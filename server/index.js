@@ -98,13 +98,24 @@ app.post("/api/generate", async (req, res) => {
         SPECIFIC INSTRUCTIONS FOR OPTIONS:
         
         - "fill-in-the-blank": 
-            Use '___' for the blank. 
-            "options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
+            -Use '___' for the blank. 
+            -"options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
+            -WHEN GIVING CORRECT ANSWER ALSO MENTION THE MEANING OF THE WORD IN ENGLISH IN A BRACKET. EXAMPLE: Correct Answer: "chat" (cat).
+            -ENSURE EACH ANSWER IS DIFFERENT.
+            -ANSWERS SHOULD NOT BE REPETITIVE
         
         - "complete-the-sentence": 
             "options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
         
         - "translate": 
+            - GIVE THE QUESTION IN THE FORM OF SENTENCE AND ANSWER IN THE FORM OF SENTENCE.
+            - EXAMPLE: Question: "Translate the following sentence: 'The cat is sleeping.' to French."
+            - Answer: "Le chat est endormi."
+            - SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL. 
+            -ALSO INCLUDE FEW WORDS ALONE AS QUESTIONS. EXAMPLE: Question: "Translate the word 'chat' to French."
+            - Answer: "chat" (make sure the difficulty of the word is according to the units level.)
+            -MAKE SURE YOU ASK QUESTIONS TO CONVERT FROM  ENGLISH TO FRENCH 80% OF THE TIME AND FROM FRENCH TO ENGLISH 20% OF THE TIME.
+            
             "options": [Scrambled words of the answer + 3 extra distractor words].
 
         - "match-pairs":
