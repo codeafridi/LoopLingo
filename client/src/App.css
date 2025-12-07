@@ -694,3 +694,219 @@ input:checked + .slider:before {
 .module-card.listen:hover {
   border-color: #3b82f6;
 }
+
+/* =========================================
+   MODERN LISTENING UI
+   ========================================= */
+
+/* Main Container */
+.listening-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* --- 1. THE AUDIO PLAYER BAR --- */
+.audio-player-card {
+  background: #1e293b; /* Dark slate */
+  border-radius: 16px;
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  position: sticky;
+  top: 20px;
+  z-index: 100; /* Stays on top while scrolling */
+}
+
+.play-fab {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.play-fab:hover {
+  transform: scale(1.1);
+  background: #2563eb;
+}
+.play-fab:active {
+  transform: scale(0.95);
+}
+
+/* The "Fake" Visualizer Animation */
+.audio-visualizer {
+  flex-grow: 1;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.bar {
+  width: 6px;
+  background-color: #475569;
+  border-radius: 4px;
+  height: 10px;
+  transition: height 0.1s ease;
+}
+
+/* Animation when playing */
+.playing .bar {
+  background-color: #22c55e; /* Green when playing */
+  animation: equalize 0.5s infinite;
+}
+
+.playing .bar:nth-child(1) {
+  animation-duration: 0.4s;
+}
+.playing .bar:nth-child(2) {
+  animation-duration: 0.2s;
+}
+.playing .bar:nth-child(3) {
+  animation-duration: 0.5s;
+}
+.playing .bar:nth-child(4) {
+  animation-duration: 0.3s;
+}
+.playing .bar:nth-child(5) {
+  animation-duration: 0.6s;
+}
+
+@keyframes equalize {
+  0% {
+    height: 10px;
+  }
+  50% {
+    height: 30px;
+  }
+  100% {
+    height: 10px;
+  }
+}
+
+.player-text {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* --- 2. QUESTION CARDS --- */
+.story-q-item {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 20px;
+  transition: transform 0.2s;
+}
+
+.story-q-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.story-q-text {
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+/* --- 3. OPTIONS (Chips style) --- */
+.story-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  gap: 12px;
+}
+
+.story-opt {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+/* Hide the actual radio circle, use styling instead */
+.story-opt input {
+  margin-right: 10px;
+  accent-color: #3b82f6;
+  transform: scale(1.2);
+}
+
+.story-opt:hover {
+  background-color: #fff;
+  border-color: #94a3b8;
+}
+
+/* Selected State */
+.story-opt:has(input:checked) {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+/* Correct/Wrong States (After submit) */
+.story-opt.correct {
+  border-color: #22c55e;
+  background-color: #dcfce7;
+  color: #15803d;
+}
+.story-opt.wrong {
+  border-color: #ef4444;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  opacity: 0.7;
+}
+
+/* --- 4. LOADING OVERLAY --- */
+.loader-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #64748b;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

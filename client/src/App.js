@@ -247,8 +247,23 @@ function App() {
   // ==========================================
   // VIEW 4: LISTENING MODE
   // ==========================================
+  // --- VIEW 4: LISTENING MODE ---
   if (view === "listening") {
+    // If loading, show the spinner INSTEAD of the component
+    if (loading) {
+      return (
+        <div className="worksheet-container">
+          <div className="loader-overlay">
+            <div className="spinner"></div>
+            <h2>Creating a new story...</h2>
+            <p>Our AI author is writing a unique script for you.</p>
+          </div>
+        </div>
+      );
+    }
+
     const storyData = exercises[0];
+
     return (
       <div className="worksheet-container">
         <header className="worksheet-header">
@@ -259,9 +274,12 @@ function App() {
           <p className="worksheet-subtitle">{unit.title}</p>
         </header>
 
-        {storyData && <ListeningStoryComponent data={storyData} />}
+        {storyData && (
+          <ListeningStoryComponent key={storyData.script} data={storyData} />
+        )}
 
         <div className="worksheet-footer">
+          {/* This triggers the loading state above */}
           <button className="finish-btn" onClick={generateListening}>
             Next Story ➔
           </button>
@@ -324,61 +342,43 @@ function ListeningStoryComponent({ data }) {
   const [submitted, setSubmitted] = useState(false);
   const [voices, setVoices] = useState([]);
 
+  // Reset when data changes
   useEffect(() => {
-    setAnswers({}); // Clear old answers
-    setSubmitted(false); // Go back to "Question Mode"
-    setIsPlaying(false); // Stop button animation
-    window.speechSynthesis.cancel(); // Stop old audio if playing
+    setAnswers({});
+    setSubmitted(false);
+    setIsPlaying(false);
+    window.speechSynthesis.cancel();
   }, [data]);
 
-  // 1. Load Voices when component mounts
+  // Load voices
   useEffect(() => {
-    const loadVoices = () => {
-      const available = window.speechSynthesis.getVoices();
-      setVoices(available);
-    };
-
-    // Chrome loads voices asynchronously, so we listen for the event
+    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
     window.speechSynthesis.onvoiceschanged = loadVoices;
-    loadVoices(); // Try immediately in case they are already there
+    loadVoices();
   }, []);
 
   const playAudio = () => {
-    if (!data.script) {
-      alert("Error: No script found in data. Please generate a new story.");
-      return;
-    }
-
-    // Cancel any current speaking
+    if (!data.script) return;
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(data.script);
 
-    // 2. INTELLIGENT VOICE SELECTION
-    // Try to find a French voice (Google, Microsoft, or Apple)
-    // If you are learning Spanish, change 'fr' to 'es' here.
+    // Voice Selection Logic
     const targetLang = "fr";
     const bestVoice =
       voices.find(
         (v) => v.lang.startsWith(targetLang) && v.name.includes("Google")
       ) || voices.find((v) => v.lang.startsWith(targetLang));
-
     if (bestVoice) {
       utterance.voice = bestVoice;
       utterance.lang = bestVoice.lang;
     } else {
-      console.warn("No specific French voice found, using default.");
-      utterance.lang = "fr-FR"; // Fallback
+      utterance.lang = "fr-FR";
     }
 
-    utterance.rate = 0.75; // Slightly slower for clarity
-
+    utterance.rate = 0.75;
     utterance.onstart = () => setIsPlaying(true);
     utterance.onend = () => setIsPlaying(false);
-    utterance.onerror = (e) => {
-      console.error("Audio Error:", e);
-      setIsPlaying(false);
-    };
 
     window.speechSynthesis.speak(utterance);
   };
@@ -389,11 +389,8 @@ function ListeningStoryComponent({ data }) {
 
   const checkAnswers = () => {
     setSubmitted(true);
-    // Reveal script automatically when checking
   };
 
-  // Safe score calculation
-  const totalQuestions = data.questions ? data.questions.length : 0;
   const score = data.questions
     ? data.questions.reduce(
         (acc, q) => acc + (answers[q.id] === q.answer ? 1 : 0),
@@ -402,35 +399,34 @@ function ListeningStoryComponent({ data }) {
     : 0;
 
   return (
-    <div className="section-block">
-      <div className="section-header">
-        <h2>{data.title || "Story Time"}</h2>
-      </div>
-
-      {/* Player */}
-      <div className="story-player-area">
-        <div className="icon-wrapper">🔊</div>
-        <button
-          className={`audio-big-btn ${isPlaying ? "playing" : ""}`}
-          onClick={playAudio}
-          disabled={isPlaying}
-        >
-          {isPlaying ? "Listening..." : "▶ Play Story"}
+    <div className="listening-container">
+      {/* 1. AUDIO PLAYER BAR */}
+      <div className={`audio-player-card ${isPlaying ? "playing" : ""}`}>
+        <button className="play-fab" onClick={playAudio} disabled={isPlaying}>
+          {isPlaying ? "⏸" : "▶"}
         </button>
-        <p className="hint-text">
-          {voices.length === 0
-            ? "Loading voices..."
-            : "Listen carefully to answer the questions below."}
-        </p>
+
+        <div className="audio-visualizer">
+          {/* Fake bars for animation */}
+          <div className="bar"></div>
+          <div className="bar"></div>
+          <div className="bar"></div>
+          <div className="bar"></div>
+          <div className="bar"></div>
+        </div>
+
+        <div className="player-text">
+          {isPlaying ? "Listen..." : "Click to Play"}
+        </div>
       </div>
 
-      {/* Questions */}
+      {/* 2. QUESTIONS */}
       <div className="story-questions">
         {data.questions &&
           data.questions.map((q, i) => (
             <div key={q.id} className="story-q-item">
               <p className="story-q-text">
-                <strong>{i + 1}.</strong> {q.question}
+                {i + 1}. {q.question}
               </p>
               <div className="story-options">
                 {q.options.map((opt) => (
@@ -450,6 +446,7 @@ function ListeningStoryComponent({ data }) {
                       value={opt}
                       onChange={() => handleSelect(q.id, opt)}
                       disabled={submitted}
+                      checked={answers[q.id] === opt} // Controlled input
                     />
                     {opt}
                   </label>
@@ -459,7 +456,7 @@ function ListeningStoryComponent({ data }) {
           ))}
       </div>
 
-      {/* Footer */}
+      {/* 3. FOOTER & RESULTS */}
       {!submitted ? (
         <button className="check-story-btn" onClick={checkAnswers}>
           Check Answers
@@ -467,7 +464,7 @@ function ListeningStoryComponent({ data }) {
       ) : (
         <div className="story-result">
           <h3>
-            You got {score} / {totalQuestions} correct!
+            You got {score} / {data.questions.length} correct!
           </h3>
           <div className="transcript-reveal">
             <h4>Transcript:</h4>
