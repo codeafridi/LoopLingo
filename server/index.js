@@ -30,7 +30,7 @@ app.post("/api/generate", async (req, res) => {
   } = req.body;
   console.log(`Generating: ${language} | ${unit} | Type: ${type}`);
 
-  // Vocabulary Constraints
+  // 1. Vocabulary Constraints
   let vocabConstraint = "";
   if (vocabulary && vocabulary.length > 0) {
     const vocabList = vocabulary.join(", ");
@@ -47,15 +47,22 @@ app.post("/api/generate", async (req, res) => {
       "Use only CEFR A1 beginner vocabulary suitable for this specific unit.";
   }
 
-  // Question Count Logic
+  // 2. Question Count Logic (FIXED LOGIC)
   let requirementText = "";
+
   if (type === "all") {
+    // We limit total questions to ~11 to prevent the AI from cutting off due to length limits
     requirementText = `
-      Generate a set of 15 exercises divided into these 3 categories:
-      1. 5 questions of "fill-in-the-blank".
-      2. 5 questions of "complete-the-sentence".
-      3. 5 questions of "translate".
+      Generate a JSON array with EXACTLY 20 exercises in this specific order:
+      1. 5 questions of type "fill-in-the-blank".
+      2. 5 questions of type "complete-the-sentence".
+      3. 5 questions of type "translate".
+      4. 5 questions of type "match-pairs" (Each containing 4 pairs).
+      
+      TOTAL: 20 exercises. You MUST generate all 4 types.
     `;
+  } else if (type === "match-pairs") {
+    requirementText = `Generate exactly 5 questions of type "match-pairs" (Each with 4 pairs).`;
   } else {
     requirementText = `Generate exactly 5 questions of type "${type}".`;
   }
@@ -68,19 +75,15 @@ app.post("/api/generate", async (req, res) => {
 
         ${vocabConstraint}
 
-        GRAMMAR FOCUS:
-        The exercises must specifically test this grammar concept: "${
-          grammar || "General grammar for this level"
-        }".
+        GRAMMAR FOCUS: "${grammar || "General grammar for this level"}"
 
+        TASK INSTRUCTIONS:
         ${requirementText}
 
-        DIVERSITY & UNIQUENESS RULES (CRITICAL):
-        1. NO REPEATS: Absolutely DO NOT generate the same question or sentence structure twice.
-        2. VARY SUBJECTS: You MUST use a mix of pronouns (Je, Tu, Il, Elle, Nous, Vous, Ils, Elles).
-        3. VARY CONTEXTS: Mix statements (.), questions (?), and negations (ne...pas).
-        4. ANSWER DISTRIBUTION: Ensure the correct answer is different for each question.
-        5. SCENARIOS: Use different verbs and nouns from the vocabulary list for every single question.
+        DIVERSITY RULES:
+        1. NO REPEATS.
+        2. VARY SUBJECTS (Je, Tu, Il, Elle...).
+        3. ANSWER DISTRIBUTION: Ensure correct answers vary.
 
         CRITICAL JSON RULES:
         1. Return ONLY raw JSON. No markdown.
@@ -88,16 +91,30 @@ app.post("/api/generate", async (req, res) => {
         3. "answer" MUST MATCH EXACTLY one of the options.
         
         SPECIFIC INSTRUCTIONS FOR OPTIONS:
-        - For 'fill-in-the-blank': 
-            **CRITICAL: There must be EXACTLY ONE blank (represented by '___') per question.** 
-            NEVER create a sentence with two or more blanks.
-            Options must include the Correct Answer + 3 Distractors. 
         
-        - For 'complete-the-sentence': 
-            The distractors must be GRAMMATICALLY INCORRECT or LOGICALLY NONSENSE (so there is only 1 clear winner).
+        - "fill-in-the-blank": 
+            Use '___' for the blank. 
+            "options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
         
-        - For 'translate': 
-            Options must contain the shuffled words of the answer + 3 extra words.
+        - "complete-the-sentence": 
+            "options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
+        
+        - "translate": 
+            "options": [Scrambled words of the answer + 3 extra distractor words].
+
+        - "match-pairs":
+            Structure:
+            {
+                "id": 1,
+                "type": "match-pairs",
+                "question": "Match the following terms",
+                "pairs": [
+                    { "left": "FrenchWord1", "right": "EnglishTranslation1" },
+                    { "left": "FrenchWord2", "right": "EnglishTranslation2" },
+                    { "left": "FrenchWord3", "right": "EnglishTranslation3" },
+                    { "left": "FrenchWord4", "right": "EnglishTranslation4" }
+                ]
+            }
 
         Output Structure Example:
         [
@@ -107,6 +124,15 @@ app.post("/api/generate", async (req, res) => {
                 "question": "C'est ___ femme.",
                 "answer": "une",
                 "options": ["un", "une", "le", "la"] 
+            },
+            {
+                "id": 10,
+                "type": "match-pairs",
+                "question": "Match the following terms",
+                "pairs": [
+                    { "left": "Chat", "right": "Cat" },
+                    { "left": "Chien", "right": "Dog" }
+                ]
             }
         ]
     `;
@@ -140,7 +166,7 @@ app.post("/api/generate", async (req, res) => {
   }
 });
 
-// --- CHECK ROUTE (Lenient Checker) ---
+// --- CHECK ROUTE ---
 app.post("/api/check", async (req, res) => {
   const { question, userAnswer, language, type } = req.body;
 
@@ -155,15 +181,14 @@ app.post("/api/check", async (req, res) => {
         Task: Check if the answer is correct. 
         
         CRITICAL GRADING RULES:
-        1. BE LENIENT with punctuation. (Ignore missing periods, commas, or question marks).
+        1. BE LENIENT with punctuation.
         2. BE LENIENT with capitalization.
-        3. BE LENIENT with missing hyphens.
-        4. If the words are correct but accents are wrong, mark it as CORRECT but mention the accent in the explanation.
+        3. If accents are wrong but word is right, mark CORRECT.
         
         Return JSON:
         {
             "isCorrect": boolean,
-            "correctAnswer": "The ideal answer (or correction)",
+            "correctAnswer": "The ideal answer",
             "explanation": "Short feedback."
         }
     `;

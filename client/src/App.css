@@ -191,7 +191,7 @@ input:checked + .slider:before {
   font-weight: bold;
   color: #888;
   margin-top: 5px;
-  width: 20px;
+  width: 50px;
 }
 .q-content {
   flex: 1;
@@ -342,4 +342,180 @@ input:checked + .slider:before {
   font-size: 1.2rem;
   border-radius: 50px;
   cursor: pointer;
+}
+
+/* =========================================
+   IV. MATCHING GAME - RESPONSIVE GRID
+   (Best for both Desktop & Mobile)
+   ========================================= */
+
+.matching-game-container {
+  background-color: #f7f9fb;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 40px;
+
+  /* Layout Fixes */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fix Title Layout */
+.matching-game-container .q-number {
+  width: 100%;
+  max-width: none;
+  flex: none;
+  text-align: left;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.matching-grid {
+  display: grid;
+  /* 
+       This makes it look good on all screens:
+       - Desktop: 4 or 5 items per row.
+       - Mobile: 2 items per row.
+    */
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 15px;
+  width: 100%;
+  margin-top: 15px;
+}
+
+.match-card {
+  /* Keep height consistent */
+  min-height: 80px;
+
+  background: white;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 10px;
+
+  /* Centering Text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  /* Text Styling */
+  font-size: 16px;
+  font-weight: 600;
+  color: #4b5563;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 0 #e5e5e5;
+
+  /* Prevent text from selecting on rapid clicks */
+  user-select: none;
+}
+
+/* --- MOBILE TWEAKS --- */
+/* If the screen is smaller than 600px (Phones) */
+@media (max-width: 600px) {
+  .matching-grid {
+    /* Force 2 columns on mobile so cards are easy to tap */
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .match-card {
+    min-height: 70px;
+    font-size: 14px;
+  }
+}
+
+/* --- STATES --- */
+
+/* Hover */
+.match-card:hover {
+  transform: translateY(-2px);
+  border-color: #d1d5db;
+  box-shadow: 0 6px 0 #d1d5db;
+}
+
+/* Active/Click */
+.match-card:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 transparent;
+}
+
+/* Selected (Blue) */
+.match-card.selected {
+  background-color: #e0f2fe;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  box-shadow: 0 4px 0 #2563eb;
+  transform: translateY(-2px);
+}
+
+/* Matched (Green) */
+.match-card.matched {
+  background-color: #dcfce7;
+  border-color: transparent;
+  color: #16a34a;
+  box-shadow: none;
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+  transform: scale(0.95);
+}
+
+/* Wrong (Red Shake) */
+.match-card.wrong {
+  background-color: #fee2e2;
+  border-color: #ef4444;
+  color: #b91c1c;
+  box-shadow: 0 4px 0 #b91c1c;
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Success Message */
+.match-success {
+  margin-top: 25px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #16a34a;
+  text-align: center;
+  animation: popIn 0.5s ease;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
 }

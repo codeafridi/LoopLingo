@@ -1,16 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 import { COURSE_DATA } from "./data";
 
 function App() {
   // --- HELPER: Get default values safely ---
-  // This prevents crashes if data is missing or empty
   const getDefaultValues = () => {
     const defaultLang = "French";
-    // Check if French exists
     const sec = COURSE_DATA[defaultLang] ? COURSE_DATA[defaultLang][0] : null;
-    // Check if section has units
     const u = sec && sec.units && sec.units.length > 0 ? sec.units[0] : null;
 
     return {
@@ -56,7 +53,6 @@ function App() {
 
   const handleUnitChange = (e) => {
     const newUnitTitle = e.target.value;
-    // Find the full unit object based on the title selected
     const newUnit = section.units.find((u) => u.title === newUnitTitle);
     if (newUnit) {
       setUnit(newUnit);
@@ -71,9 +67,9 @@ function App() {
       const res = await axios.post("http://localhost:5000/api/generate", {
         language: lang,
         section: section.name,
-        unit: unit.title, // Send the title string
-        vocabulary: unit.vocabulary, // Send the vocab array
-        grammar: unit.grammar, // Send the grammar string
+        unit: unit.title,
+        vocabulary: unit.vocabulary,
+        grammar: unit.grammar,
         type: "all",
       });
       setExercises(res.data.exercises || []);
@@ -148,6 +144,15 @@ function App() {
           language={lang}
         />
 
+        {/* SECTION IV: MATCHING PAIRS (NEW) */}
+        <WorksheetSection
+          title="IV. Match the Pairs"
+          type="match-pairs"
+          exercises={exercises.filter((e) => e.type === "match-pairs")}
+          onGenerateMore={() => generateMore("match-pairs")}
+          language={lang}
+        />
+
         <div className="worksheet-footer">
           <button className="finish-btn" onClick={() => setExercises([])}>
             Finish Practice
@@ -200,11 +205,6 @@ function App() {
           <div className="input-group">
             <label>Unit</label>
             <select value={unit.title} onChange={handleUnitChange}>
-              {/* 
-                   CRITICAL FIX: 
-                   We now map over `section.units` which are OBJECTS.
-                   We use `u.title` for the text and value.
-                */}
               {section.units.map((u, idx) => (
                 <option key={u.id || idx} value={u.title}>
                   {u.title}
@@ -242,30 +242,41 @@ function WorksheetSection({
     <div className="section-block">
       <div className="section-header">
         <h2>{title}</h2>
-        <div className="toggle-wrapper">
-          <span className={!showOptions ? "active" : ""}>No Options</span>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={showOptions}
-              onChange={() => setShowOptions(!showOptions)}
-            />
-            <span className="slider round"></span>
-          </label>
-          <span className={showOptions ? "active" : ""}>With Options</span>
-        </div>
+        {/* Hide toggle for Matching Game */}
+        {type !== "match-pairs" && (
+          <div className="toggle-wrapper">
+            <span className={!showOptions ? "active" : ""}>No Options</span>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={showOptions}
+                onChange={() => setShowOptions(!showOptions)}
+              />
+              <span className="slider round"></span>
+            </label>
+            <span className={showOptions ? "active" : ""}>With Options</span>
+          </div>
+        )}
       </div>
 
       <div className="question-list">
-        {exercises.map((ex, i) => (
-          <QuestionItem
-            key={i}
-            data={ex}
-            showOptions={showOptions}
-            language={language}
-            index={i + 1}
-          />
-        ))}
+        {exercises.map((ex, i) => {
+          // --- RENDER MATCHING GAME ---
+          if (ex.type === "match-pairs") {
+            return <MatchingGame key={i} data={ex} index={i + 1} />;
+          }
+
+          // --- RENDER STANDARD QUESTION ---
+          return (
+            <QuestionItem
+              key={i}
+              data={ex}
+              showOptions={showOptions}
+              language={language}
+              index={i + 1}
+            />
+          );
+        })}
       </div>
 
       <button className="generate-more-btn" onClick={onGenerateMore}>
@@ -275,7 +286,106 @@ function WorksheetSection({
   );
 }
 
-// --- SUB-COMPONENT: INDIVIDUAL QUESTION ---
+// --- NEW SUB-COMPONENT: MATCHING GAME ---
+function MatchingGame({ data, index }) {
+  const [items, setItems] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [matched, setMatched] = useState([]);
+  const [wrong, setWrong] = useState(null);
+
+  useEffect(() => {
+    if (!data.pairs) return;
+
+    // 1. Flatten pairs into cards
+    const list = [];
+    data.pairs.forEach((pair, idx) => {
+      // Create Left Card
+      list.push({
+        id: idx,
+        type: "left",
+        text: pair.left,
+        uuid: Math.random(),
+      });
+      // Create Right Card
+      list.push({
+        id: idx,
+        type: "right",
+        text: pair.right,
+        uuid: Math.random(),
+      });
+    });
+
+    // 2. Shuffle
+    setItems(list.sort(() => Math.random() - 0.5));
+  }, [data]);
+
+  const handleClick = (item) => {
+    // Ignore clicks on matched items or during wrong animation
+    if (matched.includes(item.id) || wrong) return;
+
+    if (!selected) {
+      // First selection
+      setSelected(item);
+    } else {
+      // Second selection
+      if (selected.uuid === item.uuid) {
+        setSelected(null); // Deselect self
+        return;
+      }
+
+      if (selected.id === item.id) {
+        // MATCH!
+        setMatched([...matched, item.id]);
+        setSelected(null);
+      } else {
+        // WRONG!
+        setWrong([selected.uuid, item.uuid]);
+        setTimeout(() => {
+          setWrong(null);
+          setSelected(null);
+        }, 800);
+      }
+    }
+  };
+
+  const isComplete = data.pairs && matched.length === data.pairs.length;
+
+  return (
+    <div className="matching-game-container">
+      <div className="q-number">
+        {index}. {data.question}
+      </div>
+
+      <div className="matching-grid">
+        {items.map((item) => {
+          const isSelected = selected && selected.uuid === item.uuid;
+          const isMatched = matched.includes(item.id);
+          const isWrong = wrong && wrong.includes(item.uuid);
+
+          let statusClass = "match-card";
+          if (isMatched) statusClass += " matched";
+          else if (isWrong) statusClass += " wrong";
+          else if (isSelected) statusClass += " selected";
+
+          return (
+            <button
+              key={item.uuid}
+              className={statusClass}
+              onClick={() => handleClick(item)}
+            >
+              {item.text}
+            </button>
+          );
+        })}
+      </div>
+      {isComplete && (
+        <div className="match-success">✨ Awesome! Set Complete!</div>
+      )}
+    </div>
+  );
+}
+
+// --- SUB-COMPONENT: INDIVIDUAL QUESTION (Standard) ---
 function QuestionItem({ data, showOptions, language, index }) {
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState(null);
