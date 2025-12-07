@@ -160,6 +160,13 @@ function App() {
           onGenerateMore={() => generateMore("missing-verb")}
           language={lang}
         />
+        <WorksheetSection
+          title="V. Choose the Article"
+          type="choose-article"
+          exercises={exercises.filter((e) => e.type === "choose-article")}
+          onGenerateMore={() => generateMore("choose-article")}
+          language={lang}
+        />
 
         <div className="worksheet-footer">
           <button className="finish-btn" onClick={() => setExercises([])}>
@@ -464,7 +471,8 @@ function QuestionItem({ data, showOptions, language, index }) {
 
         <div className="input-area">
           {(data.type === "fill-in-the-blank" ||
-            data.type === "missing-verb") &&
+            data.type === "missing-verb" ||
+            data.type === "choose-article") &&
             (isEasyMode ? (
               <select
                 className="paper-select"

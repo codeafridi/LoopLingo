@@ -56,14 +56,15 @@ app.post("/api/generate", async (req, res) => {
   if (type === "all") {
     // We limit total questions to ~11 to prevent the AI from cutting off due to length limits
     requirementText = `
-      Generate a JSON array with EXACTLY 20 exercises in this specific order:
+      Generate a JSON array with EXACTLY 30 exercises in this specific order:
       1. 5 questions of type "fill-in-the-blank".
       2. 5 questions of type "complete-the-sentence".
       3. 5 questions of type "translate".
       4. 5 questions of type "match-pairs" (Each containing 4 pairs).
       5. 5 questions of type "missing-verb" (Grammar/Conjugation focus).
+      6. 5 questions of type "choose-article" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
       
-      TOTAL: 25 exercises. You MUST generate all 5 types.
+      TOTAL: 30 exercises. You MUST generate all 6 types.
     `;
   } else if (type === "match-pairs") {
     requirementText = `Generate exactly 5 questions of type "match-pairs" (Each with 4 pairs).`;
@@ -138,6 +139,16 @@ app.post("/api/generate", async (req, res) => {
            - NEVER put the conjugated form in parentheses.
            - ENSURE ANSWERS ARE DIFFERENT (Change the pronoun!).
 
+        - "choose-article":
+           - Target: Definite (le/la/les/l') or Indefinite (un/une/des) articles.
+           - Question: Sentence with the article missing.
+           - Options: Must be a list of articles.
+           - Ex: { "question": "J'aime ___ pomme.", "answer": "la", "options": ["le", "la", "les", "l'"] }
+           -ENSURE EACH ANSWER IS DIFFERENT.
+           -ANSWERS SHOULD NOT BE REPETITIVE. 
+           -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
+           - USE THE FOLLOWING ARTICLES: Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc... .
+
         Output Structure Example:
         [
             {
@@ -163,7 +174,7 @@ app.post("/api/generate", async (req, res) => {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
       model: "llama-3.3-70b-versatile",
-      temperature: 0.7,
+      temperature: 0.8,
       max_tokens: 4000,
     });
 
