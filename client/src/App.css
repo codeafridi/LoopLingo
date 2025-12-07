@@ -97,15 +97,70 @@ body {
   font-style: italic;
   margin-top: 5px;
 }
+/* =========================================
+   BACK BUTTON (Green Pill Style)
+   ========================================= */
+
+/* 1. Adjust Header to make room for the big button */
+.worksheet-header {
+  position: relative;
+  text-align: center;
+  /* Push title down so it doesn't hit the button */
+  padding-top: 90px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 40px;
+}
+
+/* 2. The Button Itself */
 .back-link {
+  /* Positioning */
   position: absolute;
-  left: 0;
-  top: 10px;
+  left: 0px;
+  top: 20px;
+
+  /* Shape & Color (The Green Pill) */
+  background-color: #7cb342; /* Olive Green */
+  color: #ffffff;
   border: none;
-  background: none;
-  color: #888;
-  cursor: pointer;
+  border-radius: 50px; /* Fully rounded pill */
+
+  /* Sizing */
+  padding: 12px 25px;
+  min-width: 140px;
+
+  /* Typography */
   font-family: sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: none; /* Keep natural capitalization */
+  letter-spacing: 0.5px;
+
+  /* Flexbox to align the arrow and text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  /* Interaction */
+  cursor: pointer;
+  transition: all 0.1s ease;
+  z-index: 20;
+
+  /* 3D Depth Effect (The "Button" look) */
+  box-shadow: 0 4px 0 #558b2f;
+}
+
+/* Hover State */
+.back-link:hover {
+  background-color: #8bc34a; /* Slightly lighter green */
+  transform: translateY(-1px);
+}
+
+/* Active / Click State */
+.back-link:active {
+  transform: translateY(4px); /* Pushes down */
+  box-shadow: none; /* Shadow disappears */
 }
 
 /* SECTIONS */
