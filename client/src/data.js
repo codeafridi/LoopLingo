@@ -2015,26 +2015,35 @@ export const COURSE_DATA = {
     {
       name: "Section 6: Champion (CEFR B1)",
       description: "Advanced B1 concepts",
-      units: Array.from(
-        { length: 49 },
-        (_, i) => `Unit ${i + 1}: Advanced B1 Practice ${i + 1}`
-      ),
+      // FIX: Return an object with title, vocab, and grammar
+      units: Array.from({ length: 49 }, (_, i) => ({
+        id: `s6_u${i + 1}`,
+        title: `Unit ${i + 1}: Advanced B1 Practice ${i + 1}`,
+        vocabulary: [], // Empty array to prevent crashes
+        grammar: "Advanced B1 Grammar",
+      })),
     },
     {
       name: "Section 7: Daily Refresh (CEFR B2)",
       description: "Upper Intermediate",
-      units: Array.from(
-        { length: 36 },
-        (_, i) => `Unit ${i + 1}: B2 Concept ${i + 1}`
-      ),
+      // FIX: Return an object
+      units: Array.from({ length: 36 }, (_, i) => ({
+        id: `s7_u${i + 1}`,
+        title: `Unit ${i + 1}: B2 Concept ${i + 1}`,
+        vocabulary: [],
+        grammar: "B2 Level Grammar",
+      })),
     },
     {
       name: "Section 8: Legendary (CEFR B2)",
       description: "Mastery",
-      units: Array.from(
-        { length: 37 },
-        (_, i) => `Unit ${i + 1}: B2 Mastery ${i + 1}`
-      ),
+      // FIX: Return an object
+      units: Array.from({ length: 37 }, (_, i) => ({
+        id: `s8_u${i + 1}`,
+        title: `Unit ${i + 1}: B2 Mastery ${i + 1}`,
+        vocabulary: [],
+        grammar: "Mastery Level Concepts",
+      })),
     },
   ],
 
@@ -2043,9 +2052,13 @@ export const COURSE_DATA = {
     {
       name: "Section 1: Rookie",
       units: [
-        "Unit 1: Order food",
-        "Unit 2: Introduce yourself",
-        "Unit 3: Use gender and number",
+        // Make sure these are objects too if you switch to Spanish!
+        { title: "Unit 1: Order food", vocabulary: [], grammar: "Basics" },
+        {
+          title: "Unit 2: Introduce yourself",
+          vocabulary: [],
+          grammar: "Basics",
+        },
       ],
     },
   ],
