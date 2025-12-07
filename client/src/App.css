@@ -574,3 +574,123 @@ input:checked + .slider:before {
     transform: scale(1);
   }
 }
+/* =========================================
+   DASHBOARD & NEW LAYOUT STYLES
+   ========================================= */
+
+/* Dashboard Container */
+.dashboard-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: sans-serif;
+}
+
+/* Header */
+.dash-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+.dash-header h2 {
+  font-size: 2.5rem;
+  color: #fff;
+  margin-bottom: 10px;
+}
+.dash-subtitle {
+  color: #9ca3af;
+  font-size: 1.2rem;
+}
+
+/* Simple Text Back Button */
+.back-link-simple {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.back-link-simple:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+/* Grid for the 2 Big Cards */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  justify-content: center;
+}
+
+/* The Cards */
+.module-card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 280px;
+}
+
+.module-card:hover {
+  transform: translateY(-5px);
+  border-color: #3b82f6;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.module-card .icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+.module-card h3 {
+  color: white;
+  margin-bottom: 15px;
+  font-size: 1.8rem;
+}
+.module-card p {
+  color: #9ca3af;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+/* Card Buttons */
+.module-card button {
+  width: 100%;
+  padding: 15px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: auto;
+  transition: background 0.2s;
+}
+
+/* Green Theme for Core */
+.module-card.core button {
+  background: #22c55e;
+  color: white;
+}
+.module-card.core:hover {
+  border-color: #22c55e;
+}
+
+/* Blue Theme for Listening */
+.module-card.listen button {
+  background: #3b82f6;
+  color: white;
+}
+.module-card.listen:hover {
+  border-color: #3b82f6;
+}

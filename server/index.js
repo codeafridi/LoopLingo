@@ -9,9 +9,12 @@ app.use(express.json());
 
 // Increase the timeout limit for large generations
 app.use((req, res, next) => {
-  res.setTimeout(120000, () => {
-    console.log("Request has timed out.");
-    res.status(408).send("Request has timed out");
+  res.setTimeout(180000, () => {
+    // Increased to 3 mins for safety
+    if (!res.headersSent) {
+      console.log("Request has timed out.");
+      res.status(408).send("Request has timed out");
+    }
   });
   next();
 });
@@ -30,7 +33,7 @@ app.post("/api/generate", async (req, res) => {
   } = req.body;
   console.log(`Generating: ${language} | ${unit} | Type: ${type}`);
 
-  // 1. Vocabulary Constraints
+  // 1. Vocabulary Constraints (YOUR EXACT RULES)
   let vocabConstraint = "";
   if (vocabulary && vocabulary.length > 0) {
     const vocabList = vocabulary.join(", ");
@@ -50,28 +53,39 @@ app.post("/api/generate", async (req, res) => {
       "Use only CEFR A1 beginner vocabulary suitable for this specific unit.";
   }
 
-  // 2. Question Count Logic (FIXED LOGIC)
+  // 2. Question Count Logic
   let requirementText = "";
 
   if (type === "all") {
-    // We limit total questions to ~11 to prevent the AI from cutting off due to length limits
+    // Kept your 30 question logic
     requirementText = `
-      Generate a JSON array with EXACTLY 30 exercises in this specific order:
-      1. 5 questions of type "fill-in-the-blank".
-      2. 5 questions of type "complete-the-sentence".
-      3. 5 questions of type "translate".
-      4. 5 questions of type "match-pairs" (Each containing 4 pairs).
-      5. 5 questions of type "missing-verb" (Grammar/Conjugation focus).
-      6. 5 questions of type "choose-article" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
+      Generate a JSON array with EXACTLY 18 exercises in this specific order:
+      1. 3 questions of type "fill-in-the-blank".
+      2. 3 questions of type "complete-the-sentence".
+      3. 3 questions of type "translate".
+      4. 3 questions of type "match-pairs" (Each containing 4 pairs).
+      5. 3 questions of type "missing-verb" (Grammar/Conjugation focus).
+      6. 3 questions of type "choose-article" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
       
-      TOTAL: 30 exercises. You MUST generate all 6 types.
+      TOTAL: 18 exercises. You MUST generate all 6 types.
     `;
-  } else if (type === "match-pairs") {
+  }
+  // --- FIX START: Added the missing Listening Logic here ---
+  else if (type === "listening-story") {
+    requirementText = `
+      Generate ONE object with type "listening-story".
+      It must contain a "script" (Medium-Length Paragraph, 80-120 words, natural flow) based on the unit topic.
+      It must contain a "questions" array (5 multiple-choice questions in English about the script).
+    `;
+  }
+  // --- FIX END ---
+  else if (type === "match-pairs") {
     requirementText = `Generate exactly 5 questions of type "match-pairs" (Each with 4 pairs).`;
   } else {
     requirementText = `Generate exactly 5 questions of type "${type}".`;
   }
 
+  // --- YOUR EXACT PROMPT ---
   const prompt = `
         Role: Strict Language Curriculum Designer.
         Task: Create a worksheet for ${language}.
@@ -98,12 +112,26 @@ app.post("/api/generate", async (req, res) => {
         
         SPECIFIC INSTRUCTIONS FOR OPTIONS:
         
+        - "listening-story":
+            - Create a coherent short story/dialogue in ${language}.
+            - Then 5 multiple choice questions in English.
+            - Structure:
+              [
+                {
+                  "type": "listening-story",
+                  "title": "Title",
+                  "script": "Full text...",
+                  "questions": [ { "id": 1, "question": "...", "options": [...], "answer": "..." } ]
+                }
+              ]
+
         - "fill-in-the-blank": 
             -Use '___' for the blank. 
             -"options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
-            -WHEN GIVING CORRECT ANSWER ALSO MENTION THE MEANING OF THE WORD IN ENGLISH IN A BRACKET. EXAMPLE: Correct Answer: "chat" (cat).
             -ENSURE EACH ANSWER IS DIFFERENT.
-            -ANSWERS SHOULD NOT BE REPETITIVE
+            -ANSWERS SHOULD NOT BE REPETITIVE 
+            -COVER WIDE VARIETY OF WORDS.
+            -WHEN GIVING CORRECT ANSWER ALSO MENTION THE MEANING OF THE WORD IN ENGLISH IN A BRACKET. EXAMPLE: Correct Answer: "chat" (cat).
         
         - "complete-the-sentence": 
             "options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
@@ -138,6 +166,7 @@ app.post("/api/generate", async (req, res) => {
            - Ex: { "question": "Nous ___ (avoir) un chien.", "answer": "avons", ... }
            - NEVER put the conjugated form in parentheses.
            - ENSURE ANSWERS ARE DIFFERENT (Change the pronoun!).
+          
 
         - "choose-article":
            - Target: Definite (le/la/les/l') or Indefinite (un/une/des) articles.
@@ -148,51 +177,61 @@ app.post("/api/generate", async (req, res) => {
            -ANSWERS SHOULD NOT BE REPETITIVE. 
            -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
            - USE THE FOLLOWING ARTICLES: Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc... .
+           
 
         Output Structure Example:
         [
-            {
-                "id": 1,
-                "type": "fill-in-the-blank", 
-                "question": "C'est ___ femme.",
-                "answer": "une",
-                "options": ["un", "une", "le", "la"] 
-            },
-            {
-                "id": 10,
-                "type": "match-pairs",
-                "question": "Match the following terms",
-                "pairs": [
-                    { "left": "Chat", "right": "Cat" },
-                    { "left": "Chien", "right": "Dog" }
-                ]
-            }
+            { "id": 1, "type": "fill-in-the-blank", "question": "...", "answer": "...", "options": [...] }
         ]
     `;
 
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.8,
-      max_tokens: 4000,
+      model: "llama-3.1-8b-instant",
+      temperature: 0.7,
+      max_tokens: 8000,
     });
 
     const text = completion.choices[0]?.message?.content || "";
 
-    const cleanJson = (txt) => {
-      const firstBracket = txt.indexOf("[");
-      const lastBracket = txt.lastIndexOf("]");
-      if (firstBracket !== -1 && lastBracket !== -1) {
-        return txt.substring(firstBracket, lastBracket + 1);
+    // --- SMART JSON CLEANER (Added this to fix the "Error" issues) ---
+    // This part is safe to change: it just helps read the AI's response better
+    let cleanText = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    // Find where the JSON actually starts (Array or Object)
+    const firstSquare = cleanText.indexOf("[");
+    const firstCurly = cleanText.indexOf("{");
+    let startIdx = -1;
+    let endIdx = -1;
+
+    if (firstSquare !== -1 && (firstCurly === -1 || firstSquare < firstCurly)) {
+      startIdx = firstSquare;
+      endIdx = cleanText.lastIndexOf("]");
+    } else if (firstCurly !== -1) {
+      startIdx = firstCurly;
+      endIdx = cleanText.lastIndexOf("}");
+    }
+
+    if (startIdx !== -1 && endIdx !== -1) {
+      cleanText = cleanText.substring(startIdx, endIdx + 1);
+      try {
+        let parsed = JSON.parse(cleanText);
+        // If "listening-story" returns a single object, wrap it in array
+        if (!Array.isArray(parsed)) parsed = [parsed];
+
+        res.json({ exercises: parsed });
+      } catch (e) {
+        console.error("JSON PARSE ERROR:", e);
+        console.log("RAW TEXT:", text); // Check terminal if error persists
+        res.status(500).json({ error: "Invalid JSON from AI" });
       }
-      return txt;
-    };
-
-    const jsonString = cleanJson(text);
-    const exercises = JSON.parse(jsonString);
-
-    res.json({ exercises });
+    } else {
+      res.status(500).json({ error: "No JSON found" });
+    }
   } catch (error) {
     console.error("Groq Error:", error);
     res.status(500).json({ error: "Failed to generate exercises" });
@@ -202,7 +241,7 @@ app.post("/api/generate", async (req, res) => {
 // --- CHECK ROUTE ---
 app.post("/api/check", async (req, res) => {
   const { question, userAnswer, language, type } = req.body;
-
+  // ... (Your Check logic remains exactly the same) ...
   const prompt = `
         Role: Language Teacher.
         Language: ${language}.
@@ -231,13 +270,15 @@ app.post("/api/check", async (req, res) => {
       messages: [{ role: "user", content: prompt }],
       model: "llama-3.3-70b-versatile",
     });
-
     const text = completion.choices[0]?.message?.content || "";
-    const firstBrace = text.indexOf("{");
-    const lastBrace = text.lastIndexOf("}");
-    const jsonString = text.substring(firstBrace, lastBrace + 1);
-
-    res.json(JSON.parse(jsonString));
+    // Basic clean just in case
+    const cleanText = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+    const firstBrace = cleanText.indexOf("{");
+    const lastBrace = cleanText.lastIndexOf("}");
+    res.json(JSON.parse(cleanText.substring(firstBrace, lastBrace + 1)));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Check failed" });

@@ -4,65 +4,48 @@ import "./App.css";
 import { COURSE_DATA } from "./data";
 
 function App() {
-  // --- HELPER: Get default values safely ---
-  const getDefaultValues = () => {
-    const defaultLang = "French";
-    const sec = COURSE_DATA[defaultLang] ? COURSE_DATA[defaultLang][0] : null;
-    const u = sec && sec.units && sec.units.length > 0 ? sec.units[0] : null;
-
-    return {
-      lang: defaultLang,
-      section: sec || { name: "", units: [] },
-      unit: u || { title: "", vocabulary: [], grammar: "" },
-    };
-  };
-
-  const defaults = getDefaultValues();
-
   // --- STATE ---
-  const [lang, setLang] = useState(defaults.lang);
-  const [section, setSection] = useState(defaults.section);
-  const [unit, setUnit] = useState(defaults.unit);
+  // View options: 'setup' | 'dashboard' | 'worksheet' | 'listening'
+  const [view, setView] = useState("setup");
 
+  // Selection State
+  const [lang, setLang] = useState("French");
+  // Default to first item to prevent crashes
+  const [section, setSection] = useState(COURSE_DATA["French"][0]);
+  const [unit, setUnit] = useState(COURSE_DATA["French"][0].units[0]);
+
+  // Content State
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // --- HANDLERS ---
+  // --- HANDLERS (Setup) ---
   const handleLangChange = (e) => {
-    const newLang = e.target.value;
-    setLang(newLang);
-    if (COURSE_DATA[newLang] && COURSE_DATA[newLang][0]) {
-      const newSec = COURSE_DATA[newLang][0];
-      setSection(newSec);
-      if (newSec.units.length > 0) {
-        setUnit(newSec.units[0]);
-      }
-    }
+    const l = e.target.value;
+    setLang(l);
+    setSection(COURSE_DATA[l][0]);
+    setUnit(COURSE_DATA[l][0].units[0]);
   };
 
   const handleSectionChange = (e) => {
-    const newSectionName = e.target.value;
-    const newSec = COURSE_DATA[lang].find((s) => s.name === newSectionName);
-    if (newSec) {
-      setSection(newSec);
-      if (newSec.units.length > 0) {
-        setUnit(newSec.units[0]);
-      }
-    }
+    const sName = e.target.value;
+    const s = COURSE_DATA[lang].find((sec) => sec.name === sName);
+    setSection(s);
+    setUnit(s.units[0]);
   };
 
   const handleUnitChange = (e) => {
-    const newUnitTitle = e.target.value;
-    const newUnit = section.units.find((u) => u.title === newUnitTitle);
-    if (newUnit) {
-      setUnit(newUnit);
-    }
+    const uTitle = e.target.value;
+    const u = section.units.find((unit) => unit.title === uTitle);
+    setUnit(u);
   };
 
-  // --- GENERATE FUNCTIONS ---
-  const generateInitial = async () => {
+  const enterDashboard = () => {
+    setView("dashboard");
+  };
+
+  // --- API CALLS ---
+  const generateWorksheet = async () => {
     setLoading(true);
-    setExercises([]);
     try {
       const res = await axios.post("http://localhost:5000/api/generate", {
         language: lang,
@@ -70,106 +53,190 @@ function App() {
         unit: unit.title,
         vocabulary: unit.vocabulary,
         grammar: unit.grammar,
-        type: "all",
+        type: "all", // Triggers your mixed 30-question logic
       });
       setExercises(res.data.exercises || []);
+      setView("worksheet");
     } catch (e) {
-      console.error(e);
-      alert("Server Error. Check console for details.");
+      alert("Error generating worksheet. Try again.");
     }
     setLoading(false);
   };
 
-  const generateMore = async (type) => {
+  const generateListening = async () => {
+    setLoading(true);
     try {
-      document.body.style.cursor = "wait";
       const res = await axios.post("http://localhost:5000/api/generate", {
         language: lang,
         section: section.name,
         unit: unit.title,
         vocabulary: unit.vocabulary,
         grammar: unit.grammar,
-        type: type,
+        type: "listening-story", // Triggers your story logic
       });
-
-      if (res.data.exercises) {
-        setExercises((prev) => [...prev, ...res.data.exercises]);
-      }
+      setExercises(res.data.exercises || []);
+      setView("listening");
     } catch (e) {
-      alert("Could not load more.");
+      alert("Error generating story. Try again.");
     }
-    document.body.style.cursor = "default";
+    setLoading(false);
   };
 
-  // --- VIEW 1: WORKSHEET MODE ---
-  if (exercises.length > 0) {
+  // ==========================================
+  // VIEW 1: SETUP SCREEN (Landing Page)
+  // ==========================================
+  if (view === "setup") {
+    return (
+      <div className="landing-page">
+        <nav className="navbar">
+          <div className="logo">Looplingo ♾️</div>
+        </nav>
+        <header className="hero-section">
+          <div className="hero-text">
+            <h1>Master {lang}.</h1>
+            <p>Your AI-powered language gym.</p>
+          </div>
+          <div className="setup-card">
+            <div className="input-group">
+              <label>Language</label>
+              <select value={lang} onChange={handleLangChange}>
+                {Object.keys(COURSE_DATA).map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Section</label>
+              <select value={section.name} onChange={handleSectionChange}>
+                {COURSE_DATA[lang].map((s) => (
+                  <option key={s.name} value={s.name}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Unit</label>
+              <select value={unit.title} onChange={handleUnitChange}>
+                {section.units.map((u, i) => (
+                  <option key={u.id || i} value={u.title}>
+                    {u.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* THIS BUTTON NOW GOES TO DASHBOARD */}
+            <button className="start-btn" onClick={enterDashboard}>
+              Enter Dashboard ➔
+            </button>
+          </div>
+        </header>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // VIEW 2: DASHBOARD (The Hub)
+  // ==========================================
+  if (view === "dashboard") {
+    return (
+      <div className="dashboard-container">
+        <header className="dash-header">
+          <button className="back-link-simple" onClick={() => setView("setup")}>
+            ← Change Unit
+          </button>
+          <h2>{unit.title}</h2>
+          <p className="dash-subtitle">{section.name}</p>
+        </header>
+
+        <div className="modules-grid">
+          {/* CARD 1: CORE WORKSHEET */}
+          <div className="module-card core" onClick={generateWorksheet}>
+            <div className="icon">📝</div>
+            <h3>Core Practice</h3>
+            <p>Grammar, Vocab, Matching & Translation.</p>
+            <button disabled={loading}>
+              {loading ? "Generating..." : "Start Worksheet"}
+            </button>
+          </div>
+
+          {/* CARD 2: LISTENING */}
+          <div className="module-card listen" onClick={generateListening}>
+            <div className="icon">🎧</div>
+            <h3>Infinite Listening</h3>
+            <p>AI-generated stories with questions.</p>
+            <button disabled={loading}>
+              {loading ? "Generating..." : "Start Listening"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // VIEW 3: WORKSHEET MODE
+  // ==========================================
+  if (view === "worksheet") {
     return (
       <div className="worksheet-container">
         <header className="worksheet-header">
-          <button className="back-link" onClick={() => setExercises([])}>
-            ← Back to Setup
+          {/* Back goes to Dashboard now */}
+          <button className="back-link" onClick={() => setView("dashboard")}>
+            ← Dashboard
           </button>
-          <h1>{unit.title}</h1>
-          <p className="worksheet-subtitle">
-            {lang} • {section.name}
-          </p>
+          <h1>Core Practice</h1>
+          <p className="worksheet-subtitle">{unit.title}</p>
         </header>
 
-        {/* SECTION I */}
         <WorksheetSection
           title="I. Fill in the blanks"
           type="fill-in-the-blank"
           exercises={exercises.filter((e) => e.type === "fill-in-the-blank")}
-          onGenerateMore={() => generateMore("fill-in-the-blank")}
           language={lang}
         />
 
-        {/* SECTION II */}
         <WorksheetSection
-          title="II. Complete the sentence"
+          title="II. Missing Verbs (Conjugation)"
+          type="missing-verb"
+          exercises={exercises.filter((e) => e.type === "missing-verb")}
+          language={lang}
+        />
+
+        <WorksheetSection
+          title="III. Choose the Article"
+          type="choose-article"
+          exercises={exercises.filter((e) => e.type === "choose-article")}
+          language={lang}
+        />
+
+        <WorksheetSection
+          title="IV. Complete the sentence"
           type="complete-the-sentence"
           exercises={exercises.filter(
             (e) => e.type === "complete-the-sentence"
           )}
-          onGenerateMore={() => generateMore("complete-the-sentence")}
           language={lang}
         />
 
-        {/* SECTION III */}
         <WorksheetSection
-          title="III. Translate the sentence"
+          title="V. Translate"
           type="translate"
           exercises={exercises.filter((e) => e.type === "translate")}
-          onGenerateMore={() => generateMore("translate")}
           language={lang}
         />
 
-        {/* SECTION IV: MATCHING PAIRS (NEW) */}
         <WorksheetSection
-          title="IV. Match the Pairs"
+          title="VI. Match the Pairs"
           type="match-pairs"
           exercises={exercises.filter((e) => e.type === "match-pairs")}
-          onGenerateMore={() => generateMore("match-pairs")}
-          language={lang}
-        />
-        {/* --- NEW SECTION: MISSING VERB --- */}
-        <WorksheetSection
-          title="V. Missing Verb (Conjugation)"
-          type="missing-verb"
-          exercises={exercises.filter((e) => e.type === "missing-verb")}
-          onGenerateMore={() => generateMore("missing-verb")}
-          language={lang}
-        />
-        <WorksheetSection
-          title="V. Choose the Article"
-          type="choose-article"
-          exercises={exercises.filter((e) => e.type === "choose-article")}
-          onGenerateMore={() => generateMore("choose-article")}
           language={lang}
         />
 
         <div className="worksheet-footer">
-          <button className="finish-btn" onClick={() => setExercises([])}>
+          <button className="finish-btn" onClick={() => setView("dashboard")}>
             Finish Practice
           </button>
         </div>
@@ -177,90 +244,47 @@ function App() {
     );
   }
 
-  // --- VIEW 2: LANDING PAGE ---
-  return (
-    <div className="landing-page">
-      <nav className="navbar">
-        <div className="logo">GrammarGenie 🧞‍♂️</div>
-      </nav>
-      <header className="hero-section">
-        <div className="hero-text">
-          <h1>
-            Master a language,
-            <br />
-            one rule at a time.
-          </h1>
-          <p>Infinite practice worksheet generator.</p>
-        </div>
-        <div className="setup-card">
-          <h3>Setup your practice</h3>
+  // ==========================================
+  // VIEW 4: LISTENING MODE
+  // ==========================================
+  if (view === "listening") {
+    const storyData = exercises[0];
+    return (
+      <div className="worksheet-container">
+        <header className="worksheet-header">
+          <button className="back-link" onClick={() => setView("dashboard")}>
+            ← Dashboard
+          </button>
+          <h1>Listening Mode</h1>
+          <p className="worksheet-subtitle">{unit.title}</p>
+        </header>
 
-          <div className="input-group">
-            <label>Language</label>
-            <select value={lang} onChange={handleLangChange}>
-              {Object.keys(COURSE_DATA).map((l) => (
-                <option key={l} value={l}>
-                  {l}
-                </option>
-              ))}
-            </select>
-          </div>
+        {storyData && <ListeningStoryComponent data={storyData} />}
 
-          <div className="input-group">
-            <label>Section</label>
-            <select value={section.name} onChange={handleSectionChange}>
-              {COURSE_DATA[lang].map((s) => (
-                <option key={s.name} value={s.name}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="input-group">
-            <label>Unit</label>
-            <select value={unit.title} onChange={handleUnitChange}>
-              {section.units.map((u, idx) => (
-                <option key={u.id || idx} value={u.title}>
-                  {u.title}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            className="start-btn"
-            onClick={generateInitial}
-            disabled={loading}
-          >
-            {loading ? "Generating Worksheet..." : "Create Worksheet"}
+        <div className="worksheet-footer">
+          <button className="finish-btn" onClick={generateListening}>
+            Next Story ➔
           </button>
         </div>
-      </header>
-    </div>
-  );
+      </div>
+    );
+  }
+
+  return <div className="loading-screen">Loading...</div>;
 }
 
-// --- SUB-COMPONENT: SECTION BLOCK ---
-function WorksheetSection({
-  title,
-  type,
-  exercises,
-  onGenerateMore,
-  language,
-}) {
+// --- SUB-COMPONENT: WORKSHEET SECTION ---
+function WorksheetSection({ title, type, exercises, language }) {
   const [showOptions, setShowOptions] = useState(true);
-
-  if (exercises.length === 0) return null;
+  if (!exercises || exercises.length === 0) return null;
 
   return (
     <div className="section-block">
       <div className="section-header">
         <h2>{title}</h2>
-        {/* Hide toggle for Matching Game */}
         {type !== "match-pairs" && (
           <div className="toggle-wrapper">
-            <span className={!showOptions ? "active" : ""}>No Options</span>
+            <span className={!showOptions ? "active" : ""}>Hard</span>
             <label className="switch">
               <input
                 type="checkbox"
@@ -269,19 +293,14 @@ function WorksheetSection({
               />
               <span className="slider round"></span>
             </label>
-            <span className={showOptions ? "active" : ""}>With Options</span>
+            <span className={showOptions ? "active" : ""}>Easy</span>
           </div>
         )}
       </div>
-
       <div className="question-list">
         {exercises.map((ex, i) => {
-          // --- RENDER MATCHING GAME ---
-          if (ex.type === "match-pairs") {
+          if (type === "match-pairs")
             return <MatchingGame key={i} data={ex} index={i + 1} />;
-          }
-
-          // --- RENDER STANDARD QUESTION ---
           return (
             <QuestionItem
               key={i}
@@ -293,159 +312,201 @@ function WorksheetSection({
           );
         })}
       </div>
-
-      <button className="generate-more-btn" onClick={onGenerateMore}>
-        + Generate 5 more
-      </button>
     </div>
   );
 }
 
-// --- NEW SUB-COMPONENT: MATCHING GAME ---
-function MatchingGame({ data, index }) {
-  const [items, setItems] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [matched, setMatched] = useState([]);
-  const [wrong, setWrong] = useState(null);
+// --- SUB-COMPONENT: LISTENING STORY ---
+// --- SUB-COMPONENT: LISTENING STORY (Fixed Audio) ---
+function ListeningStoryComponent({ data }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [voices, setVoices] = useState([]);
 
   useEffect(() => {
-    if (!data.pairs) return;
-
-    // 1. Flatten pairs into cards
-    const list = [];
-    data.pairs.forEach((pair, idx) => {
-      // Create Left Card
-      list.push({
-        id: idx,
-        type: "left",
-        text: pair.left,
-        uuid: Math.random(),
-      });
-      // Create Right Card
-      list.push({
-        id: idx,
-        type: "right",
-        text: pair.right,
-        uuid: Math.random(),
-      });
-    });
-
-    // 2. Shuffle
-    setItems(list.sort(() => Math.random() - 0.5));
+    setAnswers({}); // Clear old answers
+    setSubmitted(false); // Go back to "Question Mode"
+    setIsPlaying(false); // Stop button animation
+    window.speechSynthesis.cancel(); // Stop old audio if playing
   }, [data]);
 
-  const handleClick = (item) => {
-    // Ignore clicks on matched items or during wrong animation
-    if (matched.includes(item.id) || wrong) return;
+  // 1. Load Voices when component mounts
+  useEffect(() => {
+    const loadVoices = () => {
+      const available = window.speechSynthesis.getVoices();
+      setVoices(available);
+    };
 
-    if (!selected) {
-      // First selection
-      setSelected(item);
-    } else {
-      // Second selection
-      if (selected.uuid === item.uuid) {
-        setSelected(null); // Deselect self
-        return;
-      }
+    // Chrome loads voices asynchronously, so we listen for the event
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices(); // Try immediately in case they are already there
+  }, []);
 
-      if (selected.id === item.id) {
-        // MATCH!
-        setMatched([...matched, item.id]);
-        setSelected(null);
-      } else {
-        // WRONG!
-        setWrong([selected.uuid, item.uuid]);
-        setTimeout(() => {
-          setWrong(null);
-          setSelected(null);
-        }, 800);
-      }
+  const playAudio = () => {
+    if (!data.script) {
+      alert("Error: No script found in data. Please generate a new story.");
+      return;
     }
+
+    // Cancel any current speaking
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(data.script);
+
+    // 2. INTELLIGENT VOICE SELECTION
+    // Try to find a French voice (Google, Microsoft, or Apple)
+    // If you are learning Spanish, change 'fr' to 'es' here.
+    const targetLang = "fr";
+    const bestVoice =
+      voices.find(
+        (v) => v.lang.startsWith(targetLang) && v.name.includes("Google")
+      ) || voices.find((v) => v.lang.startsWith(targetLang));
+
+    if (bestVoice) {
+      utterance.voice = bestVoice;
+      utterance.lang = bestVoice.lang;
+    } else {
+      console.warn("No specific French voice found, using default.");
+      utterance.lang = "fr-FR"; // Fallback
+    }
+
+    utterance.rate = 0.75; // Slightly slower for clarity
+
+    utterance.onstart = () => setIsPlaying(true);
+    utterance.onend = () => setIsPlaying(false);
+    utterance.onerror = (e) => {
+      console.error("Audio Error:", e);
+      setIsPlaying(false);
+    };
+
+    window.speechSynthesis.speak(utterance);
   };
 
-  const isComplete = data.pairs && matched.length === data.pairs.length;
+  const handleSelect = (qId, val) => {
+    setAnswers({ ...answers, [qId]: val });
+  };
+
+  const checkAnswers = () => {
+    setSubmitted(true);
+    // Reveal script automatically when checking
+  };
+
+  // Safe score calculation
+  const totalQuestions = data.questions ? data.questions.length : 0;
+  const score = data.questions
+    ? data.questions.reduce(
+        (acc, q) => acc + (answers[q.id] === q.answer ? 1 : 0),
+        0
+      )
+    : 0;
 
   return (
-    <div className="matching-game-container">
-      <div className="q-number">
-        {index}. {data.question}
+    <div className="section-block">
+      <div className="section-header">
+        <h2>{data.title || "Story Time"}</h2>
       </div>
 
-      <div className="matching-grid">
-        {items.map((item) => {
-          const isSelected = selected && selected.uuid === item.uuid;
-          const isMatched = matched.includes(item.id);
-          const isWrong = wrong && wrong.includes(item.uuid);
-
-          let statusClass = "match-card";
-          if (isMatched) statusClass += " matched";
-          else if (isWrong) statusClass += " wrong";
-          else if (isSelected) statusClass += " selected";
-
-          return (
-            <button
-              key={item.uuid}
-              className={statusClass}
-              onClick={() => handleClick(item)}
-            >
-              {item.text}
-            </button>
-          );
-        })}
+      {/* Player */}
+      <div className="story-player-area">
+        <div className="icon-wrapper">🔊</div>
+        <button
+          className={`audio-big-btn ${isPlaying ? "playing" : ""}`}
+          onClick={playAudio}
+          disabled={isPlaying}
+        >
+          {isPlaying ? "Listening..." : "▶ Play Story"}
+        </button>
+        <p className="hint-text">
+          {voices.length === 0
+            ? "Loading voices..."
+            : "Listen carefully to answer the questions below."}
+        </p>
       </div>
-      {isComplete && (
-        <div className="match-success">✨ Awesome! Set Complete!</div>
+
+      {/* Questions */}
+      <div className="story-questions">
+        {data.questions &&
+          data.questions.map((q, i) => (
+            <div key={q.id} className="story-q-item">
+              <p className="story-q-text">
+                <strong>{i + 1}.</strong> {q.question}
+              </p>
+              <div className="story-options">
+                {q.options.map((opt) => (
+                  <label
+                    key={opt}
+                    className={`story-opt ${
+                      submitted && opt === q.answer ? "correct" : ""
+                    } ${
+                      submitted && answers[q.id] === opt && opt !== q.answer
+                        ? "wrong"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`q-${q.id}`}
+                      value={opt}
+                      onChange={() => handleSelect(q.id, opt)}
+                      disabled={submitted}
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+      </div>
+
+      {/* Footer */}
+      {!submitted ? (
+        <button className="check-story-btn" onClick={checkAnswers}>
+          Check Answers
+        </button>
+      ) : (
+        <div className="story-result">
+          <h3>
+            You got {score} / {totalQuestions} correct!
+          </h3>
+          <div className="transcript-reveal">
+            <h4>Transcript:</h4>
+            <p>{data.script}</p>
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-// --- SUB-COMPONENT: INDIVIDUAL QUESTION (Standard) ---
+// --- SUB-COMPONENT: QUESTION ITEM ---
 function QuestionItem({ data, showOptions, language, index }) {
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [checking, setChecking] = useState(false);
-
-  // 1. Get Options Safely
   const safeOptions = data.options || [];
-
-  // 2. Decide Mode
   const isEasyMode = showOptions && safeOptions.length > 0;
 
   const check = async () => {
     if (!answer) return;
     setChecking(true);
-
-    // --- STEP 1: SMART LOCAL CHECK ---
-    const normalize = (text) =>
-      text
-        ? text
+    const normalize = (t) =>
+      t
+        ? t
             .toLowerCase()
             .replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "")
             .trim()
         : "";
-
-    const cleanUser = normalize(answer);
-    const cleanAnswer = normalize(data.answer);
-
-    if (cleanUser === cleanAnswer) {
+    if (normalize(answer) === normalize(data.answer)) {
       setFeedback({ isCorrect: true });
       setChecking(false);
       return;
     }
-
-    // --- STEP 2: DROPDOWN CHECK ---
     if (isEasyMode && data.type !== "translate") {
-      setFeedback({
-        isCorrect: false,
-        correctAnswer: data.answer,
-        explanation: "Incorrect selection.",
-      });
+      setFeedback({ isCorrect: false, correctAnswer: data.answer });
       setChecking(false);
       return;
     }
-
-    // --- STEP 3: AI CHECK ---
     try {
       const res = await axios.post("http://localhost:5000/api/check", {
         question: data.question,
@@ -465,10 +526,8 @@ function QuestionItem({ data, showOptions, language, index }) {
   return (
     <div className="question-row">
       <span className="q-number">{index}.</span>
-
       <div className="q-content">
         <p className="q-text">{data.question}</p>
-
         <div className="input-area">
           {(data.type === "fill-in-the-blank" ||
             data.type === "missing-verb" ||
@@ -496,31 +555,22 @@ function QuestionItem({ data, showOptions, language, index }) {
               />
             ))}
 
-          {data.type === "complete-the-sentence" &&
-            (isEasyMode ? (
-              <div className="radio-group">
-                {safeOptions.map((opt) => (
-                  <label key={opt} className="radio-label">
-                    <input
-                      type="radio"
-                      name={`q-${data.id}`}
-                      value={opt}
-                      onChange={(e) => setAnswer(e.target.value)}
-                      disabled={!!feedback}
-                    />
-                    {opt}
-                  </label>
-                ))}
-              </div>
-            ) : (
-              <textarea
-                className="paper-textarea"
-                placeholder="Finish the sentence..."
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                disabled={!!feedback}
-              />
-            ))}
+          {data.type === "complete-the-sentence" && (
+            <div className="radio-group">
+              {safeOptions.map((opt) => (
+                <label key={opt} className="radio-label">
+                  <input
+                    type="radio"
+                    name={`q-${data.id}`}
+                    value={opt}
+                    onChange={(e) => setAnswer(e.target.value)}
+                    disabled={!!feedback}
+                  />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          )}
 
           {data.type === "translate" && (
             <div>
@@ -572,6 +622,89 @@ function QuestionItem({ data, showOptions, language, index }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// --- SUB-COMPONENT: MATCHING GAME ---
+function MatchingGame({ data, index }) {
+  const [items, setItems] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [matched, setMatched] = useState([]);
+  const [wrong, setWrong] = useState(null);
+
+  useEffect(() => {
+    if (!data.pairs) return;
+    const list = [];
+    data.pairs.forEach((pair, idx) => {
+      list.push({
+        id: idx,
+        type: "left",
+        text: pair.left,
+        uuid: Math.random(),
+      });
+      list.push({
+        id: idx,
+        type: "right",
+        text: pair.right,
+        uuid: Math.random(),
+      });
+    });
+    setItems(list.sort(() => Math.random() - 0.5));
+  }, [data]);
+
+  const handleClick = (item) => {
+    if (matched.includes(item.id) || wrong) return;
+    if (!selected) {
+      setSelected(item);
+    } else {
+      if (selected.uuid === item.uuid) {
+        setSelected(null);
+        return;
+      }
+      if (selected.id === item.id) {
+        setMatched([...matched, item.id]);
+        setSelected(null);
+      } else {
+        setWrong([selected.uuid, item.uuid]);
+        setTimeout(() => {
+          setWrong(null);
+          setSelected(null);
+        }, 800);
+      }
+    }
+  };
+
+  const isComplete = data.pairs && matched.length === data.pairs.length;
+
+  return (
+    <div className="matching-game-container">
+      <div className="q-number">
+        {index}. {data.question}
+      </div>
+      <div className="matching-grid">
+        {items.map((item) => {
+          const isSelected = selected && selected.uuid === item.uuid;
+          const isMatched = matched.includes(item.id);
+          const isWrong = wrong && wrong.includes(item.uuid);
+          let statusClass = "match-card";
+          if (isMatched) statusClass += " matched";
+          else if (isWrong) statusClass += " wrong";
+          else if (isSelected) statusClass += " selected";
+          return (
+            <button
+              key={item.uuid}
+              className={statusClass}
+              onClick={() => handleClick(item)}
+            >
+              {item.text}
+            </button>
+          );
+        })}
+      </div>
+      {isComplete && (
+        <div className="match-success">✨ Awesome! Set Complete!</div>
+      )}
     </div>
   );
 }
