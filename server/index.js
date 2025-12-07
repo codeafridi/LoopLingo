@@ -59,15 +59,16 @@ app.post("/api/generate", async (req, res) => {
   if (type === "all") {
     // Kept your 30 question logic
     requirementText = `
-      Generate a JSON array with EXACTLY 18 exercises in this specific order:
+      Generate a JSON array with EXACTLY 21 exercises in this specific order:
       1. 3 questions of type "fill-in-the-blank".
       2. 3 questions of type "complete-the-sentence".
       3. 3 questions of type "translate".
       4. 3 questions of type "match-pairs" (Each containing 4 pairs).
       5. 3 questions of type "missing-verb" (Grammar/Conjugation focus).
       6. 3 questions of type "choose-article" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
+      7. 3 questions of type "choose-preposition" 
       
-      TOTAL: 18 exercises. You MUST generate all 6 types.
+      TOTAL: 21 exercises. You MUST generate all 7 types.
     `;
   }
   // --- FIX START: Added the missing Listening Logic here ---
@@ -177,6 +178,14 @@ app.post("/api/generate", async (req, res) => {
            -ANSWERS SHOULD NOT BE REPETITIVE. 
            -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
            - USE THE FOLLOWING ARTICLES: Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc... .
+
+       - "choose-preposition":
+           - Target: Common prepositions (à, de, pour, sur, sous, dans, chez, en, avec,etc... according to the units level).
+           - Question: Sentence with the preposition missing.
+           - Options: [Correct, 3 Distractors].
+           - Ex: { "question": "Je vais ___ Paris.", "answer": "à", "options": ["à", "en", "pour", "de"] }
+           - Ex: { "question": "Il rentre ___ lui.", "answer": "chez", "options": ["chez", "à", "dans", "sur"] }
+           -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
            
 
         Output Structure Example:

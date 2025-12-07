@@ -3,22 +3,31 @@ import axios from "axios";
 import "./App.css";
 import { COURSE_DATA } from "./data";
 
-function App() {
-  // --- STATE ---
-  // View options: 'setup' | 'dashboard' | 'worksheet' | 'listening'
-  const [view, setView] = useState("setup");
+// --- HELPER: Fixes "Objects are not valid as a React child" Error ---
+// If the AI sends { text: "Cat", correct: true } instead of "Cat", this extracts the text.
+const getString = (val) => {
+  if (typeof val === "object" && val !== null) {
+    return (
+      val.text ||
+      val.word ||
+      val.left ||
+      val.right ||
+      val.answer ||
+      JSON.stringify(val)
+    );
+  }
+  return val;
+};
 
-  // Selection State
+function App() {
+  const [view, setView] = useState("setup");
   const [lang, setLang] = useState("French");
-  // Default to first item to prevent crashes
   const [section, setSection] = useState(COURSE_DATA["French"][0]);
   const [unit, setUnit] = useState(COURSE_DATA["French"][0].units[0]);
-
-  // Content State
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // --- HANDLERS (Setup) ---
+  // --- HANDLERS ---
   const handleLangChange = (e) => {
     const l = e.target.value;
     setLang(l);
@@ -39,9 +48,7 @@ function App() {
     setUnit(u);
   };
 
-  const enterDashboard = () => {
-    setView("dashboard");
-  };
+  const enterDashboard = () => setView("dashboard");
 
   // --- API CALLS ---
   const generateWorksheet = async () => {
@@ -53,7 +60,7 @@ function App() {
         unit: unit.title,
         vocabulary: unit.vocabulary,
         grammar: unit.grammar,
-        type: "all", // Triggers your mixed 30-question logic
+        type: "all",
       });
       setExercises(res.data.exercises || []);
       setView("worksheet");
@@ -72,7 +79,7 @@ function App() {
         unit: unit.title,
         vocabulary: unit.vocabulary,
         grammar: unit.grammar,
-        type: "listening-story", // Triggers your story logic
+        type: "listening-story",
       });
       setExercises(res.data.exercises || []);
       setView("listening");
@@ -82,9 +89,29 @@ function App() {
     setLoading(false);
   };
 
-  // ==========================================
-  // VIEW 1: SETUP SCREEN (Landing Page)
-  // ==========================================
+  // --- GENERATE MORE ---
+  const generateMore = async (specificType) => {
+    document.body.style.cursor = "wait";
+    try {
+      const res = await axios.post("http://localhost:5000/api/generate", {
+        language: lang,
+        section: section.name,
+        unit: unit.title,
+        vocabulary: unit.vocabulary,
+        grammar: unit.grammar,
+        type: specificType,
+      });
+      if (res.data.exercises)
+        setExercises((prev) => [...prev, ...res.data.exercises]);
+    } catch (e) {
+      alert("Could not generate more.");
+    }
+    document.body.style.cursor = "default";
+  };
+
+  // ================= VIEWS =================
+
+  // 1. SETUP
   if (view === "setup") {
     return (
       <div className="landing-page">
@@ -94,7 +121,6 @@ function App() {
         <header className="hero-section">
           <div className="hero-text">
             <h1>Master {lang}.</h1>
-            <p>Your AI-powered language gym.</p>
           </div>
           <div className="setup-card">
             <div className="input-group">
@@ -127,7 +153,6 @@ function App() {
                 ))}
               </select>
             </div>
-            {/* THIS BUTTON NOW GOES TO DASHBOARD */}
             <button className="start-btn" onClick={enterDashboard}>
               Enter Dashboard ➔
             </button>
@@ -137,9 +162,7 @@ function App() {
     );
   }
 
-  // ==========================================
-  // VIEW 2: DASHBOARD (The Hub)
-  // ==========================================
+  // 2. DASHBOARD
   if (view === "dashboard") {
     return (
       <div className="dashboard-container">
@@ -150,23 +173,19 @@ function App() {
           <h2>{unit.title}</h2>
           <p className="dash-subtitle">{section.name}</p>
         </header>
-
-        <div className="modules-grid">
-          {/* CARD 1: CORE WORKSHEET */}
+        <div className="modules-grid two-col">
           <div className="module-card core" onClick={generateWorksheet}>
             <div className="icon">📝</div>
             <h3>Core Practice</h3>
-            <p>Grammar, Vocab, Matching & Translation.</p>
+            <p>Grammar, Vocabulary, Translation, Matching & Articles.</p>
             <button disabled={loading}>
               {loading ? "Generating..." : "Start Worksheet"}
             </button>
           </div>
-
-          {/* CARD 2: LISTENING */}
           <div className="module-card listen" onClick={generateListening}>
             <div className="icon">🎧</div>
             <h3>Infinite Listening</h3>
-            <p>AI-generated stories with questions.</p>
+            <p>AI-generated stories with comprehension questions.</p>
             <button disabled={loading}>
               {loading ? "Generating..." : "Start Listening"}
             </button>
@@ -176,14 +195,11 @@ function App() {
     );
   }
 
-  // ==========================================
-  // VIEW 3: WORKSHEET MODE
-  // ==========================================
+  // 3. WORKSHEET
   if (view === "worksheet") {
     return (
       <div className="worksheet-container">
         <header className="worksheet-header">
-          {/* Back goes to Dashboard now */}
           <button className="back-link" onClick={() => setView("dashboard")}>
             ← Dashboard
           </button>
@@ -195,43 +211,51 @@ function App() {
           title="I. Fill in the blanks"
           type="fill-in-the-blank"
           exercises={exercises.filter((e) => e.type === "fill-in-the-blank")}
+          onGenerateMore={() => generateMore("fill-in-the-blank")}
           language={lang}
         />
-
         <WorksheetSection
           title="II. Missing Verbs (Conjugation)"
           type="missing-verb"
           exercises={exercises.filter((e) => e.type === "missing-verb")}
+          onGenerateMore={() => generateMore("missing-verb")}
           language={lang}
         />
-
         <WorksheetSection
           title="III. Choose the Article"
           type="choose-article"
           exercises={exercises.filter((e) => e.type === "choose-article")}
+          onGenerateMore={() => generateMore("choose-article")}
           language={lang}
         />
-
         <WorksheetSection
-          title="IV. Complete the sentence"
+          title="IV. Choose the Preposition"
+          type="choose-preposition"
+          exercises={exercises.filter((e) => e.type === "choose-preposition")}
+          onGenerateMore={() => generateMore("choose-preposition")}
+          language={lang}
+        />
+        <WorksheetSection
+          title="V. Complete the sentence"
           type="complete-the-sentence"
           exercises={exercises.filter(
             (e) => e.type === "complete-the-sentence"
           )}
+          onGenerateMore={() => generateMore("complete-the-sentence")}
           language={lang}
         />
-
         <WorksheetSection
-          title="V. Translate"
+          title="VI. Translate"
           type="translate"
           exercises={exercises.filter((e) => e.type === "translate")}
+          onGenerateMore={() => generateMore("translate")}
           language={lang}
         />
-
         <WorksheetSection
-          title="VI. Match the Pairs"
+          title="VII. Match the Pairs"
           type="match-pairs"
           exercises={exercises.filter((e) => e.type === "match-pairs")}
+          onGenerateMore={() => generateMore("match-pairs")}
           language={lang}
         />
 
@@ -244,12 +268,8 @@ function App() {
     );
   }
 
-  // ==========================================
-  // VIEW 4: LISTENING MODE
-  // ==========================================
-  // --- VIEW 4: LISTENING MODE ---
+  // 4. LISTENING
   if (view === "listening") {
-    // If loading, show the spinner INSTEAD of the component
     if (loading) {
       return (
         <div className="worksheet-container">
@@ -261,9 +281,27 @@ function App() {
         </div>
       );
     }
+    // Prevent Crash if no story generated
+    if (!exercises || exercises.length === 0) {
+      return (
+        <div className="worksheet-container">
+          <header className="worksheet-header">
+            <button className="back-link" onClick={() => setView("dashboard")}>
+              ← Dashboard
+            </button>
+            <h1>Error</h1>
+          </header>
+          <div style={{ textAlign: "center", padding: "40px", color: "white" }}>
+            <h3>⚠️ AI Generation Failed.</h3>
+            <button className="finish-btn" onClick={generateListening}>
+              Try Again
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     const storyData = exercises[0];
-
     return (
       <div className="worksheet-container">
         <header className="worksheet-header">
@@ -273,13 +311,13 @@ function App() {
           <h1>Listening Mode</h1>
           <p className="worksheet-subtitle">{unit.title}</p>
         </header>
-
         {storyData && (
-          <ListeningStoryComponent key={storyData.script} data={storyData} />
+          <ListeningStoryComponent
+            key={storyData.script || "story"}
+            data={storyData}
+          />
         )}
-
         <div className="worksheet-footer">
-          {/* This triggers the loading state above */}
           <button className="finish-btn" onClick={generateListening}>
             Next Story ➔
           </button>
@@ -291,8 +329,196 @@ function App() {
   return <div className="loading-screen">Loading...</div>;
 }
 
-// --- SUB-COMPONENT: WORKSHEET SECTION ---
-function WorksheetSection({ title, type, exercises, language }) {
+// --- COMPONENT: LISTENING STORY ---
+// --- COMPONENT: LISTENING STORY (With Pause/Resume) ---
+function ListeningStoryComponent({ data }) {
+  const [isSpeaking, setIsSpeaking] = useState(false); // Is audio active?
+  const [isPaused, setIsPaused] = useState(false); // Is it currently paused?
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [voices, setVoices] = useState([]);
+
+  // 1. Cleanup & Reset when story changes
+  useEffect(() => {
+    // Stop any existing audio immediately
+    window.speechSynthesis.cancel();
+    setAnswers({});
+    setSubmitted(false);
+    setIsSpeaking(false);
+    setIsPaused(false);
+
+    // Cleanup when component unmounts (user leaves page)
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, [data]);
+
+  // 2. Load Voices
+  useEffect(() => {
+    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+  }, []);
+
+  // 3. The Smart Toggle Function
+  const toggleAudio = () => {
+    const synth = window.speechSynthesis;
+
+    // Case A: Audio is active (playing or paused)
+    if (isSpeaking) {
+      if (isPaused) {
+        // Resume
+        synth.resume();
+        setIsPaused(false);
+      } else {
+        // Pause
+        synth.pause();
+        setIsPaused(true);
+      }
+    }
+    // Case B: Audio is stopped (start fresh)
+    else {
+      if (!data.script) return;
+
+      const utterance = new SpeechSynthesisUtterance(data.script);
+      const targetLang = "fr";
+      const bestVoice =
+        voices.find(
+          (v) => v.lang.startsWith(targetLang) && v.name.includes("Google")
+        ) || voices.find((v) => v.lang.startsWith(targetLang));
+
+      if (bestVoice) {
+        utterance.voice = bestVoice;
+        utterance.lang = bestVoice.lang;
+      } else {
+        utterance.lang = "fr-FR";
+      }
+
+      utterance.rate = 0.8; // Slow speed
+
+      // Events to manage state
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setIsPaused(false);
+      };
+
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+      };
+
+      utterance.onerror = (e) => {
+        console.error("Audio error", e);
+        setIsSpeaking(false);
+      };
+
+      synth.speak(utterance);
+    }
+  };
+
+  const handleSelect = (qId, val) => setAnswers({ ...answers, [qId]: val });
+  const checkAnswers = () => setSubmitted(true);
+  const score = data.questions
+    ? data.questions.reduce(
+        (acc, q) =>
+          acc + (getString(answers[q.id]) === getString(q.answer) ? 1 : 0),
+        0
+      )
+    : 0;
+
+  // Visualizer should only animate if speaking AND NOT paused
+  const isAnimating = isSpeaking && !isPaused;
+
+  return (
+    <div className="listening-container">
+      {/* AUDIO PLAYER BAR */}
+      <div className={`audio-player-card ${isAnimating ? "playing" : ""}`}>
+        <button className="play-fab" onClick={toggleAudio}>
+          {/* Show Pause icon if playing, Play icon if paused/stopped */}
+          {isSpeaking && !isPaused ? "⏸" : "▶"}
+        </button>
+
+        <div className="audio-visualizer">
+          <div className="bar"></div>
+          <div className="bar"></div>
+          <div className="bar"></div>
+          <div className="bar"></div>
+          <div className="bar"></div>
+        </div>
+
+        <div className="player-text">
+          {!isSpeaking ? "Click to Play" : isPaused ? "Paused" : "Listening..."}
+        </div>
+      </div>
+
+      {/* QUESTIONS */}
+      <div className="story-questions">
+        {data.questions &&
+          data.questions.map((q, i) => (
+            <div key={q.id || i} className="story-q-item">
+              <p className="story-q-text">
+                {i + 1}. {getString(q.question)}
+              </p>
+              <div className="story-options">
+                {q.options.map((opt) => (
+                  <label
+                    key={getString(opt)}
+                    className={`story-opt ${
+                      submitted && getString(opt) === getString(q.answer)
+                        ? "correct"
+                        : ""
+                    } ${
+                      submitted &&
+                      getString(answers[q.id]) === getString(opt) &&
+                      getString(opt) !== getString(q.answer)
+                        ? "wrong"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`q-${q.id}`}
+                      value={getString(opt)}
+                      onChange={() => handleSelect(q.id, getString(opt))}
+                      disabled={submitted}
+                      checked={getString(answers[q.id]) === getString(opt)}
+                    />
+                    {getString(opt)}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+      </div>
+
+      {/* FOOTER */}
+      {!submitted ? (
+        <button className="check-story-btn" onClick={checkAnswers}>
+          Check Answers
+        </button>
+      ) : (
+        <div className="story-result">
+          <h3>
+            You got {score} / {data.questions.length} correct!
+          </h3>
+          <div className="transcript-reveal">
+            <h4>Transcript:</h4>
+            <p>{data.script}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- COMPONENT: WORKSHEET SECTION ---
+function WorksheetSection({
+  title,
+  type,
+  exercises,
+  language,
+  onGenerateMore,
+}) {
   const [showOptions, setShowOptions] = useState(true);
   if (!exercises || exercises.length === 0) return null;
 
@@ -330,153 +556,14 @@ function WorksheetSection({ title, type, exercises, language }) {
           );
         })}
       </div>
+      <button className="generate-more-btn" onClick={onGenerateMore}>
+        + Generate 5 more
+      </button>
     </div>
   );
 }
 
-// --- SUB-COMPONENT: LISTENING STORY ---
-// --- SUB-COMPONENT: LISTENING STORY (Fixed Audio) ---
-function ListeningStoryComponent({ data }) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [answers, setAnswers] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const [voices, setVoices] = useState([]);
-
-  // Reset when data changes
-  useEffect(() => {
-    setAnswers({});
-    setSubmitted(false);
-    setIsPlaying(false);
-    window.speechSynthesis.cancel();
-  }, [data]);
-
-  // Load voices
-  useEffect(() => {
-    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    loadVoices();
-  }, []);
-
-  const playAudio = () => {
-    if (!data.script) return;
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(data.script);
-
-    // Voice Selection Logic
-    const targetLang = "fr";
-    const bestVoice =
-      voices.find(
-        (v) => v.lang.startsWith(targetLang) && v.name.includes("Google")
-      ) || voices.find((v) => v.lang.startsWith(targetLang));
-    if (bestVoice) {
-      utterance.voice = bestVoice;
-      utterance.lang = bestVoice.lang;
-    } else {
-      utterance.lang = "fr-FR";
-    }
-
-    utterance.rate = 0.75;
-    utterance.onstart = () => setIsPlaying(true);
-    utterance.onend = () => setIsPlaying(false);
-
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const handleSelect = (qId, val) => {
-    setAnswers({ ...answers, [qId]: val });
-  };
-
-  const checkAnswers = () => {
-    setSubmitted(true);
-  };
-
-  const score = data.questions
-    ? data.questions.reduce(
-        (acc, q) => acc + (answers[q.id] === q.answer ? 1 : 0),
-        0
-      )
-    : 0;
-
-  return (
-    <div className="listening-container">
-      {/* 1. AUDIO PLAYER BAR */}
-      <div className={`audio-player-card ${isPlaying ? "playing" : ""}`}>
-        <button className="play-fab" onClick={playAudio} disabled={isPlaying}>
-          {isPlaying ? "⏸" : "▶"}
-        </button>
-
-        <div className="audio-visualizer">
-          {/* Fake bars for animation */}
-          <div className="bar"></div>
-          <div className="bar"></div>
-          <div className="bar"></div>
-          <div className="bar"></div>
-          <div className="bar"></div>
-        </div>
-
-        <div className="player-text">
-          {isPlaying ? "Listen..." : "Click to Play"}
-        </div>
-      </div>
-
-      {/* 2. QUESTIONS */}
-      <div className="story-questions">
-        {data.questions &&
-          data.questions.map((q, i) => (
-            <div key={q.id} className="story-q-item">
-              <p className="story-q-text">
-                {i + 1}. {q.question}
-              </p>
-              <div className="story-options">
-                {q.options.map((opt) => (
-                  <label
-                    key={opt}
-                    className={`story-opt ${
-                      submitted && opt === q.answer ? "correct" : ""
-                    } ${
-                      submitted && answers[q.id] === opt && opt !== q.answer
-                        ? "wrong"
-                        : ""
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name={`q-${q.id}`}
-                      value={opt}
-                      onChange={() => handleSelect(q.id, opt)}
-                      disabled={submitted}
-                      checked={answers[q.id] === opt} // Controlled input
-                    />
-                    {opt}
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
-      </div>
-
-      {/* 3. FOOTER & RESULTS */}
-      {!submitted ? (
-        <button className="check-story-btn" onClick={checkAnswers}>
-          Check Answers
-        </button>
-      ) : (
-        <div className="story-result">
-          <h3>
-            You got {score} / {data.questions.length} correct!
-          </h3>
-          <div className="transcript-reveal">
-            <h4>Transcript:</h4>
-            <p>{data.script}</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// --- SUB-COMPONENT: QUESTION ITEM ---
+// --- COMPONENT: QUESTION ITEM (Robust) ---
 function QuestionItem({ data, showOptions, language, index }) {
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState(null);
@@ -494,19 +581,19 @@ function QuestionItem({ data, showOptions, language, index }) {
             .replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "")
             .trim()
         : "";
-    if (normalize(answer) === normalize(data.answer)) {
+    if (normalize(answer) === normalize(getString(data.answer))) {
       setFeedback({ isCorrect: true });
       setChecking(false);
       return;
     }
     if (isEasyMode && data.type !== "translate") {
-      setFeedback({ isCorrect: false, correctAnswer: data.answer });
+      setFeedback({ isCorrect: false, correctAnswer: getString(data.answer) });
       setChecking(false);
       return;
     }
     try {
       const res = await axios.post("http://localhost:5000/api/check", {
-        question: data.question,
+        question: getString(data.question),
         userAnswer: answer,
         language,
         type: data.type,
@@ -518,17 +605,19 @@ function QuestionItem({ data, showOptions, language, index }) {
     setChecking(false);
   };
 
-  const addWord = (w) => setAnswer((prev) => (prev ? prev + " " + w : w));
+  const addWord = (w) =>
+    setAnswer((prev) => (prev ? prev + " " + getString(w) : getString(w)));
 
   return (
     <div className="question-row">
       <span className="q-number">{index}.</span>
       <div className="q-content">
-        <p className="q-text">{data.question}</p>
+        <p className="q-text">{getString(data.question)}</p>
         <div className="input-area">
           {(data.type === "fill-in-the-blank" ||
             data.type === "missing-verb" ||
-            data.type === "choose-article") &&
+            data.type === "choose-article" ||
+            data.type === "choose-preposition") &&
             (isEasyMode ? (
               <select
                 className="paper-select"
@@ -537,8 +626,8 @@ function QuestionItem({ data, showOptions, language, index }) {
               >
                 <option value="">[ Select ]</option>
                 {safeOptions.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
+                  <option key={getString(o)} value={getString(o)}>
+                    {getString(o)}
                   </option>
                 ))}
               </select>
@@ -555,15 +644,15 @@ function QuestionItem({ data, showOptions, language, index }) {
           {data.type === "complete-the-sentence" && (
             <div className="radio-group">
               {safeOptions.map((opt) => (
-                <label key={opt} className="radio-label">
+                <label key={getString(opt)} className="radio-label">
                   <input
                     type="radio"
                     name={`q-${data.id}`}
-                    value={opt}
+                    value={getString(opt)}
                     onChange={(e) => setAnswer(e.target.value)}
                     disabled={!!feedback}
                   />
-                  {opt}
+                  {getString(opt)}
                 </label>
               ))}
             </div>
@@ -586,7 +675,7 @@ function QuestionItem({ data, showOptions, language, index }) {
                       className="wb-chip"
                       onClick={() => addWord(w)}
                     >
-                      {w}
+                      {getString(w)}
                     </button>
                   ))}
                   <button className="wb-clear" onClick={() => setAnswer("")}>
@@ -597,7 +686,6 @@ function QuestionItem({ data, showOptions, language, index }) {
             </div>
           )}
         </div>
-
         {!feedback ? (
           <button
             className="mini-check-btn"
@@ -623,7 +711,7 @@ function QuestionItem({ data, showOptions, language, index }) {
   );
 }
 
-// --- SUB-COMPONENT: MATCHING GAME ---
+// --- COMPONENT: MATCHING GAME (Robust) ---
 function MatchingGame({ data, index }) {
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -634,16 +722,17 @@ function MatchingGame({ data, index }) {
     if (!data.pairs) return;
     const list = [];
     data.pairs.forEach((pair, idx) => {
+      // FIX: Ensure pair.left/right are strings
       list.push({
         id: idx,
         type: "left",
-        text: pair.left,
+        text: getString(pair.left),
         uuid: Math.random(),
       });
       list.push({
         id: idx,
         type: "right",
-        text: pair.right,
+        text: getString(pair.right),
         uuid: Math.random(),
       });
     });
@@ -677,7 +766,7 @@ function MatchingGame({ data, index }) {
   return (
     <div className="matching-game-container">
       <div className="q-number">
-        {index}. {data.question}
+        {index}. {getString(data.question)}
       </div>
       <div className="matching-grid">
         {items.map((item) => {
