@@ -38,7 +38,10 @@ app.post("/api/generate", async (req, res) => {
       STRICT VOCABULARY CONSTRAINT:
       You must ONLY use words from the following list (plus basic grammar connectors like 'a', 'the', 'is', 'and'):
       [ ${vocabList} ]
-      
+
+       CRITICAL EXCEPTION: You may use the INFINITIVE form of verbs (like 'manger', 'avoir', 'être' and many more) inside parentheses for grammar questions, even if they are not in the list.
+      DON'T LIMIT THE INFINITIVE FORM OF VERBS TO ONLY THE ONES IN THE LIST.USE DIFFERENT VERBS FOR EACH QUESTION.
+      USE THE DIFFICULTY OF THE VERBS ACCORDING TO THE UNITS LEVEL.
       DO NOT use any advanced vocabulary that is not in this list. 
       If you need a noun/verb not in the list, rephrase the sentence to use words from the list.
       `;
@@ -58,8 +61,9 @@ app.post("/api/generate", async (req, res) => {
       2. 5 questions of type "complete-the-sentence".
       3. 5 questions of type "translate".
       4. 5 questions of type "match-pairs" (Each containing 4 pairs).
+      5. 5 questions of type "missing-verb" (Grammar/Conjugation focus).
       
-      TOTAL: 20 exercises. You MUST generate all 4 types.
+      TOTAL: 25 exercises. You MUST generate all 5 types.
     `;
   } else if (type === "match-pairs") {
     requirementText = `Generate exactly 5 questions of type "match-pairs" (Each with 4 pairs).`;
@@ -84,6 +88,7 @@ app.post("/api/generate", async (req, res) => {
         1. NO REPEATS.
         2. VARY SUBJECTS (Je, Tu, Il, Elle...).
         3. ANSWER DISTRIBUTION: Ensure correct answers vary.
+        4. ENSURE ANSWERS ARE DIFFERENT (Change the pronoun!).
 
         CRITICAL JSON RULES:
         1. Return ONLY raw JSON. No markdown.
@@ -115,6 +120,12 @@ app.post("/api/generate", async (req, res) => {
                     { "left": "FrenchWord4", "right": "EnglishTranslation4" }
                 ]
             }
+        - "missing-verb" (Conjugation Focus):
+           - The word in parentheses MUST be the INFINITIVE (ending in -er, -ir, -re).
+           - Ex: { "question": "Tu ___ (manger) une pizza.", "answer": "manges", ... }
+           - Ex: { "question": "Nous ___ (avoir) un chien.", "answer": "avons", ... }
+           - NEVER put the conjugated form in parentheses.
+           - ENSURE ANSWERS ARE DIFFERENT (Change the pronoun!).
 
         Output Structure Example:
         [

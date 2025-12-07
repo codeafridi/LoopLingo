@@ -152,6 +152,14 @@ function App() {
           onGenerateMore={() => generateMore("match-pairs")}
           language={lang}
         />
+        {/* --- NEW SECTION: MISSING VERB --- */}
+        <WorksheetSection
+          title="V. Missing Verb (Conjugation)"
+          type="missing-verb"
+          exercises={exercises.filter((e) => e.type === "missing-verb")}
+          onGenerateMore={() => generateMore("missing-verb")}
+          language={lang}
+        />
 
         <div className="worksheet-footer">
           <button className="finish-btn" onClick={() => setExercises([])}>
@@ -455,7 +463,8 @@ function QuestionItem({ data, showOptions, language, index }) {
         <p className="q-text">{data.question}</p>
 
         <div className="input-area">
-          {data.type === "fill-in-the-blank" &&
+          {(data.type === "fill-in-the-blank" ||
+            data.type === "missing-verb") &&
             (isEasyMode ? (
               <select
                 className="paper-select"
