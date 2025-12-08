@@ -1,205 +1,336 @@
-/* RESET & FONTS */
+/* =========================================
+   1. GLOBAL RESET & TYPOGRAPHY
+   ========================================= */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --bg-dark: #0f172a; /* Deep Slate */
+  --card-dark: #1e293b; /* Lighter Slate */
+  --primary: #3b82f6; /* Vibrant Blue */
+  --success: #22c55e; /* Vibrant Green */
+  --text-main: #f1f5f9; /* Off-white */
+  --text-muted: #94a3b8; /* Muted Grey */
+  --border: #334155; /* Subtle Border */
+}
+
 body {
   margin: 0;
-  font-family: "Georgia", "Times New Roman", serif; /* Serif for that "Paper" feel */
-  background-color: #f4f4f4; /* Light gray outer background */
-  color: #333;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* --- LANDING PAGE (Dark Mode preserved for contrast) --- */
-.landing-page {
-  background: #121212;
-  min-height: 100vh;
-  color: white;
-  font-family: sans-serif;
-}
+/* =========================================
+      2. NAVBAR & LOGO
+      ========================================= */
 .navbar {
   padding: 20px 40px;
-}
-.logo {
-  color: #4ade80;
-  font-weight: bold;
-  font-size: 1.5rem;
-}
-.hero-section {
   display: flex;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 60px 20px;
-  gap: 50px;
   align-items: center;
-}
-.hero-text h1 {
-  font-size: 3rem;
-  margin-bottom: 10px;
-}
-.setup-card {
-  background: #1e1e1e;
-  padding: 30px;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 350px;
-  border: 1px solid #333;
-}
-.input-group {
-  margin-bottom: 15px;
-}
-.input-group label {
-  display: block;
-  color: #888;
-  margin-bottom: 5px;
-  font-size: 0.9rem;
-}
-.input-group select {
-  width: 100%;
-  padding: 10px;
-  background: #333;
-  color: white;
-  border: 1px solid #555;
-  border-radius: 6px;
-}
-.start-btn {
-  width: 100%;
-  padding: 12px;
-  background: #58cc02;
-  border: none;
-  color: white;
-  font-weight: bold;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 10px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* --- WORKSHEET MODE (The Paper Look) --- */
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(to right, var(--success), var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  cursor: pointer;
+}
+
+/* =========================================
+      3. LANDING PAGE (Hero)
+      ========================================= */
+.landing-page {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background Glow Effect */
+.landing-page::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 800px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.15) 0%,
+    rgba(15, 23, 42, 0) 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+.hero-section {
+  display: flex;
+  flex-direction: column; /* Stack on mobile, row on desktop */
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  gap: 60px;
+}
+
+@media (min-width: 900px) {
+  .hero-section {
+    flex-direction: row;
+    text-align: left;
+  }
+  .hero-text {
+    max-width: 50%;
+  }
+}
+
+.hero-text h1 {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: 20px;
+  background: linear-gradient(to bottom right, #fff, #cbd5e1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-text p {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Setup Card (Glassmorphism) */
+.setup-card {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.input-group label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.input-group select {
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-dark);
+  color: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.input-group select:focus {
+  border-color: var(--primary);
+}
+
+.start-btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 10px;
+  background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+  transition: transform 0.2s;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px);
+}
+.start-btn:active {
+  transform: translateY(1px);
+}
+
+/* =========================================
+      4. DASHBOARD (The Hub)
+      ========================================= */
+.dashboard-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.dash-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+.dash-header h2 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+.dash-subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.module-card {
+  background: var(--card-dark);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.module-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.module-card .icon {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+}
+.module-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+.module-card p {
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 25px;
+}
+
+.module-card button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  margin-top: auto;
+  cursor: pointer;
+}
+
+.module-card.core button {
+  background: var(--success);
+  color: white;
+}
+.module-card.listen button {
+  background: var(--primary);
+  color: white;
+}
+
+/* =========================================
+      5. WORKSHEET / LISTENING CONTAINER
+      ========================================= */
 .worksheet-container {
   max-width: 800px;
   margin: 40px auto;
-  background: white;
-  padding: 60px;
-  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);
-  min-height: 100vh;
+  padding: 0 20px 60px 20px;
 }
 
 .worksheet-header {
   text-align: center;
-  border-bottom: 2px solid #333;
-  padding-bottom: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 50px;
+  padding-top: 60px; /* Space for back button */
   position: relative;
 }
-.worksheet-header h1 {
-  margin: 0;
-  font-size: 2.5rem;
-  color: #222;
-}
-.worksheet-subtitle {
-  color: #666;
-  font-style: italic;
-  margin-top: 5px;
-}
-/* =========================================
-   BACK BUTTON (Green Pill Style)
-   ========================================= */
 
-/* 1. Adjust Header to make room for the big button */
-.worksheet-header {
-  position: relative;
-  text-align: center;
-  /* Push title down so it doesn't hit the button */
-  padding-top: 90px;
-  padding-bottom: 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 40px;
-}
-
-/* 2. The Button Itself */
+/* Green Pill Back Button */
 .back-link {
-  /* Positioning */
   position: absolute;
-  left: 0px;
-  top: 20px;
-
-  /* Shape & Color (The Green Pill) */
-  background-color: #7cb342; /* Olive Green */
-  color: #ffffff;
-  border: none;
-  border-radius: 50px; /* Fully rounded pill */
-
-  /* Sizing */
-  padding: 12px 25px;
-  min-width: 140px;
-
-  /* Typography */
-  font-family: sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  text-transform: none; /* Keep natural capitalization */
-  letter-spacing: 0.5px;
-
-  /* Flexbox to align the arrow and text */
+  top: 0;
+  left: 0;
+  background-color: var(--card-dark);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-
-  /* Interaction */
-  cursor: pointer;
-  transition: all 0.1s ease;
-  z-index: 20;
-
-  /* 3D Depth Effect (The "Button" look) */
-  box-shadow: 0 4px 0 #558b2f;
 }
 
-/* Hover State */
 .back-link:hover {
-  background-color: #8bc34a; /* Slightly lighter green */
-  transform: translateY(-1px);
+  background-color: var(--border);
+  color: white;
+  transform: translateX(-3px);
 }
 
-/* Active / Click State */
-.back-link:active {
-  transform: translateY(4px); /* Pushes down */
-  box-shadow: none; /* Shadow disappears */
-}
-
-/* SECTIONS */
+/* =========================================
+      6. EXERCISE SECTIONS (Modern Cards)
+      ========================================= */
 .section-block {
-  margin-bottom: 50px;
+  background: var(--card-dark);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
 }
+
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-.section-header h2 {
-  font-size: 1.4rem;
-  color: #444;
-  margin: 0;
-  font-family: sans-serif;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border);
 }
 
-/* TOGGLE SWITCH */
+.section-header h2 {
+  font-size: 1.3rem;
+  margin: 0;
+  color: white;
+}
+
+/* Toggle Switch */
 .toggle-wrapper {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.8rem;
-  font-family: sans-serif;
-  color: #999;
-}
-.toggle-wrapper .active {
-  color: #333;
-  font-weight: bold;
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 .switch {
   position: relative;
   display: inline-block;
   width: 40px;
-  height: 20px;
+  height: 22px;
 }
 .switch input {
   opacity: 0;
@@ -213,719 +344,376 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: #475569;
   transition: 0.4s;
-  border-radius: 20px;
+  border-radius: 34px;
 }
 .slider:before {
   position: absolute;
   content: "";
   height: 16px;
   width: 16px;
-  left: 2px;
-  bottom: 2px;
+  left: 3px;
+  bottom: 3px;
   background-color: white;
   transition: 0.4s;
   border-radius: 50%;
 }
 input:checked + .slider {
-  background-color: #58cc02;
+  background-color: var(--primary);
 }
 input:checked + .slider:before {
-  transform: translateX(20px);
+  transform: translateX(18px);
 }
 
-/* QUESTIONS */
+/* Questions */
 .question-row {
   display: flex;
   gap: 15px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   align-items: flex-start;
 }
 .q-number {
-  font-weight: bold;
-  color: #888;
-  margin-top: 5px;
-  width: 50px;
-}
-.q-content {
-  flex: 1;
+  color: var(--primary);
+  font-weight: 800;
+  min-width: 25px;
 }
 .q-text {
-  margin: 0 0 10px 0;
+  margin: 0 0 12px 0;
   font-size: 1.1rem;
   line-height: 1.5;
+  font-weight: 500;
 }
 
-/* INPUT STYLES (Paper-like) */
+/* Inputs (No more underline only) */
 .paper-input {
-  border: none;
-  border-bottom: 2px solid #333;
-  background: transparent;
-  font-size: 1.1rem;
-  padding: 5px;
-  width: 150px;
-  font-family: inherit; /* Keep Serif */
-  outline: none;
-  color: #000;
-}
-.paper-input:focus {
-  border-bottom-color: #58cc02;
-}
-.paper-input.full-width {
-  width: 100%;
-  display: block;
-  margin-bottom: 10px;
-}
-
-.paper-select {
-  border: 1px solid #ccc;
-  padding: 5px;
-  font-size: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.paper-textarea {
-  width: 100%;
-  border: 1px solid #ccc;
-  padding: 10px;
+  background: #0f172a;
+  border: 1px solid var(--border);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 8px;
   font-family: inherit;
   font-size: 1rem;
-  border-radius: 4px;
-  min-height: 60px;
+  outline: none;
+  min-width: 200px;
 }
-
-/* RADIO BUTTONS */
-.radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.paper-input:focus {
+  border-color: var(--primary);
 }
-.radio-label {
-  cursor: pointer;
-  font-size: 1rem;
-}
-.radio-label input {
-  margin-right: 10px;
-}
-
-/* WORD BANK */
-.word-bank-mini {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  margin-top: 5px;
-}
-.wb-chip {
-  background: #eee;
-  border: 1px solid #ddd;
-  padding: 4px 10px;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-.wb-chip:hover {
-  background: #ddd;
-}
-.wb-clear {
-  background: none;
-  border: none;
-  color: red;
-  cursor: pointer;
-  font-size: 0.8rem;
-  margin-left: 10px;
-}
-
-/* FEEDBACK & BUTTONS */
-.mini-check-btn {
-  margin-top: 10px;
-  background: #333;
-  color: white;
-  border: none;
-  padding: 6px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-.mini-check-btn:hover {
-  background: #000;
-}
-.mini-check-btn:disabled {
-  background: #ccc;
-}
-
-.mini-feedback {
-  margin-top: 10px;
-  font-size: 0.95rem;
-}
-.mini-feedback.correct {
-  color: #58a700;
-}
-.mini-feedback.incorrect {
-  color: #ea2b2b;
-}
-.correction {
-  color: #666;
-  font-style: italic;
-}
-
-.generate-more-btn {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  background: white;
-  border: 2px dashed #ccc;
-  color: #666;
-  cursor: pointer;
-  font-weight: bold;
-  border-radius: 8px;
-  margin-top: 10px;
-}
-.generate-more-btn:hover {
-  border-color: #58cc02;
-  color: #58cc02;
-}
-
-.finish-btn {
-  display: block;
-  margin: 40px auto 0;
-  padding: 15px 40px;
-  background: #58cc02;
-  color: white;
-  border: none;
-  font-size: 1.2rem;
-  border-radius: 50px;
-  cursor: pointer;
-}
-
-/* =========================================
-   IV. MATCHING GAME - RESPONSIVE GRID
-   (Best for both Desktop & Mobile)
-   ========================================= */
-
-.matching-game-container {
-  background-color: #f7f9fb;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 25px;
-  margin-bottom: 40px;
-
-  /* Layout Fixes */
-  display: flex;
-  flex-direction: column;
+.paper-input.full-width {
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Fix Title Layout */
-.matching-game-container .q-number {
-  width: 100%;
-  max-width: none;
-  flex: none;
-  text-align: left;
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-
-.matching-grid {
-  display: grid;
-  /* 
-       This makes it look good on all screens:
-       - Desktop: 4 or 5 items per row.
-       - Mobile: 2 items per row.
-    */
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 15px;
-  width: 100%;
-  margin-top: 15px;
-}
-
-.match-card {
-  /* Keep height consistent */
-  min-height: 80px;
-
-  background: white;
-  border: 2px solid #e5e5e5;
-  border-radius: 12px;
+.paper-select {
+  background: #0f172a;
+  color: white;
+  border: 1px solid var(--border);
   padding: 10px;
-
-  /* Centering Text */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-
-  /* Text Styling */
-  font-size: 16px;
-  font-weight: 600;
-  color: #4b5563;
-
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 0 #e5e5e5;
-
-  /* Prevent text from selecting on rapid clicks */
-  user-select: none;
-}
-
-/* --- MOBILE TWEAKS --- */
-/* If the screen is smaller than 600px (Phones) */
-@media (max-width: 600px) {
-  .matching-grid {
-    /* Force 2 columns on mobile so cards are easy to tap */
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .match-card {
-    min-height: 70px;
-    font-size: 14px;
-  }
-}
-
-/* --- STATES --- */
-
-/* Hover */
-.match-card:hover {
-  transform: translateY(-2px);
-  border-color: #d1d5db;
-  box-shadow: 0 6px 0 #d1d5db;
-}
-
-/* Active/Click */
-.match-card:active {
-  transform: translateY(2px);
-  box-shadow: 0 0 0 transparent;
-}
-
-/* Selected (Blue) */
-.match-card.selected {
-  background-color: #e0f2fe;
-  border-color: #3b82f6;
-  color: #1d4ed8;
-  box-shadow: 0 4px 0 #2563eb;
-  transform: translateY(-2px);
-}
-
-/* Matched (Green) */
-.match-card.matched {
-  background-color: #dcfce7;
-  border-color: transparent;
-  color: #16a34a;
-  box-shadow: none;
-  opacity: 0.5;
-  cursor: default;
-  pointer-events: none;
-  transform: scale(0.95);
-}
-
-/* Wrong (Red Shake) */
-.match-card.wrong {
-  background-color: #fee2e2;
-  border-color: #ef4444;
-  color: #b91c1c;
-  box-shadow: 0 4px 0 #b91c1c;
-  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
-
-/* Success Message */
-.match-success {
-  margin-top: 25px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #16a34a;
-  text-align: center;
-  animation: popIn 0.5s ease;
-}
-
-/* --- ANIMATIONS --- */
-@keyframes shake {
-  10%,
-  90% {
-    transform: translate3d(-1px, 0, 0);
-  }
-  20%,
-  80% {
-    transform: translate3d(2px, 0, 0);
-  }
-  30%,
-  50%,
-  70% {
-    transform: translate3d(-4px, 0, 0);
-  }
-  40%,
-  60% {
-    transform: translate3d(4px, 0, 0);
-  }
-}
-
-@keyframes popIn {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  80% {
-    transform: scale(1.1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-/* =========================================
-   DASHBOARD & NEW LAYOUT STYLES
-   ========================================= */
-
-/* Dashboard Container */
-.dashboard-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  font-family: sans-serif;
-}
-
-/* Header */
-.dash-header {
-  text-align: center;
-  margin-bottom: 50px;
-}
-.dash-header h2 {
-  font-size: 2.5rem;
-  color: #fff;
-  margin-bottom: 10px;
-}
-.dash-subtitle {
-  color: #9ca3af;
-  font-size: 1.2rem;
-}
-
-/* Simple Text Back Button */
-.back-link-simple {
-  background: none;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  font-size: 0.9rem;
-  margin-bottom: 20px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.back-link-simple:hover {
-  color: white;
-  text-decoration: underline;
-}
-
-/* Grid for the 2 Big Cards */
-.modules-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  justify-content: center;
-}
-
-/* The Cards */
-.module-card {
-  background: #1f2937;
-  border: 1px solid #374151;
-  border-radius: 16px;
-  padding: 40px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 280px;
-}
-
-.module-card:hover {
-  transform: translateY(-5px);
-  border-color: #3b82f6;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.module-card .icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-}
-.module-card h3 {
-  color: white;
-  margin-bottom: 15px;
-  font-size: 1.8rem;
-}
-.module-card p {
-  color: #9ca3af;
-  margin-bottom: 30px;
-  font-size: 1.1rem;
-  line-height: 1.5;
-}
-
-/* Card Buttons */
-.module-card button {
-  width: 100%;
-  padding: 15px;
   border-radius: 8px;
-  border: none;
-  font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
-  margin-top: auto;
-  transition: background 0.2s;
 }
 
-/* Green Theme for Core */
-.module-card.core button {
-  background: #22c55e;
-  color: white;
+/* Generate More Button */
+.generate-more-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px dashed var(--primary);
+  color: var(--primary);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 15px;
 }
-.module-card.core:hover {
-  border-color: #22c55e;
-}
-
-/* Blue Theme for Listening */
-.module-card.listen button {
-  background: #3b82f6;
-  color: white;
-}
-.module-card.listen:hover {
-  border-color: #3b82f6;
+.generate-more-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
 }
 
 /* =========================================
-   MODERN LISTENING UI
-   ========================================= */
-
-/* Main Container */
-.listening-container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-/* --- 1. THE AUDIO PLAYER BAR --- */
+      7. LISTENING MODE UI
+      ========================================= */
 .audio-player-card {
-  background: #1e293b; /* Dark slate */
+  background: #0f172a; /* Darker accent */
+  border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 25px;
+  padding: 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
   position: sticky;
   top: 20px;
-  z-index: 100; /* Stays on top while scrolling */
+  z-index: 100;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .play-fab {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   border: none;
-  background: #3b82f6;
+  background: var(--primary);
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transition: transform 0.2s;
 }
-
 .play-fab:hover {
   transform: scale(1.1);
-  background: #2563eb;
-}
-.play-fab:active {
-  transform: scale(0.95);
 }
 
-/* The "Fake" Visualizer Animation */
 .audio-visualizer {
   flex-grow: 1;
-  height: 40px;
+  height: 30px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  overflow: hidden;
 }
-
 .bar {
-  width: 6px;
-  background-color: #475569;
-  border-radius: 4px;
-  height: 10px;
-  transition: height 0.1s ease;
+  width: 4px;
+  background: #64748b;
+  border-radius: 2px;
+  height: 8px;
+  transition: height 0.1s;
 }
-
-/* Animation when playing */
 .playing .bar {
-  background-color: #22c55e; /* Green when playing */
+  background: var(--success);
   animation: equalize 0.5s infinite;
 }
-
-.playing .bar:nth-child(1) {
-  animation-duration: 0.4s;
-}
-.playing .bar:nth-child(2) {
-  animation-duration: 0.2s;
-}
-.playing .bar:nth-child(3) {
-  animation-duration: 0.5s;
-}
-.playing .bar:nth-child(4) {
-  animation-duration: 0.3s;
-}
-.playing .bar:nth-child(5) {
-  animation-duration: 0.6s;
-}
-
 @keyframes equalize {
   0% {
-    height: 10px;
+    height: 8px;
   }
   50% {
-    height: 30px;
+    height: 24px;
   }
   100% {
-    height: 10px;
+    height: 8px;
   }
 }
 
 .player-text {
-  color: #94a3b8;
   font-size: 0.9rem;
   font-weight: 600;
-  white-space: nowrap;
+  color: var(--text-muted);
+  min-width: 80px;
+  text-align: right;
 }
 
-/* --- 2. QUESTION CARDS --- */
 .story-q-item {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: #253045; /* Slightly lighter card */
+  padding: 20px;
   border-radius: 12px;
-  padding: 25px;
   margin-bottom: 20px;
-  transition: transform 0.2s;
+  border: 1px solid transparent;
 }
-
 .story-q-item:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border-color: var(--border);
 }
 
-.story-q-text {
-  font-size: 1.1rem;
-  color: #1e293b;
-  margin-bottom: 15px;
-  font-weight: 700;
-}
-
-/* --- 3. OPTIONS (Chips style) --- */
 .story-options {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* 2 columns */
-  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
 }
 
 .story-opt {
+  padding: 12px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 12px 15px;
-  background-color: #f8fafc;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  cursor: pointer;
+  gap: 10px;
+  color: var(--text-muted);
   transition: all 0.2s;
-  font-size: 0.95rem;
-  color: #475569;
-}
-
-/* Hide the actual radio circle, use styling instead */
-.story-opt input {
-  margin-right: 10px;
-  accent-color: #3b82f6;
-  transform: scale(1.2);
 }
 
 .story-opt:hover {
-  background-color: #fff;
-  border-color: #94a3b8;
+  border-color: var(--text-muted);
+  color: white;
 }
-
-/* Selected State */
 .story-opt:has(input:checked) {
-  border-color: #3b82f6;
-  background-color: #eff6ff;
-  color: #1d4ed8;
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
   font-weight: 600;
 }
 
-/* Correct/Wrong States (After submit) */
-.story-opt.correct {
-  border-color: #22c55e;
-  background-color: #dcfce7;
-  color: #15803d;
+.story-result {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid var(--success);
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
 }
-.story-opt.wrong {
-  border-color: #ef4444;
-  background-color: #fee2e2;
-  color: #b91c1c;
-  opacity: 0.7;
+.transcript-reveal {
+  background: var(--bg-dark);
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.6;
 }
 
-/* --- 4. LOADING OVERLAY --- */
+/* =========================================
+      8. MATCHING GAME UI
+      ========================================= */
+.matching-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.match-card {
+  background: var(--bg-dark);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.match-card:hover {
+  border-color: var(--text-muted);
+  color: white;
+  transform: translateY(-2px);
+}
+.match-card.selected {
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+}
+.match-card.matched {
+  border-color: transparent;
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+  cursor: default;
+}
+.match-card.wrong {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  animation: shake 0.4s;
+}
+
+.finish-btn,
+.check-story-btn {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 40px auto 0;
+  padding: 16px;
+  border-radius: 50px;
+  border: none;
+  background: var(--success);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.finish-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+}
+
+/* --- LOADING SPINNER --- */
+.loading-screen,
 .loader-overlay {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px;
-  color: #64748b;
+  height: 60vh;
+  color: var(--text-muted);
 }
-
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #e2e8f0;
-  border-top: 4px solid #3b82f6;
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
 }
-
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
+  to {
     transform: rotate(360deg);
   }
 }
-.generate-more-btn {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  background: transparent;
-  border: 2px dashed #4b5563;
-  color: #9ca3af;
-  border-radius: 8px;
-  margin-top: 20px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
+
+/* =========================================
+   RADIO BUTTONS (Complete the Sentence)
+   ========================================= */
+
+.radio-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Auto grid */
+  gap: 12px;
+  margin: 15px 0 20px 0; /* Add spacing below the options */
 }
 
-.generate-more-btn:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
-  background: rgba(59, 130, 246, 0.05);
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--bg-dark); /* Dark background */
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Hover Effect */
+.radio-label:hover {
+  background-color: var(--card-dark);
+  border-color: var(--text-muted);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Selected State (Using modern CSS :has selector) */
+.radio-label:has(input:checked) {
+  border-color: var(--primary);
+  background-color: rgba(59, 130, 246, 0.15); /* Subtle blue tint */
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* The actual radio circle accent color */
+.radio-label input[type="radio"] {
+  accent-color: var(--primary);
+  width: 1.2em;
+  height: 1.2em;
+  cursor: pointer;
+}
+
+/* Spacing for the Check Button below the options */
+.mini-check-btn {
+  margin-top: 10px;
 }

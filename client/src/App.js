@@ -114,46 +114,70 @@ function App() {
   // 1. SETUP
   if (view === "setup") {
     return (
+      // ... inside view === "setup"
       <div className="landing-page">
         <nav className="navbar">
-          <div className="logo">Looplingo ♾️</div>
+          <div className="logo">
+            Looplingo <span className="logo-icon">♾️</span>
+          </div>
         </nav>
+
+        {/* Container for background effects */}
+        <div className="background-glow"></div>
+
         <header className="hero-section">
           <div className="hero-text">
-            <h1>Master {lang}.</h1>
+            <h1>
+              Master <span className="highlight-text">{lang}.</span>
+            </h1>
+            <p className="hero-sub">
+              The AI-powered language gym that adapts to you.
+              <br />
+              Infinite practice, zero repetition.
+            </p>
           </div>
-          <div className="setup-card">
+
+          <div className="setup-card glass-panel">
             <div className="input-group">
-              <label>Language</label>
-              <select value={lang} onChange={handleLangChange}>
-                {Object.keys(COURSE_DATA).map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
+              <label>I want to learn</label>
+              <div className="select-wrapper">
+                <select value={lang} onChange={handleLangChange}>
+                  {Object.keys(COURSE_DATA).map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
+
             <div className="input-group">
-              <label>Section</label>
-              <select value={section.name} onChange={handleSectionChange}>
-                {COURSE_DATA[lang].map((s) => (
-                  <option key={s.name} value={s.name}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+              <label>My Level (Section)</label>
+              <div className="select-wrapper">
+                <select value={section.name} onChange={handleSectionChange}>
+                  {COURSE_DATA[lang].map((s) => (
+                    <option key={s.name} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
+
             <div className="input-group">
-              <label>Unit</label>
-              <select value={unit.title} onChange={handleUnitChange}>
-                {section.units.map((u, i) => (
-                  <option key={u.id || i} value={u.title}>
-                    {u.title}
-                  </option>
-                ))}
-              </select>
+              <label>Current Topic (Unit)</label>
+              <div className="select-wrapper">
+                <select value={unit.title} onChange={handleUnitChange}>
+                  {section.units.map((u, i) => (
+                    <option key={u.id || i} value={u.title}>
+                      {u.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <button className="start-btn" onClick={enterDashboard}>
+
+            <button className="start-btn glow-btn" onClick={enterDashboard}>
               Enter Dashboard ➔
             </button>
           </div>

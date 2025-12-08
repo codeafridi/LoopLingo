@@ -130,13 +130,33 @@ app.post("/api/generate", async (req, res) => {
             -Use '___' for the blank. 
             -"options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
             -ENSURE EACH ANSWER IS DIFFERENT.
+            -CRITICAL RULE: Distractors must be CLEARLY WRONG based on Logic or Grammar.
+            - LOGIC EXAMPLE: "Je bois du ___." -> Answer: "café". Distractors: "pain" (bread), "chat" (cat). (You cannot drink bread).
+            - GRAMMAR EXAMPLE: "C'est une ___." -> Answer: "pomme" (fem). Distractors: "livre", "stylo" (masc words).
+            - NEVER provide two valid options (e.g., do NOT put "chien" and "chat" as options for "J'ai un ___").
+            - "options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
             -ANSWERS SHOULD NOT BE REPETITIVE 
             -COVER WIDE VARIETY OF WORDS.
-            -WHEN GIVING CORRECT ANSWER ALSO MENTION THE MEANING OF THE WORD IN ENGLISH IN A BRACKET. EXAMPLE: Correct Answer: "chat" (cat).
+            
         
-        - "complete-the-sentence": 
-            "options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
-        
+       - "complete-the-sentence": 
+            - QUESTION STYLE: Give the FIRST HALF of a sentence (e.g., "Pour aller au marché, je...").
+            - OPTIONS STYLE: Must be PHRASES or CLAUSES .
+            - CRITICAL: DO NOT use single words as options.
+            - Example Question: "Le matin, j'aime..."
+            - Example Answer: "manger un croissant."
+            - Example Distractors: ["le soir.", "dormir noir.", "une table."]
+            - LOGIC: The correct answer must logically and grammatically finish the thought.
+            - CRITICAL RULE: SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
+            - ALSO MENTION SOME LONG SENTENCES AS QUESTIONS AND ANSWERS.
+            - CRITICAL RULE: The question must set a CLEAR CONTEXT so only one answer is logically possible.
+            - GOOD FORMAT: "Goal -> Action" or "Condition -> Consequence".
+            - Example Q: "J'ai très faim, alors je..." (I am very hungry, so I...)
+            - Example A: "...mange une pizza." (eat a pizza.)
+            - Example Distractors (Must be illogical): ["...dors dans le lit.", "...vais au cinéma.", "...suis content."]
+            - AVOID GENERIC STARTERS like "Je vais..." because anything can follow.
+           
+
         - "translate": 
             - GIVE THE QUESTION IN THE FORM OF SENTENCE AND ANSWER IN THE FORM OF SENTENCE.
             - EXAMPLE: Question: "Translate the following sentence: 'The cat is sleeping.' to French."
