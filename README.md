@@ -1,9 +1,11 @@
-#LoopLingo
+LoopLingo
 
 AI-generated language practice platform that mirrors real CEFR units and produces unlimited drills for every skill.
 
+.
+---
 
-#Overview
+Overview
 
 LoopLingo is a language-learning engine that generates endless, structured practice for each CEFR-aligned unit.
 It focuses on precision, scalability, and real exam readiness rather than gamification.
@@ -11,8 +13,6 @@ It focuses on precision, scalability, and real exam readiness rather than gamifi
 The system builds each unit with:
 
 Correct CEFR grammar targets
-
-Personalised listening skills part wrt the units
 
 Unit-specific vocabulary
 
@@ -25,7 +25,9 @@ Current language focus: French
 Upcoming: Spanish, German, Japanese
 
 
-#Core Features
+---
+
+Core Features
 
 Unlimited auto-generated exercises per unit
 
@@ -41,7 +43,9 @@ AI-driven explanation engine (optional)
 
 
 
-#Long-Term Goals
+---
+
+Long-Term Goals
 
 1. Full CEFR progression (A1 → C1)
 
@@ -62,14 +66,17 @@ AI-driven explanation engine (optional)
 
 
 
-#Architecture
+
+---
+
+Architecture
 
 Frontend: React → Next.js migration planned
 Backend: Node.js + Express
 Database: PostgreSQL
 AI Models: OpenAI / DeepSeek / Gemini (model-agnostic design)
 
-#Future additions:
+Future additions:
 
 Vector storage for learner history
 
@@ -78,7 +85,12 @@ TTS/ASR pipeline for listening/speaking tasks
 Microservice structure for exercise generation
 
 
-#Current Status
+
+---
+
+Current Status
+
+Landing page (Framer): in progress
 
 Base question generator: production start
 
@@ -88,7 +100,9 @@ GitHub repo: daily commits and iteration
 
 
 
-#Planned Modules
+---
+
+Planned Modules
 
 Reading comprehension generator
 
@@ -103,7 +117,10 @@ Advanced grammar trainer
 Unit import system for other languages
 
 
-#Setup
+
+---
+
+Setup
 
 npm install
 npm start
@@ -111,7 +128,11 @@ npm start
 More detailed environment setup will be added as backend components are built.
 
 
+---
 
-#License
+License
 
 MIT License
+
+
+---
