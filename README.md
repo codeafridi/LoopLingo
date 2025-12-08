@@ -102,6 +102,7 @@ Railway / Render (backend)
 Clone Repo
 
 git clone https://github.com/yourusername/LoopLingo.git
+
 cd LoopLingo
 
 Install Dependencies
