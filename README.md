@@ -1,35 +1,117 @@
-# LoopLingo
+#LoopLingo
 
-AI-powered language practice tool built to mirror Duolingo-style units with unlimited drills.
+AI-generated language practice platform that mirrors real CEFR units and produces unlimited drills for every skill.
 
-## 🚀 Current Progress
-- Landing page (Framer) — in progress  
-- Core app — development starting  
-- GitHub tracking — daily commits  
 
-## 🎯 What LoopLingo Does
-- Generates unlimited practice for every unit
-- Supports multiple exercise types (fill-in-the-blank, translate, complete sentence, match pairs)
-- Uses AI to create accurate CEFR-aligned vocabulary & grammar drills
-- Expanding to multiple languages (French → Spanish → German → Japanese)
+#Overview
 
-## 📦 Tech Stack
-- **Frontend:** React (later Next.js)  
-- **Backend:** Node.js + Express  
-- **Database:** PostgreSQL (later)  
-- **AI:** OpenAI / Deepseek / Gemini (TBD)
+LoopLingo is a language-learning engine that generates endless, structured practice for each CEFR-aligned unit.
+It focuses on precision, scalability, and real exam readiness rather than gamification.
 
-## 📘 Roadmap
-### Phase 1 — Landing Page  
-### Phase 2 — Expand Exercise Types  
-### Phase 3 — Improve UI  
-### Phase 4 — Add Exam Prep  
-### Phase 5 — Add Multi-Language Support  
-### Phase 6 — Full SaaS (auth + payments + analytics)
+The system builds each unit with:
 
-## 🤝 Contributing
-Not open to contributions yet.
+Correct CEFR grammar targets
 
-## 📄 License
+Personalised listening skills part wrt the units
+
+Unit-specific vocabulary
+
+Unlimited exercise variations
+
+Instant evaluation and feedback
+
+
+Current language focus: French
+Upcoming: Spanish, German, Japanese
+
+
+#Core Features
+
+Unlimited auto-generated exercises per unit
+
+Multiple exercise types (fill-in, translate, complete, match, grammar targeting)
+
+CEFR-aligned vocabulary datasets (A1 → B2)
+
+Unit-accurate content based on real curricula
+
+Progressive difficulty scaling
+
+AI-driven explanation engine (optional)
+
+
+
+#Long-Term Goals
+
+1. Full CEFR progression (A1 → C1)
+
+
+2. Listening, writing, and speaking modules
+
+
+3. Exam-style tasks (DELF, TEF, TCF)
+
+
+4. Multi-language support
+
+
+5. Personalised spaced-repetition engine
+
+
+6. SaaS platform with authentication, analytics, and user data storage
+
+
+
+#Architecture
+
+Frontend: React → Next.js migration planned
+Backend: Node.js + Express
+Database: PostgreSQL
+AI Models: OpenAI / DeepSeek / Gemini (model-agnostic design)
+
+#Future additions:
+
+Vector storage for learner history
+
+TTS/ASR pipeline for listening/speaking tasks
+
+Microservice structure for exercise generation
+
+
+#Current Status
+
+Base question generator: production start
+
+CEFR vocabulary scaffold: active development
+
+GitHub repo: daily commits and iteration
+
+
+
+#Planned Modules
+
+Reading comprehension generator
+
+Listening tasks with TTS audio
+
+Writing evaluator + correction engine
+
+Speaking evaluator
+
+Advanced grammar trainer
+
+Unit import system for other languages
+
+
+#Setup
+
+npm install
+npm start
+
+More detailed environment setup will be added as backend components are built.
+
+
+
+#License
+
 MIT License
-# LoopLingo
