@@ -130,13 +130,20 @@ app.post("/api/generate", async (req, res) => {
             -Use '___' for the blank. 
             -"options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
             -ENSURE EACH ANSWER IS DIFFERENT.
-            -CRITICAL RULE: Distractors must be CLEARLY WRONG based on Logic or Grammar.
-            - LOGIC EXAMPLE: "Je bois du ___." -> Answer: "café". Distractors: "pain" (bread), "chat" (cat). (You cannot drink bread).
-            - GRAMMAR EXAMPLE: "C'est une ___." -> Answer: "pomme" (fem). Distractors: "livre", "stylo" (masc words).
-            - NEVER provide two valid options (e.g., do NOT put "chien" and "chat" as options for "J'ai un ___").
-            - "options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
             -ANSWERS SHOULD NOT BE REPETITIVE 
             -COVER WIDE VARIETY OF WORDS.
+            - Distractors: Words that fit the sentence but DO NOT match the English hint STRICTLY.
+           
+              - RULE 3 (OPTIONS): The "options" array MUST contain the "answer"string. Do not generate a list of options that excludes the correct answer.
+              - RULE 4 (GENDER AGREEMENT): Check the article before the blank AND MAKE SURE THE GENDER IS CORRECT.
+              - RULE 5 (NUMBER AGREEMENT): Check the number before the blank AND MAKE SURE THE NUMBER IS CORRECT.
+              - RULE 6 (VERB CONJUGATION): Check the verb before the blank AND MAKE SURE THE VERB IS CORRECT.
+              - RULE 7 (ADJECTIVE AGREEMENT): Check the adjective before the blank AND MAKE SURE THE ADJECTIVE IS CORRECT.
+              - RULE 8 (NOUN AGREEMENT): Check the noun before the blank AND MAKE SURE THE NOUN IS CORRECT.
+              - RULE 9 (PREPOSITION AGREEMENT): Check the preposition before the blank AND MAKE SURE THE PREPOSITION IS CORRECT.
+              - RULE 10 (ARTICLE AGREEMENT): Check the article before the blank AND MAKE SURE THE ARTICLE IS CORRECT.
+              - RULE 11 (DETERMINER AGREEMENT): Check the determiner before the blank AND MAKE SURE THE DETERMINER IS CORRECT.
+              - Options: [Correct, Distractor1, Distractor2, Distractor3].
             
         
        - "complete-the-sentence": 
