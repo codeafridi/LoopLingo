@@ -1,0 +1,719 @@
+/* =========================================
+   1. GLOBAL RESET & TYPOGRAPHY
+   ========================================= */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --bg-dark: #0f172a; /* Deep Slate */
+  --card-dark: #1e293b; /* Lighter Slate */
+  --primary: #3b82f6; /* Vibrant Blue */
+  --success: #22c55e; /* Vibrant Green */
+  --text-main: #f1f5f9; /* Off-white */
+  --text-muted: #94a3b8; /* Muted Grey */
+  --border: #334155; /* Subtle Border */
+}
+
+body {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* =========================================
+      2. NAVBAR & LOGO
+      ========================================= */
+.navbar {
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(to right, var(--success), var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  cursor: pointer;
+}
+
+/* =========================================
+      3. LANDING PAGE (Hero)
+      ========================================= */
+.landing-page {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background Glow Effect */
+.landing-page::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 800px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.15) 0%,
+    rgba(15, 23, 42, 0) 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+.hero-section {
+  display: flex;
+  flex-direction: column; /* Stack on mobile, row on desktop */
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  gap: 60px;
+}
+
+@media (min-width: 900px) {
+  .hero-section {
+    flex-direction: row;
+    text-align: left;
+  }
+  .hero-text {
+    max-width: 50%;
+  }
+}
+
+.hero-text h1 {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: 20px;
+  background: linear-gradient(to bottom right, #fff, #cbd5e1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-text p {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Setup Card (Glassmorphism) */
+.setup-card {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.input-group label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.input-group select {
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-dark);
+  color: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.input-group select:focus {
+  border-color: var(--primary);
+}
+
+.start-btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 10px;
+  background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+  transition: transform 0.2s;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px);
+}
+.start-btn:active {
+  transform: translateY(1px);
+}
+
+/* =========================================
+      4. DASHBOARD (The Hub)
+      ========================================= */
+.dashboard-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.dash-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+.dash-header h2 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+.dash-subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.module-card {
+  background: var(--card-dark);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.module-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.module-card .icon {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+}
+.module-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+.module-card p {
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 25px;
+}
+
+.module-card button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  margin-top: auto;
+  cursor: pointer;
+}
+
+.module-card.core button {
+  background: var(--success);
+  color: white;
+}
+.module-card.listen button {
+  background: var(--primary);
+  color: white;
+}
+
+/* =========================================
+      5. WORKSHEET / LISTENING CONTAINER
+      ========================================= */
+.worksheet-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px 60px 20px;
+}
+
+.worksheet-header {
+  text-align: center;
+  margin-bottom: 50px;
+  padding-top: 60px; /* Space for back button */
+  position: relative;
+}
+
+/* Green Pill Back Button */
+.back-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: var(--card-dark);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-link:hover {
+  background-color: var(--border);
+  color: white;
+  transform: translateX(-3px);
+}
+
+/* =========================================
+      6. EXERCISE SECTIONS (Modern Cards)
+      ========================================= */
+.section-block {
+  background: var(--card-dark);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-header h2 {
+  font-size: 1.3rem;
+  margin: 0;
+  color: white;
+}
+
+/* Toggle Switch */
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #475569;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: var(--primary);
+}
+input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
+/* Questions */
+.question-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+.q-number {
+  color: var(--primary);
+  font-weight: 800;
+  min-width: 25px;
+}
+.q-text {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* Inputs (No more underline only) */
+.paper-input {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  min-width: 200px;
+}
+.paper-input:focus {
+  border-color: var(--primary);
+}
+.paper-input.full-width {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.paper-select {
+  background: #0f172a;
+  color: white;
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Generate More Button */
+.generate-more-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px dashed var(--primary);
+  color: var(--primary);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 15px;
+}
+.generate-more-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+/* =========================================
+      7. LISTENING MODE UI
+      ========================================= */
+.audio-player-card {
+  background: #0f172a; /* Darker accent */
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: sticky;
+  top: 20px;
+  z-index: 100;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.play-fab {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+.play-fab:hover {
+  transform: scale(1.1);
+}
+
+.audio-visualizer {
+  flex-grow: 1;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.bar {
+  width: 4px;
+  background: #64748b;
+  border-radius: 2px;
+  height: 8px;
+  transition: height 0.1s;
+}
+.playing .bar {
+  background: var(--success);
+  animation: equalize 0.5s infinite;
+}
+@keyframes equalize {
+  0% {
+    height: 8px;
+  }
+  50% {
+    height: 24px;
+  }
+  100% {
+    height: 8px;
+  }
+}
+
+.player-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 80px;
+  text-align: right;
+}
+
+.story-q-item {
+  background: #253045; /* Slightly lighter card */
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+}
+.story-q-item:hover {
+  border-color: var(--border);
+}
+
+.story-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.story-opt {
+  padding: 12px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.story-opt:hover {
+  border-color: var(--text-muted);
+  color: white;
+}
+.story-opt:has(input:checked) {
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.story-result {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid var(--success);
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+.transcript-reveal {
+  background: var(--bg-dark);
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* =========================================
+      8. MATCHING GAME UI
+      ========================================= */
+.matching-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.match-card {
+  background: var(--bg-dark);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.match-card:hover {
+  border-color: var(--text-muted);
+  color: white;
+  transform: translateY(-2px);
+}
+.match-card.selected {
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+}
+.match-card.matched {
+  border-color: transparent;
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+  cursor: default;
+}
+.match-card.wrong {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  animation: shake 0.4s;
+}
+
+.finish-btn,
+.check-story-btn {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 40px auto 0;
+  padding: 16px;
+  border-radius: 50px;
+  border: none;
+  background: var(--success);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.finish-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+}
+
+/* --- LOADING SPINNER --- */
+.loading-screen,
+.loader-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: var(--text-muted);
+}
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   RADIO BUTTONS (Complete the Sentence)
+   ========================================= */
+
+.radio-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Auto grid */
+  gap: 12px;
+  margin: 15px 0 20px 0; /* Add spacing below the options */
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--bg-dark); /* Dark background */
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Hover Effect */
+.radio-label:hover {
+  background-color: var(--card-dark);
+  border-color: var(--text-muted);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Selected State (Using modern CSS :has selector) */
+.radio-label:has(input:checked) {
+  border-color: var(--primary);
+  background-color: rgba(59, 130, 246, 0.15); /* Subtle blue tint */
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* The actual radio circle accent color */
+.radio-label input[type="radio"] {
+  accent-color: var(--primary);
+  width: 1.2em;
+  height: 1.2em;
+  cursor: pointer;
+}
+
+/* Spacing for the Check Button below the options */
+.mini-check-btn {
+  margin-top: 10px;
+}
