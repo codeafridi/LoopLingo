@@ -1,16 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const Groq = require("groq-sdk");
+const OpenAI = require("openai"); // We use the OpenAI SDK to talk to OpenRouter
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Increase the timeout limit for large generations
+// Timeout set to 3 minutes
 app.use((req, res, next) => {
   res.setTimeout(180000, () => {
-    // Increased to 3 mins for safety
     if (!res.headersSent) {
       console.log("Request has timed out.");
       res.status(408).send("Request has timed out");
@@ -19,7 +18,15 @@ app.use((req, res, next) => {
   next();
 });
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// --- OPENROUTER SETUP (Accessing Qwen) ---
+const openai = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY, // Make sure this is in your .env
+  defaultHeaders: {
+    "HTTP-Referer": "http://localhost:3000", // Required by OpenRouter
+    "X-Title": "LoopLingo",
+  },
+});
 
 // --- GENERATE ROUTE ---
 app.post("/api/generate", async (req, res) => {
@@ -31,9 +38,11 @@ app.post("/api/generate", async (req, res) => {
     grammar,
     type = "all",
   } = req.body;
-  console.log(`Generating: ${language} | ${unit} | Type: ${type}`);
+  console.log(
+    `Generating with Qwen 2.5: ${language} | ${unit} | Type: ${type}`
+  );
 
-  // 1. Vocabulary Constraints (YOUR EXACT RULES)
+  // 1. Vocabulary Constraints
   let vocabConstraint = "";
   if (vocabulary && vocabulary.length > 0) {
     const vocabList = vocabulary.join(", ");
@@ -57,36 +66,29 @@ app.post("/api/generate", async (req, res) => {
   let requirementText = "";
 
   if (type === "all") {
-    // Kept your 30 question logic
     requirementText = `
-      Generate a JSON array with EXACTLY 20 exercises in this specific order:
-      1. 3 questions of type "fill-in-the-blank".
-      2. 3 questions of type "complete-the-sentence".
-      3. 3 questions of type "translate".
-      4. 3 questions of type "match-pairs" (Each containing 4 pairs).
-      5. 3 questions of type "missing-verb" (Grammar/Conjugation focus).
-      6. 3 questions of type "choose-article" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
-      7. 2 questions of type "choose-preposition" 
+      Generate a JSON array with EXACTLY 30 exercises in this specific order:
+      1. 5 questions of type "fill-in-the-blank".
+      2. 5 questions of type "complete-the-sentence".
+      3. 5 questions of type "translate".
+      4. 5 questions of type "match-pairs" (Each containing 4 pairs).
+      5. 5 questions of type "missing-verb" (Grammar/Conjugation focus).
+      6. 5 questions of type "choose-article" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
       
-      TOTAL: 20 exercises. You MUST generate all 7 types.
+      TOTAL: 30 exercises. You MUST generate all 6 types.
     `;
-  }
-  // --- FIX START: Added the missing Listening Logic here ---
-  else if (type === "listening-story") {
+  } else if (type === "listening-story") {
     requirementText = `
       Generate ONE object with type "listening-story".
-      It must contain a "script" (Medium-Length Paragraph, 80-120 words, natural flow) based on the unit topic.
+      It must contain a "script" (80-120 words in ${language}) based on the unit topic.
       It must contain a "questions" array (5 multiple-choice questions in English about the script).
     `;
-  }
-  // --- FIX END ---
-  else if (type === "match-pairs") {
+  } else if (type === "match-pairs") {
     requirementText = `Generate exactly 5 questions of type "match-pairs" (Each with 4 pairs).`;
   } else {
     requirementText = `Generate exactly 5 questions of type "${type}".`;
   }
 
-  // --- YOUR EXACT PROMPT ---
   const prompt = `
         Role: Strict Language Curriculum Designer.
         Task: Create a worksheet for ${language}.
@@ -133,47 +135,21 @@ app.post("/api/generate", async (req, res) => {
             -ANSWERS SHOULD NOT BE REPETITIVE 
             -COVER WIDE VARIETY OF WORDS.
             - Distractors: Words that fit the sentence but DO NOT match the English hint STRICTLY.
-           
-              - RULE 3 (OPTIONS): The "options" array MUST contain the "answer"string. Do not generate a list of options that excludes the correct answer.
-              - RULE 4 (GENDER AGREEMENT): Check the article before the blank AND MAKE SURE THE GENDER IS CORRECT.
-              - RULE 5 (NUMBER AGREEMENT): Check the number before the blank AND MAKE SURE THE NUMBER IS CORRECT.
-              - RULE 6 (VERB CONJUGATION): Check the verb before the blank AND MAKE SURE THE VERB IS CORRECT.
-              - RULE 7 (ADJECTIVE AGREEMENT): Check the adjective before the blank AND MAKE SURE THE ADJECTIVE IS CORRECT.
-              - RULE 8 (NOUN AGREEMENT): Check the noun before the blank AND MAKE SURE THE NOUN IS CORRECT.
-              - RULE 9 (PREPOSITION AGREEMENT): Check the preposition before the blank AND MAKE SURE THE PREPOSITION IS CORRECT.
-              - RULE 10 (ARTICLE AGREEMENT): Check the article before the blank AND MAKE SURE THE ARTICLE IS CORRECT.
-              - RULE 11 (DETERMINER AGREEMENT): Check the determiner before the blank AND MAKE SURE THE DETERMINER IS CORRECT.
-              - Options: [Correct, Distractor1, Distractor2, Distractor3].
-            
+            - RULE 3 (OPTIONS): The "options" array MUST contain the "answer"string.
+            - RULE 4 (GENDER/NUMBER/VERB AGREEMENT): Check all grammar rules.
+            - WHEN GIVING CORRECT ANSWER ALSO MENTION THE MEANING OF THE WORD IN ENGLISH IN A BRACKET.
         
-       - "complete-the-sentence": 
-            - QUESTION STYLE: Give the FIRST HALF of a sentence (e.g., "Pour aller au marché, je...").
-            - OPTIONS STYLE: Must be PHRASES or CLAUSES .
-            - CRITICAL: DO NOT use single words as options.
-            - Example Question: "Le matin, j'aime..."
-            - Example Answer: "manger un croissant."
-            - Example Distractors: ["le soir.", "dormir noir.", "une table."]
-            - LOGIC: The correct answer must logically and grammatically finish the thought.
-            - CRITICAL RULE: SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
-            - ALSO MENTION SOME LONG SENTENCES AS QUESTIONS AND ANSWERS.
+        - "complete-the-sentence": 
+            - QUESTION STYLE: Give the FIRST HALF of a sentence.
+            - OPTIONS STYLE: Must be PHRASES or CLAUSES.
+            - CRITICAL: DO NOT use single words.
+            - LOGIC: The correct answer must logically finish the thought.
             - CRITICAL RULE: The question must set a CLEAR CONTEXT so only one answer is logically possible.
-            - GOOD FORMAT: "Goal -> Action" or "Condition -> Consequence".
-            - Example Q: "J'ai très faim, alors je..." (I am very hungry, so I...)
-            - Example A: "...mange une pizza." (eat a pizza.)
-            - Example Distractors (Must be illogical): ["...dors dans le lit.", "...vais au cinéma.", "...suis content."]
-            - AVOID GENERIC STARTERS like "Je vais..." because anything can follow.
-           
-
+        
         - "translate": 
             - GIVE THE QUESTION IN THE FORM OF SENTENCE AND ANSWER IN THE FORM OF SENTENCE.
-            - EXAMPLE: Question: "Translate the following sentence: 'The cat is sleeping.' to French."
-            - Answer: "Le chat est endormi."
-            - SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL. 
-            -ALSO INCLUDE FEW WORDS ALONE AS QUESTIONS. EXAMPLE: Question: "Translate the word 'chat' to French."
-            - Answer: "chat" (make sure the difficulty of the word is according to the units level.)
-            -MAKE SURE YOU ASK QUESTIONS TO CONVERT FROM  ENGLISH TO FRENCH 80% OF THE TIME AND FROM FRENCH TO ENGLISH 20% OF THE TIME.
-            
-            "options": [Scrambled words of the answer + 3 extra distractor words].
+            - Mix 80% English->${language}, 20% ${language}->English.
+            - "options": [Scrambled words of the answer + 3 extra distractor words].
 
         - "match-pairs":
             Structure:
@@ -183,37 +159,22 @@ app.post("/api/generate", async (req, res) => {
                 "question": "Match the following terms",
                 "pairs": [
                     { "left": "FrenchWord1", "right": "EnglishTranslation1" },
-                    { "left": "FrenchWord2", "right": "EnglishTranslation2" },
-                    { "left": "FrenchWord3", "right": "EnglishTranslation3" },
-                    { "left": "FrenchWord4", "right": "EnglishTranslation4" }
+                    // ... 4 pairs
                 ]
             }
         - "missing-verb" (Conjugation Focus):
-           - The word in parentheses MUST be the INFINITIVE (ending in -er, -ir, -re).
-           - Ex: { "question": "Tu ___ (manger) une pizza.", "answer": "manges", ... }
-           - Ex: { "question": "Nous ___ (avoir) un chien.", "answer": "avons", ... }
+           - The word in parentheses MUST be the INFINITIVE.
            - NEVER put the conjugated form in parentheses.
-           - ENSURE ANSWERS ARE DIFFERENT (Change the pronoun!).
-          
+           - ENSURE ANSWERS ARE DIFFERENT.
 
         - "choose-article":
-           - Target: Definite (le/la/les/l') or Indefinite (un/une/des) articles.
+           - Target: Definite or Indefinite articles.
            - Question: Sentence with the article missing.
-           - Options: Must be a list of articles.
-           - Ex: { "question": "J'aime ___ pomme.", "answer": "la", "options": ["le", "la", "les", "l'"] }
-           -ENSURE EACH ANSWER IS DIFFERENT.
-           -ANSWERS SHOULD NOT BE REPETITIVE. 
-           -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
-           - USE THE FOLLOWING ARTICLES: Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc... .
+           - Options: List of articles.
 
-       - "choose-preposition":
-           - Target: Common prepositions (à, de, pour, sur, sous, dans, chez, en, avec,etc... according to the units level).
+        - "choose-preposition":
+           - Target: Common prepositions.
            - Question: Sentence with the preposition missing.
-           - Options: [Correct, 3 Distractors].
-           - Ex: { "question": "Je vais ___ Paris.", "answer": "à", "options": ["à", "en", "pour", "de"] }
-           - Ex: { "question": "Il rentre ___ lui.", "answer": "chez", "options": ["chez", "à", "dans", "sur"] }
-           -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
-           
 
         Output Structure Example:
         [
@@ -222,28 +183,26 @@ app.post("/api/generate", async (req, res) => {
     `;
 
   try {
-    const completion = await groq.chat.completions.create({
+    const completion = await openai.chat.completions.create({
+      // ✨ USING QWEN 2.5 72B
+      model: "qwen/qwen-2.5-7b-instruct",
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.1-8b-instant",
       temperature: 0.7,
-      max_tokens: 8000,
     });
 
     const text = completion.choices[0]?.message?.content || "";
 
-    // --- SMART JSON CLEANER (Added this to fix the "Error" issues) ---
-    // This part is safe to change: it just helps read the AI's response better
+    // --- JSON CLEANER ---
     let cleanText = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
-
-    // Find where the JSON actually starts (Array or Object)
     const firstSquare = cleanText.indexOf("[");
     const firstCurly = cleanText.indexOf("{");
     let startIdx = -1;
     let endIdx = -1;
 
+    // Smartly find if it's an Array [...] or Object {...}
     if (firstSquare !== -1 && (firstCurly === -1 || firstSquare < firstCurly)) {
       startIdx = firstSquare;
       endIdx = cleanText.lastIndexOf("]");
@@ -256,20 +215,25 @@ app.post("/api/generate", async (req, res) => {
       cleanText = cleanText.substring(startIdx, endIdx + 1);
       try {
         let parsed = JSON.parse(cleanText);
-        // If "listening-story" returns a single object, wrap it in array
+
+        // Normalize single object to array (for Listening Story or single gens)
         if (!Array.isArray(parsed)) parsed = [parsed];
 
+        // Handle nested "exercises" key if AI adds it
+        if (parsed[0] && parsed[0].exercises) parsed = parsed[0].exercises;
+
         res.json({ exercises: parsed });
-      } catch (e) {
-        console.error("JSON PARSE ERROR:", e);
-        console.log("RAW TEXT:", text); // Check terminal if error persists
-        res.status(500).json({ error: "Invalid JSON from AI" });
+      } catch (parseError) {
+        console.error("JSON PARSE ERROR:", parseError.message);
+        console.log("RAW TEXT:", text);
+        res.status(500).json({ error: "Invalid JSON from AI." });
       }
     } else {
+      console.error("NO JSON FOUND");
       res.status(500).json({ error: "No JSON found" });
     }
   } catch (error) {
-    console.error("Groq Error:", error);
+    console.error("OpenRouter Error:", error);
     res.status(500).json({ error: "Failed to generate exercises" });
   }
 });
@@ -277,37 +241,17 @@ app.post("/api/generate", async (req, res) => {
 // --- CHECK ROUTE ---
 app.post("/api/check", async (req, res) => {
   const { question, userAnswer, language, type } = req.body;
-  // ... (Your Check logic remains exactly the same) ...
   const prompt = `
-        Role: Language Teacher.
-        Language: ${language}.
-        Exercise Type: ${type}
-        
-        Question: "${question}"
-        Student Answer: "${userAnswer}"
-
-        Task: Check if the answer is correct. 
-        
-        CRITICAL GRADING RULES:
-        1. BE LENIENT with punctuation.
-        2. BE LENIENT with capitalization.
-        3. If accents are wrong but word is right, mark CORRECT.
-        
-        Return JSON:
-        {
-            "isCorrect": boolean,
-            "correctAnswer": "The ideal answer",
-            "explanation": "Short feedback."
-        }
+        Role: Teacher. Lang: ${language}.
+        Check answer: "${userAnswer}" for Question: "${question}".
+        Return JSON: { "isCorrect": boolean, "correctAnswer": "string", "explanation": "string" }
     `;
-
   try {
-    const completion = await groq.chat.completions.create({
+    const completion = await openai.chat.completions.create({
+      model: "qwen/qwen-2.5-72b-instruct",
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
     });
     const text = completion.choices[0]?.message?.content || "";
-    // Basic clean just in case
     const cleanText = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
