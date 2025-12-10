@@ -7,10 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Increase the timeout limit for large generations
+// Timeout: 3 minutes
 app.use((req, res, next) => {
   res.setTimeout(180000, () => {
-    // Increased to 3 mins for safety
     if (!res.headersSent) {
       console.log("Request has timed out.");
       res.status(408).send("Request has timed out");
@@ -33,69 +32,54 @@ app.post("/api/generate", async (req, res) => {
   } = req.body;
   console.log(`Generating: ${language} | ${unit} | Type: ${type}`);
 
-  // 1. Vocabulary Constraints (YOUR EXACT RULES)
+  // 1. Vocabulary Constraints
   let vocabConstraint = "";
   if (vocabulary && vocabulary.length > 0) {
     const vocabList = vocabulary.join(", ");
     vocabConstraint = `
       STRICT VOCABULARY CONSTRAINT:
-      You must ONLY use words from the following list (plus basic grammar connectors like 'a', 'the', 'is', 'and'):
-      [ ${vocabList} ]
+      You must ONLY use words from: [ ${vocabList} ] (plus basic connectors).
+      EXCEPTION: You may use the INFINITIVE form of verbs (e.g., 'manger') inside parentheses.
+    `;
+  } else {
+    vocabConstraint = "Use CEFR A1 beginner vocabulary.";
+  }
 
-       CRITICAL EXCEPTION: You may use the INFINITIVE form of verbs (like 'manger', 'avoir', 'être' and many more) inside parentheses for grammar questions, even if they are not in the list.
-      DON'T LIMIT THE INFINITIVE FORM OF VERBS TO ONLY THE ONES IN THE LIST.USE DIFFERENT VERBS FOR EACH QUESTION.
-      USE THE DIFFICULTY OF THE VERBS ACCORDING TO THE UNITS LEVEL.
-      DO NOT use any advanced vocabulary that is not in this list.
-      If you need a noun/verb not in the list, rephrase the sentence to use words from the list.
-      `;
+  // 2. Logic Selection
+  let requirementText = "";
+
+  if (type === "all") {
+    requirementText = `
+      Generate a JSON array with EXACTLY 18 exercises in this specific order:
+      1. 3 questions of type "fill-in-the-blank".
+      2. 3 questions of type "complete-the-sentence".
+      3. 3 questions of type "translate".
+      4. 3 questions of type "match-pairs".
+      5. 3 questions of type "missing-verb".
+      6. 3 questions of type "choose-article".
+      TOTAL: 18 exercises.
+    `;
+  } else if (type === "listening-story") {
+    requirementText = `
+      Generate ONE object with type "listening-story".
+      It must contain a "script" (80-120 words in ${language}) based on the unit topic.
+      It must contain a "questions" array (5 multiple-choice questions in English about the script).
+    `;
   } else if (type === "essay-challenge") {
+    // ✨ ESSAY GENERATION LOGIC
     requirementText = `
       Generate ONE object with type "essay-challenge".
       It must contain:
       1. "topic": A title related to the unit.
-      2. "english_text": A paragraph in English (approx 60-80 words) based on the unit's vocabulary/theme.
+      2. "english_text": A paragraph in English (approx 60-80 words) based on the unit's vocabulary.
       3. "french_reference": The ideal translation of that paragraph in ${language}.
     `;
-  } else {
-    vocabConstraint =
-      "Use only CEFR A1 beginner vocabulary suitable for this specific unit.";
-  }
-
-  // 2. Question Count Logic
-  let requirementText = "";
-
-  if (type === "all") {
-    // Kept your 30 question logic
-    requirementText = `
-      Generate a JSON array with EXACTLY 40 exercises in this specific order:
-      1. 5 questions of type "fill-in-the-blank".
-      2. 5 questions of type "complete-the-sentence".
-      3. 5 questions of type "translate".
-      4. 5 questions of type "match-pairs" (Each containing 4 pairs).
-      5. 5 questions of type "missing-verb" (Grammar/Conjugation focus).
-      6. 5 questions of type "choose-article" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
-      7. 5 questions of type "gender-engagement-drill" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
-      8. 5 questions of type "choose-preposition"
-
-      TOTAL: YOU MUST GENERATE EXACTLY 40 EXERCISES 5 FOR EACH EXERCISE TYPE. You MUST generate all 8 types.
-    `;
-  }
-  // --- FIX START: Added the missing Listening Logic here ---
-  else if (type === "listening-story") {
-    requirementText = `
-      Generate ONE object with type "listening-story".
-      It must contain a "script" (Medium-Length Paragraph, 80-120 words, natural flow) based on the unit topic.
-      It must contain a "questions" array (5 multiple-choice questions in English about the script).
-    `;
-  }
-  // --- FIX END ---
-  else if (type === "match-pairs") {
-    requirementText = `Generate exactly 5 questions of type "match-pairs" (Each with 4 pairs).`;
+  } else if (type === "match-pairs") {
+    requirementText = `Generate exactly 5 questions of type "match-pairs".`;
   } else {
     requirementText = `Generate exactly 5 questions of type "${type}".`;
   }
 
-  // --- YOUR EXACT PROMPT ---
   const prompt = `
         Role: Strict Language Curriculum Designer.
         Task: Create a worksheet for ${language}.
@@ -121,11 +105,12 @@ app.post("/api/generate", async (req, res) => {
         3. "answer" MUST MATCH EXACTLY one of the options.
 
         SPECIFIC INSTRUCTIONS FOR OPTIONS:
-           
+
 
         - "essay-challenge":
             - Structure: { "type": "essay-challenge", "topic": "My Morning Routine", "english_text": "I wake up at...", "french_reference": "Je me lève à..." }
-
+            - IGNORE CAPITAL LETTERS WHILE GRADING.
+            - IGNORE CERTAIN UNTYPABLE UNIQUE FOREIGN CHARACTERS LIKE ê, é, à, etc... WHILE GRADING .
 
         - "listening-story":
             - Create a coherent short story/dialogue in ${language}.
@@ -214,7 +199,7 @@ app.post("/api/generate", async (req, res) => {
            - Target: Definite (le/la/les/l') or Indefinite (un/une/des) articles.
            - Question: Sentence with the article missing.
            - Options: Must be a list of articles.
-           
+
            -CRITICAL RULE: ENSURE EACH ANSWER IS DIFFERENT.
            -CRITICAL RULE: ANSWERS SHOULD NOT BE REPETITIVE.
            -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
@@ -239,7 +224,7 @@ app.post("/api/generate", async (req, res) => {
            -CRITICAL RULE: ENSURE EACH ANSWER IS DIFFERENT.
            -CRITICAL RULE: QUESTIONS SHOULD NOT BE REPETITIVE.
            -CRITICAL RULE: SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
-          
+
 
 
         Output Structure Example:
@@ -251,21 +236,18 @@ app.post("/api/generate", async (req, res) => {
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.1-8b-instant",
-      temperature: 0.7,
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.6,
       max_tokens: 8000,
     });
 
     const text = completion.choices[0]?.message?.content || "";
 
-    // --- SMART JSON CLEANER (Added this to fix the "Error" issues) ---
-    // This part is safe to change: it just helps read the AI's response better
+    // --- JSON CLEANER ---
     let cleanText = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
-
-    // Find where the JSON actually starts (Array or Object)
     const firstSquare = cleanText.indexOf("[");
     const firstCurly = cleanText.indexOf("{");
     let startIdx = -1;
@@ -283,58 +265,44 @@ app.post("/api/generate", async (req, res) => {
       cleanText = cleanText.substring(startIdx, endIdx + 1);
       try {
         let parsed = JSON.parse(cleanText);
-        // If "listening-story" returns a single object, wrap it in array
-        if (!Array.isArray(parsed)) parsed = [parsed];
+        // Helper: Ensure array output for "all", single object for others if needed
+        if (type === "all" && !Array.isArray(parsed)) parsed = [parsed];
+        if (
+          (type === "listening-story" || type === "essay-challenge") &&
+          !Array.isArray(parsed)
+        )
+          parsed = [parsed];
 
         res.json({ exercises: parsed });
-      } catch (e) {
-        console.error("JSON PARSE ERROR:", e);
-        console.log("RAW TEXT:", text); // Check terminal if error persists
-        res.status(500).json({ error: "Invalid JSON from AI" });
+      } catch (parseError) {
+        console.error("JSON PARSE ERROR:", parseError.message);
+        console.log("RAW TEXT:", text);
+        res.status(500).json({ error: "Invalid JSON from AI." });
       }
     } else {
+      console.error("NO JSON FOUND");
       res.status(500).json({ error: "No JSON found" });
     }
   } catch (error) {
-    console.error("Groq Error:", error);
-    res.status(500).json({ error: "Failed to generate exercises" });
+    console.error("Groq API Error:", error);
+    res.status(500).json({ error: "Failed to generate content." });
   }
 });
 
-// --- CHECK ROUTE ---
+// --- CHECK ANSWER ROUTE ---
 app.post("/api/check", async (req, res) => {
   const { question, userAnswer, language, type } = req.body;
-  // ... (Your Check logic remains exactly the same) ...
   const prompt = `
-        Role: Language Teacher.
-        Language: ${language}.
-        Exercise Type: ${type}
-
-        Question: "${question}"
-        Student Answer: "${userAnswer}"
-
-        Task: Check if the answer is correct.
-
-        CRITICAL GRADING RULES:
-        1. BE LENIENT with punctuation.
-        2. BE LENIENT with capitalization.
-        3. If accents are wrong but word is right, mark CORRECT.
-
-        Return JSON:
-        {
-            "isCorrect": boolean,
-            "correctAnswer": "The ideal answer",
-            "explanation": "Short feedback."
-        }
+        Role: Teacher. Lang: ${language}.
+        Check answer: "${userAnswer}" for Question: "${question}".
+        Return JSON: { "isCorrect": boolean, "correctAnswer": "string", "explanation": "string" }
     `;
-
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
       model: "llama-3.3-70b-versatile",
     });
     const text = completion.choices[0]?.message?.content || "";
-    // Basic clean just in case
     const cleanText = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
@@ -343,46 +311,50 @@ app.post("/api/check", async (req, res) => {
     const lastBrace = cleanText.lastIndexOf("}");
     res.json(JSON.parse(cleanText.substring(firstBrace, lastBrace + 1)));
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Check failed" });
   }
 });
 
-// --- ESSAY GRADING ROUTE ---
+// --- NEW: GRADE ESSAY ROUTE (ROBUST) ---
 app.post("/api/grade-essay", async (req, res) => {
   const { userText, originalText, referenceText, language } = req.body;
+  console.log("Grading Essay...");
 
   const prompt = `
     Role: Strict Language Professor.
     Language: ${language}.
     
-    TASK: Compare the Student's Translation with the Ideal Translation.
+    TASK: Grade the student's translation.
     
     Original English: "${originalText}"
-    Ideal Target: "${referenceText}"
+    Ideal Target (${language}): "${referenceText}"
     Student Input: "${userText}"
     
-    1. Analyze grammar, vocabulary, and meaning.
-    2. Give a score from 0 to 100.
-    3. Provide constructive feedback.
+    INSTRUCTIONS:
+    1. Check for grammar, vocabulary, and meaning.
+    2. Give a score (0-100).
+    3. Be encouraging but strict on grammar errors.
+    4. Provide the "corrected" version.
     
-    OUTPUT JSON ONLY:
+    OUTPUT JSON ONLY (Do not write any other text):
     {
       "score": number,
-      "feedback": "string explaining mistakes",
-      "corrected": "the corrected version of student input"
+      "feedback": "Short explanation of mistakes in english.",
+      "corrected": "The perfect version."
     }
   `;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "qwen/qwen-2.5-72b-instruct", // or your preferred model
+    const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
+      model: "llama-3.3-70b-versatile", // Smartest model for grading
+      temperature: 0.3, // Low temp for consistent grading
     });
 
     const text = completion.choices[0]?.message?.content || "";
-    // Clean JSON
-    const cleanText = text
+
+    // --- SMART JSON CLEANER FOR GRADING ---
+    let cleanText = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
@@ -390,13 +362,21 @@ app.post("/api/grade-essay", async (req, res) => {
     const lastBrace = cleanText.lastIndexOf("}");
 
     if (firstBrace !== -1 && lastBrace !== -1) {
-      res.json(JSON.parse(cleanText.substring(firstBrace, lastBrace + 1)));
+      const jsonString = cleanText.substring(firstBrace, lastBrace + 1);
+      try {
+        res.json(JSON.parse(jsonString));
+      } catch (e) {
+        console.error("Grading JSON Error:", e);
+        console.log("Raw Grading Text:", text);
+        res.status(500).json({ error: "AI returned bad JSON." });
+      }
     } else {
-      throw new Error("Invalid JSON");
+      console.error("No JSON in grading response");
+      res.status(500).json({ error: "Grading JSON invalid" });
     }
   } catch (error) {
-    console.error("Grading Error:", error);
-    res.status(500).json({ error: "Failed to grade essay" });
+    console.error("Grading API Error:", error);
+    res.status(500).json({ error: "Grading failed" });
   }
 });
 

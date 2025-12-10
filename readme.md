@@ -87,7 +87,7 @@ app.post("/api/generate", async (req, res) => {
   }
 
   // --- YOUR EXACT PROMPT ---
-  const prompt = `
+    const prompt = `
         Role: Strict Language Curriculum Designer.
         Task: Create a worksheet for ${language}.
         Level: ${section}
@@ -112,6 +112,11 @@ app.post("/api/generate", async (req, res) => {
         3. "answer" MUST MATCH EXACTLY one of the options.
 
         SPECIFIC INSTRUCTIONS FOR OPTIONS:
+
+
+        - "essay-challenge":
+            - Structure: { "type": "essay-challenge", "topic": "My Morning Routine", "english_text": "I wake up at...", "french_reference": "Je me lève à..." }
+
 
         - "listening-story":
             - Create a coherent short story/dialogue in ${language}.
@@ -200,9 +205,9 @@ app.post("/api/generate", async (req, res) => {
            - Target: Definite (le/la/les/l') or Indefinite (un/une/des) articles.
            - Question: Sentence with the article missing.
            - Options: Must be a list of articles.
-           - Ex: { "question": "J'aime ___ pomme.", "answer": "la", "options": ["le", "la", "les", "l'"] }
-           -ENSURE EACH ANSWER IS DIFFERENT.
-           -ANSWERS SHOULD NOT BE REPETITIVE.
+
+           -CRITICAL RULE: ENSURE EACH ANSWER IS DIFFERENT.
+           -CRITICAL RULE: ANSWERS SHOULD NOT BE REPETITIVE.
            -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
            - USE THE FOLLOWING ARTICLES: Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc... .
 
@@ -215,12 +220,24 @@ app.post("/api/generate", async (req, res) => {
            -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
 
 
+        - "gender-engagement-drill":
+           - "gender-drill" (NEW):
+           - Target: Adjective agreements or Noun endings based on gender.
+           - Question: A sentence with an adjective/noun missing.
+           - Options: [Masculine form, Feminine form, Plural forms].
+           - Ex: { "question": "La maison est ___ (blanc).", "answer": "blanche", "options": ["blanc", "blanche", "blancs"] }
+           - Ex: { "question": "Il est ___ (heureux).", "answer": "heureux", "options": ["heureuse", "heureux", "heureuses"] }
+           -CRITICAL RULE: ENSURE EACH ANSWER IS DIFFERENT.
+           -CRITICAL RULE: QUESTIONS SHOULD NOT BE REPETITIVE.
+           -CRITICAL RULE: SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
+
+
+
         Output Structure Example:
         [
             { "id": 1, "type": "fill-in-the-blank", "question": "...", "answer": "...", "options": [...] }
         ]
     `;
-
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
