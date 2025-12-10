@@ -122,7 +122,7 @@ function App() {
       setExercises(res.data.exercises || []);
       setView("essay");
     } catch (e) {
-      alert("Error generating essay task.");
+      alert("Error generating essay tasks.");
     }
     setLoading(false);
   };
