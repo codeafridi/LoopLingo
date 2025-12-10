@@ -108,7 +108,24 @@ function App() {
     }
     document.body.style.cursor = "default";
   };
-
+  const generateEssay = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post("http://localhost:5000/api/generate", {
+        language: lang,
+        section: section.name,
+        unit: unit.title,
+        vocabulary: unit.vocabulary,
+        grammar: unit.grammar,
+        type: "essay-challenge",
+      });
+      setExercises(res.data.exercises || []);
+      setView("essay");
+    } catch (e) {
+      alert("Error generating essay task.");
+    }
+    setLoading(false);
+  };
   // ================= VIEWS =================
 
   // 1. SETUP
@@ -214,6 +231,16 @@ function App() {
               {loading ? "Generating..." : "Start Listening"}
             </button>
           </div>
+
+          {/* CARD 3: ESSAY WRITING */}
+          <div className="module-card essay" onClick={generateEssay}>
+            <div className="icon">✍️</div>
+            <h3>Essay Challenge</h3>
+            <p>Translate paragraphs and get AI grading.</p>
+            <button disabled={loading}>
+              {loading ? "Generating..." : "Start Writing"}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -276,6 +303,15 @@ function App() {
           language={lang}
         />
         <WorksheetSection
+          title="VII. Gender Engagement drill"
+          type="gender-engagement-drill"
+          exercises={exercises.filter(
+            (e) => e.type === "gender-engagement-drill"
+          )}
+          onGenerateMore={() => generateMore("gender-engagement-drill")}
+          language={lang}
+        />
+        <WorksheetSection
           title="VII. Match the Pairs"
           type="match-pairs"
           exercises={exercises.filter((e) => e.type === "match-pairs")}
@@ -300,7 +336,7 @@ function App() {
           <div className="loader-overlay">
             <div className="spinner"></div>
             <h2>Creating a new story...</h2>
-            <p>Never Give Up on Your Dreams</p>
+            <p>Never Give Up on Your Dreams!!!</p>
           </div>
         </div>
       );
@@ -346,6 +382,23 @@ function App() {
             Next Story ➔
           </button>
         </div>
+      </div>
+    );
+  }
+  // ================= VIEW 5: ESSAY MODE =================
+  if (view === "essay") {
+    const data = exercises[0];
+    return (
+      <div className="worksheet-container">
+        <header className="worksheet-header">
+          <button className="back-link" onClick={() => setView("dashboard")}>
+            ← Dashboard
+          </button>
+          <h1>Essay Challenge</h1>
+          <p className="worksheet-subtitle">{unit.title}</p>
+        </header>
+
+        {data && <EssayComponent data={data} lang={lang} />}
       </div>
     );
   }
@@ -641,7 +694,8 @@ function QuestionItem({ data, showOptions, language, index }) {
           {(data.type === "fill-in-the-blank" ||
             data.type === "missing-verb" ||
             data.type === "choose-article" ||
-            data.type === "choose-preposition") &&
+            data.type === "choose-preposition" ||
+            data.type === "gender-engagement-drill") &&
             (isEasyMode ? (
               <select
                 className="paper-select"
@@ -819,4 +873,81 @@ function MatchingGame({ data, index }) {
   );
 }
 
+// --- COMPONENT: ESSAY WRITING ---
+function EssayComponent({ data, lang }) {
+  const [userText, setUserText] = useState("");
+  const [result, setResult] = useState(null);
+  const [grading, setGrading] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!userText.trim()) return;
+    setGrading(true);
+    try {
+      const res = await axios.post("http://localhost:5000/api/grade-essay", {
+        userText,
+        originalText: data.english_text,
+        referenceText: data.french_reference,
+        language: lang,
+      });
+      setResult(res.data);
+    } catch (e) {
+      alert("Grading failed.");
+    }
+    setGrading(false);
+  };
+
+  return (
+    <div className="section-block">
+      <div className="section-header">
+        <h2>Topic: {data.topic}</h2>
+      </div>
+
+      <div className="essay-container">
+        <div className="essay-prompt">
+          <h4>Translate this to {lang}:</h4>
+          <p className="source-text">"{data.english_text}"</p>
+        </div>
+
+        <textarea
+          className="essay-input"
+          rows="6"
+          placeholder={`Write your ${lang} translation here...`}
+          value={userText}
+          onChange={(e) => setUserText(e.target.value)}
+          disabled={!!result}
+        />
+
+        {!result ? (
+          <button
+            className="finish-btn"
+            onClick={handleSubmit}
+            disabled={grading}
+          >
+            {grading ? "Grading..." : "Submit Essay"}
+          </button>
+        ) : (
+          <div className="essay-result">
+            <div className="score-circle">
+              <span>{result.score}%</span>
+            </div>
+            <div className="feedback-content">
+              <h4>Feedback:</h4>
+              <p>{result.feedback}</p>
+              <div className="correction-box">
+                <strong>Better way to say it:</strong>
+                <p>{result.corrected}</p>
+              </div>
+            </div>
+            <button
+              className="generate-more-btn"
+              onClick={() => window.location.reload()}
+            >
+              Try Another
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 export default App;

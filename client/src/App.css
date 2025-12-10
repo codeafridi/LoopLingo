@@ -717,3 +717,88 @@ input:checked + .slider:before {
 .mini-check-btn {
   margin-top: 10px;
 }
+
+/* Essay Card Theme */
+.module-card.essay button {
+  background: #f59e0b;
+  color: white;
+}
+.module-card.essay:hover {
+  border-color: #f59e0b;
+}
+
+/* Essay Component Styles */
+.essay-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.essay-prompt {
+  background: #f1f5f9;
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 5px solid #f59e0b;
+}
+.source-text {
+  font-size: 1.2rem;
+  font-style: italic;
+  color: #334155;
+  margin-top: 10px;
+}
+
+.essay-input {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  font-family: inherit;
+  font-size: 1.1rem;
+  resize: vertical;
+  background: #fff;
+  color: #0f172a;
+  box-sizing: border-box; /* Prevents overflow */
+}
+.essay-input:focus {
+  outline: none;
+  border-color: #f59e0b;
+}
+
+/* Result Section */
+.essay-result {
+  margin-top: 20px;
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 30px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.score-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+}
+
+.feedback-content {
+  text-align: left;
+  width: 100%;
+}
+.correction-box {
+  margin-top: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #22c55e;
+}

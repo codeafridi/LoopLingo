@@ -48,6 +48,14 @@ app.post("/api/generate", async (req, res) => {
       DO NOT use any advanced vocabulary that is not in this list.
       If you need a noun/verb not in the list, rephrase the sentence to use words from the list.
       `;
+  } else if (type === "essay-challenge") {
+    requirementText = `
+      Generate ONE object with type "essay-challenge".
+      It must contain:
+      1. "topic": A title related to the unit.
+      2. "english_text": A paragraph in English (approx 60-80 words) based on the unit's vocabulary/theme.
+      3. "french_reference": The ideal translation of that paragraph in ${language}.
+    `;
   } else {
     vocabConstraint =
       "Use only CEFR A1 beginner vocabulary suitable for this specific unit.";
@@ -59,16 +67,17 @@ app.post("/api/generate", async (req, res) => {
   if (type === "all") {
     // Kept your 30 question logic
     requirementText = `
-      Generate a JSON array with EXACTLY 35 exercises in this specific order:
+      Generate a JSON array with EXACTLY 40 exercises in this specific order:
       1. 5 questions of type "fill-in-the-blank".
       2. 5 questions of type "complete-the-sentence".
       3. 5 questions of type "translate".
       4. 5 questions of type "match-pairs" (Each containing 4 pairs).
       5. 5 questions of type "missing-verb" (Grammar/Conjugation focus).
       6. 5 questions of type "choose-article" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
-      7. 5 questions of type "choose-preposition"
+      7. 5 questions of type "gender-engagement-drill" (Focus on Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc...).
+      8. 5 questions of type "choose-preposition"
 
-      TOTAL: YOU MUST GENERATE EXACTLY 35 EXERCISES 5 FOR EACH EXERCISE TYPE. You MUST generate all 7 types.
+      TOTAL: YOU MUST GENERATE EXACTLY 40 EXERCISES 5 FOR EACH EXERCISE TYPE. You MUST generate all 8 types.
     `;
   }
   // --- FIX START: Added the missing Listening Logic here ---
@@ -112,6 +121,11 @@ app.post("/api/generate", async (req, res) => {
         3. "answer" MUST MATCH EXACTLY one of the options.
 
         SPECIFIC INSTRUCTIONS FOR OPTIONS:
+           
+
+        - "essay-challenge":
+            - Structure: { "type": "essay-challenge", "topic": "My Morning Routine", "english_text": "I wake up at...", "french_reference": "Je me lève à..." }
+
 
         - "listening-story":
             - Create a coherent short story/dialogue in ${language}.
@@ -200,9 +214,9 @@ app.post("/api/generate", async (req, res) => {
            - Target: Definite (le/la/les/l') or Indefinite (un/une/des) articles.
            - Question: Sentence with the article missing.
            - Options: Must be a list of articles.
-           - Ex: { "question": "J'aime ___ pomme.", "answer": "la", "options": ["le", "la", "les", "l'"] }
-           -ENSURE EACH ANSWER IS DIFFERENT.
-           -ANSWERS SHOULD NOT BE REPETITIVE.
+           
+           -CRITICAL RULE: ENSURE EACH ANSWER IS DIFFERENT.
+           -CRITICAL RULE: ANSWERS SHOULD NOT BE REPETITIVE.
            -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
            - USE THE FOLLOWING ARTICLES: Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc... .
 
@@ -213,6 +227,19 @@ app.post("/api/generate", async (req, res) => {
            - Ex: { "question": "Je vais ___ Paris.", "answer": "à", "options": ["à", "en", "pour", "de"] }
            - Ex: { "question": "Il rentre ___ lui.", "answer": "chez", "options": ["chez", "à", "dans", "sur"] }
            -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
+
+
+        - "gender-engagement-drill":
+           - "gender-drill" (NEW):
+           - Target: Adjective agreements or Noun endings based on gender.
+           - Question: A sentence with an adjective/noun missing.
+           - Options: [Masculine form, Feminine form, Plural forms].
+           - Ex: { "question": "La maison est ___ (blanc).", "answer": "blanche", "options": ["blanc", "blanche", "blancs"] }
+           - Ex: { "question": "Il est ___ (heureux).", "answer": "heureux", "options": ["heureuse", "heureux", "heureuses"] }
+           -CRITICAL RULE: ENSURE EACH ANSWER IS DIFFERENT.
+           -CRITICAL RULE: QUESTIONS SHOULD NOT BE REPETITIVE.
+           -CRITICAL RULE: SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
+          
 
 
         Output Structure Example:
@@ -318,6 +345,58 @@ app.post("/api/check", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Check failed" });
+  }
+});
+
+// --- ESSAY GRADING ROUTE ---
+app.post("/api/grade-essay", async (req, res) => {
+  const { userText, originalText, referenceText, language } = req.body;
+
+  const prompt = `
+    Role: Strict Language Professor.
+    Language: ${language}.
+    
+    TASK: Compare the Student's Translation with the Ideal Translation.
+    
+    Original English: "${originalText}"
+    Ideal Target: "${referenceText}"
+    Student Input: "${userText}"
+    
+    1. Analyze grammar, vocabulary, and meaning.
+    2. Give a score from 0 to 100.
+    3. Provide constructive feedback.
+    
+    OUTPUT JSON ONLY:
+    {
+      "score": number,
+      "feedback": "string explaining mistakes",
+      "corrected": "the corrected version of student input"
+    }
+  `;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "qwen/qwen-2.5-72b-instruct", // or your preferred model
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const text = completion.choices[0]?.message?.content || "";
+    // Clean JSON
+    const cleanText = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+    const firstBrace = cleanText.indexOf("{");
+    const lastBrace = cleanText.lastIndexOf("}");
+
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      res.json(JSON.parse(cleanText.substring(firstBrace, lastBrace + 1)));
+    } else {
+      throw new Error("Invalid JSON");
+    }
+  } catch (error) {
+    console.error("Grading Error:", error);
+    res.status(500).json({ error: "Failed to grade essay" });
   }
 });
 
