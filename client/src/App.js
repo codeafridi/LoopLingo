@@ -300,7 +300,7 @@ function App() {
           <div className="loader-overlay">
             <div className="spinner"></div>
             <h2>Creating a new story...</h2>
-            <p>Our AI author is writing a unique script for you.</p>
+            <p>Never Give Up on Your Dreams</p>
           </div>
         </div>
       );
