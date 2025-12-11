@@ -386,7 +386,23 @@ function App() {
     );
   }
   // ================= VIEW 5: ESSAY MODE =================
+  // ==========================================
+  // VIEW 5: ESSAY MODE (Infinite Loop Fix)
+  // ==========================================
   if (view === "essay") {
+    // 1. Show Spinner if generating the next essay
+    if (loading) {
+      return (
+        <div className="worksheet-container">
+          <div className="loader-overlay">
+            <div className="spinner"></div>
+            <h2>Creating new essay topic...</h2>
+            <p>Thinking up a scenario for {unit.title}...</p>
+          </div>
+        </div>
+      );
+    }
+
     const data = exercises[0];
     return (
       <div className="worksheet-container">
@@ -398,7 +414,10 @@ function App() {
           <p className="worksheet-subtitle">{unit.title}</p>
         </header>
 
-        {data && <EssayComponent data={data} lang={lang} />}
+        {/* Pass generateEssay function as 'onNext' prop */}
+        {data && (
+          <EssayComponent data={data} lang={lang} onNext={generateEssay} />
+        )}
       </div>
     );
   }
@@ -874,10 +893,18 @@ function MatchingGame({ data, index }) {
 }
 
 // --- COMPONENT: ESSAY WRITING ---
-function EssayComponent({ data, lang }) {
+// --- COMPONENT: ESSAY WRITING (Infinite) ---
+function EssayComponent({ data, lang, onNext }) {
   const [userText, setUserText] = useState("");
   const [result, setResult] = useState(null);
   const [grading, setGrading] = useState(false);
+
+  // Reset state when new data arrives (New Essay)
+  useEffect(() => {
+    setUserText("");
+    setResult(null);
+    setGrading(false);
+  }, [data]);
 
   const handleSubmit = async () => {
     if (!userText.trim()) return;
@@ -891,7 +918,8 @@ function EssayComponent({ data, lang }) {
       });
       setResult(res.data);
     } catch (e) {
-      alert("Grading failed.");
+      alert("Grading failed. Please try again.");
+      setGrading(false); // Stop loading if error
     }
     setGrading(false);
   };
@@ -914,7 +942,7 @@ function EssayComponent({ data, lang }) {
           placeholder={`Write your ${lang} translation here...`}
           value={userText}
           onChange={(e) => setUserText(e.target.value)}
-          disabled={!!result}
+          disabled={!!result || grading}
         />
 
         {!result ? (
@@ -934,15 +962,18 @@ function EssayComponent({ data, lang }) {
               <h4>Feedback:</h4>
               <p>{result.feedback}</p>
               <div className="correction-box">
-                <strong>Better way to say it:</strong>
+                <strong>Correct Translation:</strong>
                 <p>{result.corrected}</p>
               </div>
             </div>
+
+            {/* THIS BUTTON NOW TRIGGERS THE INFINITE LOOP */}
             <button
-              className="generate-more-btn"
-              onClick={() => window.location.reload()}
+              className="finish-btn"
+              onClick={onNext}
+              style={{ backgroundColor: "#3b82f6", marginTop: "30px" }}
             >
-              Try Another
+              Next Essay Scenario ➔
             </button>
           </div>
         )}

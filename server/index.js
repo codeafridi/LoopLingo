@@ -108,10 +108,21 @@ app.post("/api/generate", async (req, res) => {
 
 
         - "essay-challenge":
-            - Structure: { "type": "essay-challenge", "topic": "My Morning Routine", "english_text": "I wake up at...", "french_reference": "Je me lève à..." }
-            - IGNORE CAPITAL LETTERS WHILE GRADING.
-            - IGNORE CERTAIN UNTYPABLE UNIQUE FOREIGN CHARACTERS LIKE ê, é, à, etc... WHILE GRADING .
+           You generate French essay challenges.
 
+           Rules:
+             - NEVER reuse previous examples.
+             - AVOID typical textbook clichés: boy, girl, dog, cat, pizza, croissant.
+             - Produce unique scenarios every time with new names, new settings, new daily-life contexts.
+             - Use vocabulary that matches the CEFR level.
+             - Generate a 60-80 word English paragraph ONLY.
+             - Topic must match the CEFR unit theme.
+             - The paragraph must be realistic, modern, and natural.
+             - NO repeated structures.
+              Output ONLY the English paragraph.
+
+
+                 
         - "listening-story":
             - Create a coherent short story/dialogue in ${language}.
             - Then 5 multiple choice questions in English.
@@ -288,6 +299,8 @@ app.post("/api/generate", async (req, res) => {
     res.status(500).json({ error: "Failed to generate content." });
   }
 });
+
+// ...
 
 // --- CHECK ANSWER ROUTE ---
 app.post("/api/check", async (req, res) => {
