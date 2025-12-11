@@ -22,6 +22,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // --- GENERATE ROUTE ---
 app.post("/api/generate", async (req, res) => {
+  // 1. Get variables (including difficulty)
   const {
     language,
     section,
@@ -29,10 +30,17 @@ app.post("/api/generate", async (req, res) => {
     vocabulary,
     grammar,
     type = "all",
+    difficulty = 1,
   } = req.body;
-  console.log(`Generating: ${language} | ${unit} | Type: ${type}`);
 
-  // 1. Vocabulary Constraints
+  // 2. Calculate Word Count for Essays (Adaptive Difficulty)
+  const wordCount = 60 + (difficulty - 1) * 30; // Level 1=60, Level 2=90...
+
+  console.log(
+    `Generating: ${language} | Type: ${type} | Level: ${difficulty} (~${wordCount} words)`
+  );
+
+  // 3. Vocabulary Constraints
   let vocabConstraint = "";
   if (vocabulary && vocabulary.length > 0) {
     const vocabList = vocabulary.join(", ");
@@ -45,34 +53,44 @@ app.post("/api/generate", async (req, res) => {
     vocabConstraint = "Use CEFR A1 beginner vocabulary.";
   }
 
-  // 2. Logic Selection
+  // 4. Logic Selection
   let requirementText = "";
 
   if (type === "all") {
+    // 21 Questions (3 of each type) is safer for rate limits than 30
     requirementText = `
-      Generate a JSON array with EXACTLY 18 exercises in this specific order:
+      Generate a JSON array with EXACTLY 21 exercises in this specific order:
       1. 3 questions of type "fill-in-the-blank".
       2. 3 questions of type "complete-the-sentence".
       3. 3 questions of type "translate".
       4. 3 questions of type "match-pairs".
       5. 3 questions of type "missing-verb".
       6. 3 questions of type "choose-article".
-      TOTAL: 18 exercises.
+      7. 3 questions of type "gender-engagement-drill".
+      
+      TOTAL: 21 exercises.
     `;
   } else if (type === "listening-story") {
     requirementText = `
       Generate ONE object with type "listening-story".
-      It must contain a "script" (80-120 words in ${language}) based on the unit topic.
+      It must contain a "script" (Medium-Length Paragraph, 80-120 words, natural flow) based on the unit topic.
       It must contain a "questions" array (5 multiple-choice questions in English about the script).
     `;
   } else if (type === "essay-challenge") {
-    // ✨ ESSAY GENERATION LOGIC
+    // ✨ ADAPTIVE ESSAY LOGIC
     requirementText = `
       Generate ONE object with type "essay-challenge".
-      It must contain:
-      1. "topic": A title related to the unit.
-      2. "english_text": A paragraph in English (approx 60-80 words) based on the unit's vocabulary.
-      3. "french_reference": The ideal translation of that paragraph in ${language}.
+      
+      INSTRUCTIONS:
+      1. Write a cohesive, natural paragraph in English (approx ${wordCount} words).
+      2. Style: Diary Entry, Email, or Story snippet.
+      3. Topic: Must relate to '${unit}', but be creative.
+      4. Difficulty: This is Level ${difficulty}. Increase sentence complexity as level goes up.
+      
+      OUTPUT:
+      - "topic": Creative title.
+      - "english_text": The English paragraph.
+      - "french_reference": The ideal translation in ${language}.
     `;
   } else if (type === "match-pairs") {
     requirementText = `Generate exactly 5 questions of type "match-pairs".`;
@@ -82,12 +100,11 @@ app.post("/api/generate", async (req, res) => {
 
   const prompt = `
         Role: Strict Language Curriculum Designer.
-        Task: Create a worksheet for ${language}.
-        Level: ${section}
-        Topic: ${unit}
-
+        Language: ${language}.
+        Level: ${section}.
+        Unit: ${unit}.
+        
         ${vocabConstraint}
-
         GRAMMAR FOCUS: "${grammar || "General grammar for this level"}"
 
         TASK INSTRUCTIONS:
@@ -226,7 +243,7 @@ app.post("/api/generate", async (req, res) => {
 
 
         - "gender-engagement-drill":
-           - "gender-drill" (NEW):
+           
            - Target: Adjective agreements or Noun endings based on gender.
            - Question: A sentence with an adjective/noun missing.
            - Options: [Masculine form, Feminine form, Plural forms].
@@ -247,7 +264,7 @@ app.post("/api/generate", async (req, res) => {
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.3-7b-versatile",
       temperature: 0.6,
       max_tokens: 8000,
     });
@@ -276,13 +293,8 @@ app.post("/api/generate", async (req, res) => {
       cleanText = cleanText.substring(startIdx, endIdx + 1);
       try {
         let parsed = JSON.parse(cleanText);
-        // Helper: Ensure array output for "all", single object for others if needed
-        if (type === "all" && !Array.isArray(parsed)) parsed = [parsed];
-        if (
-          (type === "listening-story" || type === "essay-challenge") &&
-          !Array.isArray(parsed)
-        )
-          parsed = [parsed];
+        // Normalize single object (story/essay) to array for frontend
+        if (!Array.isArray(parsed)) parsed = [parsed];
 
         res.json({ exercises: parsed });
       } catch (parseError) {
@@ -295,14 +307,69 @@ app.post("/api/generate", async (req, res) => {
       res.status(500).json({ error: "No JSON found" });
     }
   } catch (error) {
-    console.error("Groq API Error:", error);
+    console.error("API Error:", error);
     res.status(500).json({ error: "Failed to generate content." });
   }
 });
 
-// ...
+// --- NEW: GRADE ESSAY ROUTE ---
+app.post("/api/grade-essay", async (req, res) => {
+  const { userText, originalText, referenceText, language } = req.body;
+  console.log("Grading Essay...");
 
-// --- CHECK ANSWER ROUTE ---
+  const prompt = `
+    Role: Strict Language Professor.
+    Language: ${language}.
+    
+    TASK: Grade the student's translation.
+    Original English: "${originalText}"
+    Ideal Target (${language}): "${referenceText}"
+    Student Input: "${userText}"
+    
+    INSTRUCTIONS:
+    1. Check for grammar, vocabulary, and meaning.
+    2. Give a score (0-100).
+    3. The "feedback" MUST BE IN ENGLISH.
+    
+    OUTPUT JSON ONLY:
+    { "score": number, "feedback": "string", "corrected": "string" }
+  `;
+
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "llama-3.3-7b-versatile",
+      temperature: 0.1,
+    });
+
+    const text = completion.choices[0]?.message?.content || "";
+    let cleanText = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+    const firstBrace = cleanText.indexOf("{");
+    const lastBrace = cleanText.lastIndexOf("}");
+
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      res.json(JSON.parse(cleanText.substring(firstBrace, lastBrace + 1)));
+    } else {
+      res.json({
+        score: 0,
+        feedback: "Error reading result.",
+        corrected: referenceText,
+      });
+    }
+  } catch (error) {
+    console.error("Grading Error:", error);
+    res.json({
+      score: 0,
+      feedback: "Service Unavailable",
+      corrected: referenceText,
+    });
+  }
+});
+
+// --- CHECK ROUTE (FIXED: Using Groq now) ---
 app.post("/api/check", async (req, res) => {
   const { question, userAnswer, language, type } = req.body;
   const prompt = `
@@ -313,7 +380,7 @@ app.post("/api/check", async (req, res) => {
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.3-7b-versatile",
     });
     const text = completion.choices[0]?.message?.content || "";
     const cleanText = text
@@ -325,71 +392,6 @@ app.post("/api/check", async (req, res) => {
     res.json(JSON.parse(cleanText.substring(firstBrace, lastBrace + 1)));
   } catch (error) {
     res.status(500).json({ error: "Check failed" });
-  }
-});
-
-// --- NEW: GRADE ESSAY ROUTE (ROBUST) ---
-app.post("/api/grade-essay", async (req, res) => {
-  const { userText, originalText, referenceText, language } = req.body;
-  console.log("Grading Essay...");
-
-  const prompt = `
-    Role: Strict Language Professor.
-    Language: ${language}.
-    
-    TASK: Grade the student's translation.
-    
-    Original English: "${originalText}"
-    Ideal Target (${language}): "${referenceText}"
-    Student Input: "${userText}"
-    
-    INSTRUCTIONS:
-    1. Check for grammar, vocabulary, and meaning.
-    2. Give a score (0-100).
-    3. Be encouraging but strict on grammar errors.
-    4. Provide the "corrected" version.
-    
-    OUTPUT JSON ONLY (Do not write any other text):
-    {
-      "score": number,
-      "feedback": "Short explanation of mistakes in english.",
-      "corrected": "The perfect version."
-    }
-  `;
-
-  try {
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile", // Smartest model for grading
-      temperature: 0.3, // Low temp for consistent grading
-    });
-
-    const text = completion.choices[0]?.message?.content || "";
-
-    // --- SMART JSON CLEANER FOR GRADING ---
-    let cleanText = text
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-    const firstBrace = cleanText.indexOf("{");
-    const lastBrace = cleanText.lastIndexOf("}");
-
-    if (firstBrace !== -1 && lastBrace !== -1) {
-      const jsonString = cleanText.substring(firstBrace, lastBrace + 1);
-      try {
-        res.json(JSON.parse(jsonString));
-      } catch (e) {
-        console.error("Grading JSON Error:", e);
-        console.log("Raw Grading Text:", text);
-        res.status(500).json({ error: "AI returned bad JSON." });
-      }
-    } else {
-      console.error("No JSON in grading response");
-      res.status(500).json({ error: "Grading JSON invalid" });
-    }
-  } catch (error) {
-    console.error("Grading API Error:", error);
-    res.status(500).json({ error: "Grading failed" });
   }
 });
 

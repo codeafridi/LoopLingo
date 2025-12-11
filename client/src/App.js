@@ -21,6 +21,7 @@ const getString = (val) => {
 
 function App() {
   const [view, setView] = useState("setup");
+  const [essayLevel, setEssayLevel] = useState(1);
   const [lang, setLang] = useState("French");
   const [section, setSection] = useState(COURSE_DATA["French"][0]);
   const [unit, setUnit] = useState(COURSE_DATA["French"][0].units[0]);
@@ -127,6 +128,29 @@ function App() {
     setLoading(false);
   };
   // ================= VIEWS =================
+
+  // --- NEW: HANDLE NEXT ESSAY (Increases Difficulty) ---
+  const handleNextEssay = async () => {
+    const nextLevel = essayLevel + 1;
+    setEssayLevel(nextLevel); // Update UI to show Level 2, 3...
+    setLoading(true);
+
+    try {
+      const res = await axios.post("http://localhost:5000/api/generate", {
+        language: lang,
+        section: section.name,
+        unit: unit.title,
+        vocabulary: unit.vocabulary,
+        grammar: unit.grammar,
+        type: "essay-challenge",
+        difficulty: nextLevel, // ✨ Sends the harder level to server
+      });
+      setExercises(res.data.exercises || []);
+    } catch (e) {
+      alert("Error generating next level.");
+    }
+    setLoading(false);
+  };
 
   // 1. SETUP
   if (view === "setup") {
@@ -389,35 +413,44 @@ function App() {
   // ==========================================
   // VIEW 5: ESSAY MODE (Infinite Loop Fix)
   // ==========================================
+  // ================= VIEW 5: ESSAY MODE =================
   if (view === "essay") {
-    // 1. Show Spinner if generating the next essay
     if (loading) {
       return (
         <div className="worksheet-container">
           <div className="loader-overlay">
             <div className="spinner"></div>
-            <h2>Creating new essay topic...</h2>
-            <p>Thinking up a scenario for {unit.title}...</p>
+            {/* Show the user the level is increasing */}
+            <h2>Creating Level {essayLevel} Challenge...</h2>
+            <p>Writing a longer, smarter scenario...</p>
           </div>
         </div>
       );
     }
 
     const data = exercises[0];
+    if (!data)
+      return (
+        <div className="worksheet-container">
+          <h1>Error: No Essay found.</h1>
+          <button className="finish-btn" onClick={generateEssay}>
+            Try Again
+          </button>
+        </div>
+      );
+
     return (
       <div className="worksheet-container">
         <header className="worksheet-header">
           <button className="back-link" onClick={() => setView("dashboard")}>
             ← Dashboard
           </button>
-          <h1>Essay Challenge</h1>
+          <h1>Essay Challenge (Lvl {essayLevel})</h1>
           <p className="worksheet-subtitle">{unit.title}</p>
         </header>
 
-        {/* Pass generateEssay function as 'onNext' prop */}
-        {data && (
-          <EssayComponent data={data} lang={lang} onNext={generateEssay} />
-        )}
+        {/* 👇 UPDATE THIS LINE: Use 'handleNextEssay' instead of 'generateEssay' */}
+        <EssayComponent data={data} lang={lang} onNext={handleNextEssay} />
       </div>
     );
   }
