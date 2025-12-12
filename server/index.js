@@ -20,28 +20,39 @@ app.use((req, res, next) => {
   next();
 });
 
+let notifications = [];
+
 // --- KESTRA TRIGGER HELPER ---
-const triggerKestraTutor = async (unit, score) => {
+// --- KESTRA TRIGGER HELPER ---
+// --- KESTRA TRIGGER HELPER ---
+// --- KESTRA TRIGGER HELPER ---
+const triggerKestraTutor = async (unit, score, mistakes = []) => {
   try {
-    // This URL matches the Flow ID you created in Kestra
+    // 1. Define URL
     const kestraUrl =
       "http://localhost:8080/api/v1/executions/webhook/looplingo.prod/looplingo_ai_tutor/looplingo_secret_key";
 
+    console.log("KESRA URL BEING USED:", kestraUrl);
+    // 2. Send Data (Use 'score', NOT 'finalScore')
     await axios.post(kestraUrl, {
       user: "Student",
       unit: unit || "General Practice",
       score: score,
+      mistakes: mistakes,
       timestamp: new Date().toISOString(),
     });
+
     console.log(`✅ Triggered Kestra: Score ${score}%`);
   } catch (error) {
-    console.error(
-      "⚠️ Kestra Trigger Failed (Is Docker running?):",
-      error.message
-    );
+    console.error("❌ KESTRA ERROR DETAILS:");
+    if (error.response) {
+      console.error(`Status: ${error.response.status}`);
+      console.error(`Data:`, error.response.data);
+    } else {
+      console.error("Error Message:", error.message);
+    }
   }
 };
-
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // --- GENERATE ROUTE ---
@@ -383,7 +394,9 @@ app.post("/api/grade-essay", async (req, res) => {
       );
 
       // Trigger Kestra
-      triggerKestraTutor("Essay Challenge", jsonResult.score);
+      triggerKestraTutor("Essay Challenge", jsonResult.score, [
+        { question: "Essay", wrongAnswer: jsonResult.feedback },
+      ]);
 
       res.json(jsonResult);
     } else {
@@ -421,4 +434,49 @@ app.post("/api/check", async (req, res) => {
   }
 });
 
+// 1. NEW: Route for Kestra to send data BACK to us
+app.post("/api/kestra-callback", (req, res) => {
+  const { user, message, type } = req.body;
+  console.log("🔔 Notification Received from Kestra:", message);
+
+  // Add to our "Database"
+  notifications.unshift({
+    id: Date.now(),
+    user,
+    message,
+    type, // 'success' or 'warning'
+    read: false,
+    timestamp: new Date(),
+  });
+
+  res.json({ success: true });
+});
+
+// 2. NEW: Route for Frontend to fetch notifications
+app.get("/api/notifications", (req, res) => {
+  res.json(notifications);
+});
+
+// 3. NEW: Route to clear notifications
+app.post("/api/notifications/clear", (req, res) => {
+  notifications = [];
+  res.json({ success: true });
+});
+
+// --- NEW ROUTE: END SESSION (This triggers Kestra for Worksheets)
+app.post("/api/end-session", async (req, res) => {
+  const { user, score, mistakes } = req.body;
+
+  console.log(`🚀 Ending Session for ${user}. Score: ${score}%`);
+
+  try {
+    // Call our helper function to notify Kestra
+    await triggerKestraTutor("Session Review", score, mistakes);
+
+    res.json({ success: true, message: "Report generated!" });
+  } catch (error) {
+    console.error("Kestra Error:", error.message);
+    res.status(500).json({ error: "Failed to trigger analysis" });
+  }
+});
 app.listen(5000, () => console.log("Server running on port 5000"));

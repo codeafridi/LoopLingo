@@ -20,6 +20,8 @@ const getString = (val) => {
 
 function App() {
   const [view, setView] = useState("setup");
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifs, setShowNotifs] = useState(false);
   const [essayLevel, setEssayLevel] = useState(1);
   const [lang, setLang] = useState("French");
   const [section, setSection] = useState(COURSE_DATA["French"][0]);
@@ -29,12 +31,26 @@ function App() {
 
   // ✨ NEW: User Identity & Scoreboard
   const [userName, setUserName] = useState("");
+
+  // ✨ NEW: Store the final result here
+  const [sessionResult, setSessionResult] = useState(null);
+
   const [sessionStats, setSessionStats] = useState({
     correctCount: 0,
     totalAttempted: 0,
     mistakesLog: [],
   });
 
+  // Add this useEffect inside App()
+  useEffect(() => {
+    const interval = setInterval(() => {
+      axios
+        .get("http://localhost:5000/api/notifications")
+        .then((res) => setNotifications(res.data))
+        .catch((err) => console.error(err));
+    }, 5000); // Check every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
   // --- HANDLERS ---
   const handleLangChange = (e) => {
     const l = e.target.value;
@@ -75,31 +91,52 @@ function App() {
   };
 
   // ✨ NEW: Finish & Trigger Kestra
+  // --- FINISH & ANALYZE ---
   const finishSession = async () => {
     if (sessionStats.totalAttempted === 0) {
-      alert("You haven't done any exercises yet!");
+      // Small check, no alert needed, just return
       return;
     }
+
     const finalScore = Math.round(
       (sessionStats.correctCount / sessionStats.totalAttempted) * 100
     );
-    alert(`Session Complete! Score: ${finalScore}%`);
 
+    // 1. Show the Result Card immediately (UI Update)
+    setSessionResult({
+      score: finalScore,
+      correct: sessionStats.correctCount,
+      total: sessionStats.totalAttempted,
+      message: "Analyzing your performance...",
+    });
+
+    // 2. Send Data to Background (Kestra)
     try {
-      // Send to Node.js Server -> Which sends to Kestra
       await axios.post("http://localhost:5000/api/end-session", {
         user: userName || "Student",
         score: finalScore,
         mistakes: sessionStats.mistakesLog,
       });
-      setView("dashboard");
-      setSessionStats({ correctCount: 0, totalAttempted: 0, mistakesLog: [] });
+      // Update status to show success
+      setSessionResult((prev) => ({
+        ...prev,
+        message: "✅ Sent to AI Tutor for analysis.",
+      }));
     } catch (e) {
-      console.error("Failed to send session data", e);
-      setView("dashboard");
+      console.error(e);
+      setSessionResult((prev) => ({
+        ...prev,
+        message: "⚠️ LoopLingo.",
+      }));
     }
   };
 
+  // Helper to close the result and go home
+  const closeSession = () => {
+    setSessionResult(null); // Clear result
+    setSessionStats({ correctCount: 0, totalAttempted: 0, mistakesLog: [] }); // Reset stats
+    setView("dashboard");
+  };
   // --- API CALLS ---
   const generateWorksheet = async () => {
     setLoading(true);
@@ -210,6 +247,33 @@ function App() {
         <nav className="navbar">
           <div className="logo">
             Looplingo <span className="logo-icon">♾️</span>
+          </div>
+
+          {/* NOTIFICATION BELL */}
+          <div
+            className="notif-container"
+            onClick={() => setShowNotifs(!showNotifs)}
+          >
+            <span className="bell-icon">🔔</span>
+            {notifications.length > 0 && (
+              <span className="badge">{notifications.length}</span>
+            )}
+
+            {showNotifs && (
+              <div className="notif-dropdown">
+                <h4>AI Tutor Feedback</h4>
+                {notifications.length === 0 ? (
+                  <p>No new messages.</p>
+                ) : (
+                  notifications.map((n) => (
+                    <div key={n.id} className={`notif-item ${n.type}`}>
+                      <p>{n.message}</p>
+                      <span className="time">Just now</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </nav>
         <div className="background-glow"></div>
@@ -411,10 +475,41 @@ function App() {
         />
 
         <div className="worksheet-footer">
-          {/* ✨ FINISH SESSION BUTTON */}
-          <button className="finish-btn" onClick={finishSession}>
-            Finish & Analyze
-          </button>
+          {/* ✨ CONDITIONAL RENDERING: Show Button OR Result Card */}
+
+          {!sessionResult ? (
+            <button className="finish-btn" onClick={finishSession}>
+              Finish & Analyze
+            </button>
+          ) : (
+            <div className="session-summary-card">
+              <h2>Session Complete!</h2>
+              <div className="score-display">
+                <span className="big-score">{sessionResult.score}%</span>
+                <span className="score-detail">
+                  {sessionResult.correct} / {sessionResult.total} Correct
+                </span>
+              </div>
+
+              <div className="ai-status-bar">
+                <span className="pulse-dot"></span>
+                {sessionResult.message}
+              </div>
+
+              <p className="summary-hint">
+                Check your email or notifications later for your personalized
+                study guide.
+              </p>
+
+              <button
+                className="back-link-simple"
+                style={{ marginTop: "20px", color: "white" }}
+                onClick={closeSession}
+              >
+                Return to Dashboard
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
