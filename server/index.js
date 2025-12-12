@@ -3,6 +3,8 @@ const cors = require("cors");
 require("dotenv").config();
 const Groq = require("groq-sdk");
 
+const axios = require("axios");
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -17,6 +19,28 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+// --- KESTRA TRIGGER HELPER ---
+const triggerKestraTutor = async (unit, score) => {
+  try {
+    // This URL matches the Flow ID you created in Kestra
+    const kestraUrl =
+      "http://localhost:8080/api/v1/executions/webhook/looplingo.prod/looplingo_ai_tutor/looplingo_secret_key";
+
+    await axios.post(kestraUrl, {
+      user: "Student",
+      unit: unit || "General Practice",
+      score: score,
+      timestamp: new Date().toISOString(),
+    });
+    console.log(`✅ Triggered Kestra: Score ${score}%`);
+  } catch (error) {
+    console.error(
+      "⚠️ Kestra Trigger Failed (Is Docker running?):",
+      error.message
+    );
+  }
+};
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -313,6 +337,7 @@ app.post("/api/generate", async (req, res) => {
 });
 
 // --- NEW: GRADE ESSAY ROUTE ---
+// --- GRADE ESSAY ROUTE (FIXED) ---
 app.post("/api/grade-essay", async (req, res) => {
   const { userText, originalText, referenceText, language } = req.body;
   console.log("Grading Essay...");
@@ -330,15 +355,17 @@ app.post("/api/grade-essay", async (req, res) => {
     1. Check for grammar, vocabulary, and meaning.
     2. Give a score (0-100).
     3. The "feedback" MUST BE IN ENGLISH.
+    4. Provide the "corrected" version.
     
     OUTPUT JSON ONLY:
     { "score": number, "feedback": "string", "corrected": "string" }
   `;
 
   try {
+    // ✨ FIX: USING GROQ HERE INSTEAD OF OPENAI
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       temperature: 0.1,
     });
 
@@ -351,21 +378,20 @@ app.post("/api/grade-essay", async (req, res) => {
     const lastBrace = cleanText.lastIndexOf("}");
 
     if (firstBrace !== -1 && lastBrace !== -1) {
-      res.json(JSON.parse(cleanText.substring(firstBrace, lastBrace + 1)));
+      const jsonResult = JSON.parse(
+        cleanText.substring(firstBrace, lastBrace + 1)
+      );
+
+      // Trigger Kestra
+      triggerKestraTutor("Essay Challenge", jsonResult.score);
+
+      res.json(jsonResult);
     } else {
-      res.json({
-        score: 0,
-        feedback: "Error reading result.",
-        corrected: referenceText,
-      });
+      res.status(500).json({ error: "Grading JSON invalid" });
     }
   } catch (error) {
     console.error("Grading Error:", error);
-    res.json({
-      score: 0,
-      feedback: "Service Unavailable",
-      corrected: referenceText,
-    });
+    res.status(500).json({ error: "Grading failed" });
   }
 });
 

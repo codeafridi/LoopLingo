@@ -3,8 +3,7 @@ import axios from "axios";
 import "./App.css";
 import { COURSE_DATA } from "./data";
 
-// --- HELPER: Fixes "Objects are not valid as a React child" Error ---
-// If the AI sends { text: "Cat", correct: true } instead of "Cat", this extracts the text.
+// --- HELPER ---
 const getString = (val) => {
   if (typeof val === "object" && val !== null) {
     return (
@@ -28,6 +27,14 @@ function App() {
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // ✨ NEW: User Identity & Scoreboard
+  const [userName, setUserName] = useState("");
+  const [sessionStats, setSessionStats] = useState({
+    correctCount: 0,
+    totalAttempted: 0,
+    mistakesLog: [],
+  });
+
   // --- HANDLERS ---
   const handleLangChange = (e) => {
     const l = e.target.value;
@@ -35,25 +42,68 @@ function App() {
     setSection(COURSE_DATA[l][0]);
     setUnit(COURSE_DATA[l][0].units[0]);
   };
-
   const handleSectionChange = (e) => {
     const sName = e.target.value;
     const s = COURSE_DATA[lang].find((sec) => sec.name === sName);
     setSection(s);
     setUnit(s.units[0]);
   };
-
   const handleUnitChange = (e) => {
     const uTitle = e.target.value;
     const u = section.units.find((unit) => unit.title === uTitle);
     setUnit(u);
+    setEssayLevel(1);
+  };
+  const enterDashboard = () => setView("dashboard");
+
+  // ✨ NEW: Track Results per Question
+  const handleTrackResult = (isCorrect, questionData, userAnswer) => {
+    setSessionStats((prev) => ({
+      correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
+      totalAttempted: prev.totalAttempted + 1,
+      mistakesLog: isCorrect
+        ? prev.mistakesLog
+        : [
+            ...prev.mistakesLog,
+            {
+              question: getString(questionData.question),
+              wrongAnswer: userAnswer,
+              type: questionData.type,
+            },
+          ],
+    }));
   };
 
-  const enterDashboard = () => setView("dashboard");
+  // ✨ NEW: Finish & Trigger Kestra
+  const finishSession = async () => {
+    if (sessionStats.totalAttempted === 0) {
+      alert("You haven't done any exercises yet!");
+      return;
+    }
+    const finalScore = Math.round(
+      (sessionStats.correctCount / sessionStats.totalAttempted) * 100
+    );
+    alert(`Session Complete! Score: ${finalScore}%`);
+
+    try {
+      // Send to Node.js Server -> Which sends to Kestra
+      await axios.post("http://localhost:5000/api/end-session", {
+        user: userName || "Student",
+        score: finalScore,
+        mistakes: sessionStats.mistakesLog,
+      });
+      setView("dashboard");
+      setSessionStats({ correctCount: 0, totalAttempted: 0, mistakesLog: [] });
+    } catch (e) {
+      console.error("Failed to send session data", e);
+      setView("dashboard");
+    }
+  };
 
   // --- API CALLS ---
   const generateWorksheet = async () => {
     setLoading(true);
+    setSessionStats({ correctCount: 0, totalAttempted: 0, mistakesLog: [] }); // Reset
     try {
       const res = await axios.post("http://localhost:5000/api/generate", {
         language: lang,
@@ -90,7 +140,6 @@ function App() {
     setLoading(false);
   };
 
-  // --- GENERATE MORE ---
   const generateMore = async (specificType) => {
     document.body.style.cursor = "wait";
     try {
@@ -109,6 +158,7 @@ function App() {
     }
     document.body.style.cursor = "default";
   };
+
   const generateEssay = async () => {
     setLoading(true);
     try {
@@ -119,22 +169,21 @@ function App() {
         vocabulary: unit.vocabulary,
         grammar: unit.grammar,
         type: "essay-challenge",
+        difficulty: 1,
       });
       setExercises(res.data.exercises || []);
+      setEssayLevel(1);
       setView("essay");
     } catch (e) {
       alert("Error generating essay tasks.");
     }
     setLoading(false);
   };
-  // ================= VIEWS =================
 
-  // --- NEW: HANDLE NEXT ESSAY (Increases Difficulty) ---
   const handleNextEssay = async () => {
     const nextLevel = essayLevel + 1;
-    setEssayLevel(nextLevel); // Update UI to show Level 2, 3...
+    setEssayLevel(nextLevel);
     setLoading(true);
-
     try {
       const res = await axios.post("http://localhost:5000/api/generate", {
         language: lang,
@@ -143,7 +192,7 @@ function App() {
         vocabulary: unit.vocabulary,
         grammar: unit.grammar,
         type: "essay-challenge",
-        difficulty: nextLevel, // ✨ Sends the harder level to server
+        difficulty: nextLevel,
       });
       setExercises(res.data.exercises || []);
     } catch (e) {
@@ -152,20 +201,18 @@ function App() {
     setLoading(false);
   };
 
+  // ================= VIEWS =================
+
   // 1. SETUP
   if (view === "setup") {
     return (
-      // ... inside view === "setup"
       <div className="landing-page">
         <nav className="navbar">
           <div className="logo">
             Looplingo <span className="logo-icon">♾️</span>
           </div>
         </nav>
-
-        {/* Container for background effects */}
         <div className="background-glow"></div>
-
         <header className="hero-section">
           <div className="hero-text">
             <h1>
@@ -173,12 +220,24 @@ function App() {
             </h1>
             <p className="hero-sub">
               The AI-powered language gym that adapts to you.
-              <br />
-              Infinite practice, zero repetition.
             </p>
           </div>
-
           <div className="setup-card glass-panel">
+            {/* ✨ ADDED NAME INPUT */}
+            <div className="input-group">
+              <label>Your Name</label>
+              <input
+                className="paper-input full-width"
+                style={{
+                  background: "#0f172a",
+                  color: "white",
+                  border: "1px solid #334155",
+                }}
+                placeholder="Enter Name"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+              />
+            </div>
             <div className="input-group">
               <label>I want to learn</label>
               <div className="select-wrapper">
@@ -191,9 +250,8 @@ function App() {
                 </select>
               </div>
             </div>
-
             <div className="input-group">
-              <label>My Level (Section)</label>
+              <label>My Level</label>
               <div className="select-wrapper">
                 <select value={section.name} onChange={handleSectionChange}>
                   {COURSE_DATA[lang].map((s) => (
@@ -204,9 +262,8 @@ function App() {
                 </select>
               </div>
             </div>
-
             <div className="input-group">
-              <label>Current Topic (Unit)</label>
+              <label>Current Topic</label>
               <div className="select-wrapper">
                 <select value={unit.title} onChange={handleUnitChange}>
                   {section.units.map((u, i) => (
@@ -217,7 +274,6 @@ function App() {
                 </select>
               </div>
             </div>
-
             <button className="start-btn glow-btn" onClick={enterDashboard}>
               Enter Dashboard ➔
             </button>
@@ -242,7 +298,7 @@ function App() {
           <div className="module-card core" onClick={generateWorksheet}>
             <div className="icon">📝</div>
             <h3>Core Practice</h3>
-            <p>Grammar, Vocabulary, Translation, Matching & Articles.</p>
+            <p>Grammar, Vocabulary, Translation, Matching.</p>
             <button disabled={loading}>
               {loading ? "Generating..." : "Start Worksheet"}
             </button>
@@ -250,13 +306,11 @@ function App() {
           <div className="module-card listen" onClick={generateListening}>
             <div className="icon">🎧</div>
             <h3>Infinite Listening</h3>
-            <p>AI-generated stories with comprehension questions.</p>
+            <p>AI-generated stories with questions.</p>
             <button disabled={loading}>
               {loading ? "Generating..." : "Start Listening"}
             </button>
           </div>
-
-          {/* CARD 3: ESSAY WRITING */}
           <div className="module-card essay" onClick={generateEssay}>
             <div className="icon">✍️</div>
             <h3>Essay Challenge</h3>
@@ -280,14 +334,22 @@ function App() {
           </button>
           <h1>Core Practice</h1>
           <p className="worksheet-subtitle">{unit.title}</p>
+          {/* ✨ SHOW LIVE SCORE */}
+          <div
+            style={{ marginTop: "10px", color: "#22c55e", fontWeight: "bold" }}
+          >
+            Score: {sessionStats.correctCount} / {sessionStats.totalAttempted}
+          </div>
         </header>
 
+        {/* ✨ PASSED onResult TO ALL SECTIONS */}
         <WorksheetSection
           title="I. Fill in the blanks"
           type="fill-in-the-blank"
           exercises={exercises.filter((e) => e.type === "fill-in-the-blank")}
           onGenerateMore={() => generateMore("fill-in-the-blank")}
           language={lang}
+          onResult={handleTrackResult}
         />
         <WorksheetSection
           title="II. Missing Verbs (Conjugation)"
@@ -295,6 +357,7 @@ function App() {
           exercises={exercises.filter((e) => e.type === "missing-verb")}
           onGenerateMore={() => generateMore("missing-verb")}
           language={lang}
+          onResult={handleTrackResult}
         />
         <WorksheetSection
           title="III. Choose the Article"
@@ -302,6 +365,7 @@ function App() {
           exercises={exercises.filter((e) => e.type === "choose-article")}
           onGenerateMore={() => generateMore("choose-article")}
           language={lang}
+          onResult={handleTrackResult}
         />
         <WorksheetSection
           title="IV. Choose the Preposition"
@@ -309,6 +373,7 @@ function App() {
           exercises={exercises.filter((e) => e.type === "choose-preposition")}
           onGenerateMore={() => generateMore("choose-preposition")}
           language={lang}
+          onResult={handleTrackResult}
         />
         <WorksheetSection
           title="V. Complete the sentence"
@@ -318,6 +383,7 @@ function App() {
           )}
           onGenerateMore={() => generateMore("complete-the-sentence")}
           language={lang}
+          onResult={handleTrackResult}
         />
         <WorksheetSection
           title="VI. Translate"
@@ -325,48 +391,48 @@ function App() {
           exercises={exercises.filter((e) => e.type === "translate")}
           onGenerateMore={() => generateMore("translate")}
           language={lang}
+          onResult={handleTrackResult}
         />
         <WorksheetSection
-          title="VII. Gender Engagement drill"
-          type="gender-engagement-drill"
-          exercises={exercises.filter(
-            (e) => e.type === "gender-engagement-drill"
-          )}
-          onGenerateMore={() => generateMore("gender-engagement-drill")}
+          title="VII. Gender Agreement"
+          type="gender-drill"
+          exercises={exercises.filter((e) => e.type === "gender-drill")}
+          onGenerateMore={() => generateMore("gender-drill")}
           language={lang}
+          onResult={handleTrackResult}
         />
         <WorksheetSection
-          title="VII. Match the Pairs"
+          title="VIII. Match the Pairs"
           type="match-pairs"
           exercises={exercises.filter((e) => e.type === "match-pairs")}
           onGenerateMore={() => generateMore("match-pairs")}
           language={lang}
+          onResult={handleTrackResult}
         />
 
         <div className="worksheet-footer">
-          <button className="finish-btn" onClick={() => setView("dashboard")}>
-            Finish Practice
+          {/* ✨ FINISH SESSION BUTTON */}
+          <button className="finish-btn" onClick={finishSession}>
+            Finish & Analyze
           </button>
         </div>
       </div>
     );
   }
 
-  // 4. LISTENING
+  // 4. LISTENING (Same)
   if (view === "listening") {
-    if (loading) {
+    if (loading)
       return (
         <div className="worksheet-container">
           <div className="loader-overlay">
             <div className="spinner"></div>
             <h2>Creating a new story...</h2>
-            <p>Never Give Up on Your Dreams!!!</p>
           </div>
         </div>
       );
-    }
-    // Prevent Crash if no story generated
-    if (!exercises || exercises.length === 0) {
+    const storyData = exercises[0];
+    if (!storyData)
       return (
         <div className="worksheet-container">
           <header className="worksheet-header">
@@ -383,9 +449,6 @@ function App() {
           </div>
         </div>
       );
-    }
-
-    const storyData = exercises[0];
     return (
       <div className="worksheet-container">
         <header className="worksheet-header">
@@ -409,25 +472,19 @@ function App() {
       </div>
     );
   }
-  // ================= VIEW 5: ESSAY MODE =================
-  // ==========================================
-  // VIEW 5: ESSAY MODE (Infinite Loop Fix)
-  // ==========================================
-  // ================= VIEW 5: ESSAY MODE =================
+
+  // 5. ESSAY (Same)
   if (view === "essay") {
-    if (loading) {
+    if (loading)
       return (
         <div className="worksheet-container">
           <div className="loader-overlay">
             <div className="spinner"></div>
-            {/* Show the user the level is increasing */}
             <h2>Creating Level {essayLevel} Challenge...</h2>
-            <p>Writing a longer, smarter scenario...</p>
+            <p>Writing a scenario...</p>
           </div>
         </div>
       );
-    }
-
     const data = exercises[0];
     if (!data)
       return (
@@ -438,7 +495,6 @@ function App() {
           </button>
         </div>
       );
-
     return (
       <div className="worksheet-container">
         <header className="worksheet-header">
@@ -448,8 +504,6 @@ function App() {
           <h1>Essay Challenge (Lvl {essayLevel})</h1>
           <p className="worksheet-subtitle">{unit.title}</p>
         </header>
-
-        {/* 👇 UPDATE THIS LINE: Use 'handleNextEssay' instead of 'generateEssay' */}
         <EssayComponent data={data} lang={lang} onNext={handleNextEssay} />
       </div>
     );
@@ -458,199 +512,19 @@ function App() {
   return <div className="loading-screen">Loading...</div>;
 }
 
-// --- COMPONENT: LISTENING STORY ---
-// --- COMPONENT: LISTENING STORY (With Pause/Resume) ---
-function ListeningStoryComponent({ data }) {
-  const [isSpeaking, setIsSpeaking] = useState(false); // Is audio active?
-  const [isPaused, setIsPaused] = useState(false); // Is it currently paused?
-  const [answers, setAnswers] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const [voices, setVoices] = useState([]);
+// --- SUB-COMPONENTS ---
 
-  // 1. Cleanup & Reset when story changes
-  useEffect(() => {
-    // Stop any existing audio immediately
-    window.speechSynthesis.cancel();
-    setAnswers({});
-    setSubmitted(false);
-    setIsSpeaking(false);
-    setIsPaused(false);
-
-    // Cleanup when component unmounts (user leaves page)
-    return () => {
-      window.speechSynthesis.cancel();
-    };
-  }, [data]);
-
-  // 2. Load Voices
-  useEffect(() => {
-    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    loadVoices();
-  }, []);
-
-  // 3. The Smart Toggle Function
-  const toggleAudio = () => {
-    const synth = window.speechSynthesis;
-
-    // Case A: Audio is active (playing or paused)
-    if (isSpeaking) {
-      if (isPaused) {
-        // Resume
-        synth.resume();
-        setIsPaused(false);
-      } else {
-        // Pause
-        synth.pause();
-        setIsPaused(true);
-      }
-    }
-    // Case B: Audio is stopped (start fresh)
-    else {
-      if (!data.script) return;
-
-      const utterance = new SpeechSynthesisUtterance(data.script);
-      const targetLang = "fr";
-      const bestVoice =
-        voices.find(
-          (v) => v.lang.startsWith(targetLang) && v.name.includes("Google")
-        ) || voices.find((v) => v.lang.startsWith(targetLang));
-
-      if (bestVoice) {
-        utterance.voice = bestVoice;
-        utterance.lang = bestVoice.lang;
-      } else {
-        utterance.lang = "fr-FR";
-      }
-
-      utterance.rate = 0.8; // Slow speed
-
-      // Events to manage state
-      utterance.onstart = () => {
-        setIsSpeaking(true);
-        setIsPaused(false);
-      };
-
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        setIsPaused(false);
-      };
-
-      utterance.onerror = (e) => {
-        console.error("Audio error", e);
-        setIsSpeaking(false);
-      };
-
-      synth.speak(utterance);
-    }
-  };
-
-  const handleSelect = (qId, val) => setAnswers({ ...answers, [qId]: val });
-  const checkAnswers = () => setSubmitted(true);
-  const score = data.questions
-    ? data.questions.reduce(
-        (acc, q) =>
-          acc + (getString(answers[q.id]) === getString(q.answer) ? 1 : 0),
-        0
-      )
-    : 0;
-
-  // Visualizer should only animate if speaking AND NOT paused
-  const isAnimating = isSpeaking && !isPaused;
-
-  return (
-    <div className="listening-container">
-      {/* AUDIO PLAYER BAR */}
-      <div className={`audio-player-card ${isAnimating ? "playing" : ""}`}>
-        <button className="play-fab" onClick={toggleAudio}>
-          {/* Show Pause icon if playing, Play icon if paused/stopped */}
-          {isSpeaking && !isPaused ? "⏸" : "▶"}
-        </button>
-
-        <div className="audio-visualizer">
-          <div className="bar"></div>
-          <div className="bar"></div>
-          <div className="bar"></div>
-          <div className="bar"></div>
-          <div className="bar"></div>
-        </div>
-
-        <div className="player-text">
-          {!isSpeaking ? "Click to Play" : isPaused ? "Paused" : "Listening..."}
-        </div>
-      </div>
-
-      {/* QUESTIONS */}
-      <div className="story-questions">
-        {data.questions &&
-          data.questions.map((q, i) => (
-            <div key={q.id || i} className="story-q-item">
-              <p className="story-q-text">
-                {i + 1}. {getString(q.question)}
-              </p>
-              <div className="story-options">
-                {q.options.map((opt) => (
-                  <label
-                    key={getString(opt)}
-                    className={`story-opt ${
-                      submitted && getString(opt) === getString(q.answer)
-                        ? "correct"
-                        : ""
-                    } ${
-                      submitted &&
-                      getString(answers[q.id]) === getString(opt) &&
-                      getString(opt) !== getString(q.answer)
-                        ? "wrong"
-                        : ""
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name={`q-${q.id}`}
-                      value={getString(opt)}
-                      onChange={() => handleSelect(q.id, getString(opt))}
-                      disabled={submitted}
-                      checked={getString(answers[q.id]) === getString(opt)}
-                    />
-                    {getString(opt)}
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
-      </div>
-
-      {/* FOOTER */}
-      {!submitted ? (
-        <button className="check-story-btn" onClick={checkAnswers}>
-          Check Answers
-        </button>
-      ) : (
-        <div className="story-result">
-          <h3>
-            You got {score} / {data.questions.length} correct!
-          </h3>
-          <div className="transcript-reveal">
-            <h4>Transcript:</h4>
-            <p>{data.script}</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// --- COMPONENT: WORKSHEET SECTION ---
+// ✨ UPDATED: Accepts onResult
 function WorksheetSection({
   title,
   type,
   exercises,
   language,
   onGenerateMore,
+  onResult,
 }) {
   const [showOptions, setShowOptions] = useState(true);
   if (!exercises || exercises.length === 0) return null;
-
   return (
     <div className="section-block">
       <div className="section-header">
@@ -673,7 +547,14 @@ function WorksheetSection({
       <div className="question-list">
         {exercises.map((ex, i) => {
           if (type === "match-pairs")
-            return <MatchingGame key={i} data={ex} index={i + 1} />;
+            return (
+              <MatchingGame
+                key={i}
+                data={ex}
+                index={i + 1}
+                onResult={onResult}
+              />
+            );
           return (
             <QuestionItem
               key={i}
@@ -681,6 +562,7 @@ function WorksheetSection({
               showOptions={showOptions}
               language={language}
               index={i + 1}
+              onResult={onResult}
             />
           );
         })}
@@ -692,16 +574,17 @@ function WorksheetSection({
   );
 }
 
-// --- COMPONENT: QUESTION ITEM (Robust) ---
-function QuestionItem({ data, showOptions, language, index }) {
+// ✨ UPDATED: Tracks Score
+function QuestionItem({ data, showOptions, language, index, onResult }) {
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [checking, setChecking] = useState(false);
+  const [isDone, setIsDone] = useState(false); // Only score once
   const safeOptions = data.options || [];
   const isEasyMode = showOptions && safeOptions.length > 0;
 
   const check = async () => {
-    if (!answer) return;
+    if (!answer || isDone) return;
     setChecking(true);
     const normalize = (t) =>
       t
@@ -710,13 +593,20 @@ function QuestionItem({ data, showOptions, language, index }) {
             .replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "")
             .trim()
         : "";
-    if (normalize(answer) === normalize(getString(data.answer))) {
+    const isCorrectLocally =
+      normalize(answer) === normalize(getString(data.answer));
+
+    if (isCorrectLocally) {
       setFeedback({ isCorrect: true });
+      setIsDone(true);
+      if (onResult) onResult(true, data, answer);
       setChecking(false);
       return;
     }
     if (isEasyMode && data.type !== "translate") {
       setFeedback({ isCorrect: false, correctAnswer: getString(data.answer) });
+      setIsDone(true);
+      if (onResult) onResult(false, data, answer);
       setChecking(false);
       return;
     }
@@ -728,12 +618,13 @@ function QuestionItem({ data, showOptions, language, index }) {
         type: data.type,
       });
       setFeedback(res.data);
+      setIsDone(true);
+      if (onResult) onResult(res.data.isCorrect, data, answer);
     } catch (e) {
       console.error(e);
     }
     setChecking(false);
   };
-
   const addWord = (w) =>
     setAnswer((prev) => (prev ? prev + " " + getString(w) : getString(w)));
 
@@ -747,12 +638,12 @@ function QuestionItem({ data, showOptions, language, index }) {
             data.type === "missing-verb" ||
             data.type === "choose-article" ||
             data.type === "choose-preposition" ||
-            data.type === "gender-engagement-drill") &&
+            data.type === "gender-drill") &&
             (isEasyMode ? (
               <select
                 className="paper-select"
                 onChange={(e) => setAnswer(e.target.value)}
-                disabled={!!feedback}
+                disabled={isDone || !!feedback}
               >
                 <option value="">[ Select ]</option>
                 {safeOptions.map((o) => (
@@ -767,7 +658,7 @@ function QuestionItem({ data, showOptions, language, index }) {
                 placeholder="_______"
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
-                disabled={!!feedback}
+                disabled={isDone || !!feedback}
               />
             ))}
 
@@ -780,7 +671,7 @@ function QuestionItem({ data, showOptions, language, index }) {
                     name={`q-${data.id}`}
                     value={getString(opt)}
                     onChange={(e) => setAnswer(e.target.value)}
-                    disabled={!!feedback}
+                    disabled={isDone || !!feedback}
                   />
                   {getString(opt)}
                 </label>
@@ -794,7 +685,7 @@ function QuestionItem({ data, showOptions, language, index }) {
                 className="paper-input full-width"
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
-                disabled={!!feedback}
+                disabled={isDone || !!feedback}
                 placeholder="Type translation..."
               />
               {isEasyMode && !feedback && (
@@ -820,7 +711,7 @@ function QuestionItem({ data, showOptions, language, index }) {
           <button
             className="mini-check-btn"
             onClick={check}
-            disabled={checking}
+            disabled={checking || isDone}
           >
             Check
           </button>
@@ -841,18 +732,18 @@ function QuestionItem({ data, showOptions, language, index }) {
   );
 }
 
-// --- COMPONENT: MATCHING GAME (Robust) ---
-function MatchingGame({ data, index }) {
+// ✨ UPDATED: Tracks Score
+function MatchingGame({ data, index, onResult }) {
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
   const [matched, setMatched] = useState([]);
   const [wrong, setWrong] = useState(null);
+  const [hasReported, setHasReported] = useState(false); // Prevent double reporting
 
   useEffect(() => {
     if (!data.pairs) return;
     const list = [];
     data.pairs.forEach((pair, idx) => {
-      // FIX: Ensure pair.left/right are strings
       list.push({
         id: idx,
         type: "left",
@@ -893,6 +784,13 @@ function MatchingGame({ data, index }) {
 
   const isComplete = data.pairs && matched.length === data.pairs.length;
 
+  useEffect(() => {
+    if (isComplete && !hasReported) {
+      setHasReported(true);
+      if (onResult) onResult(true, data, "Matched All");
+    }
+  }, [isComplete, hasReported, onResult, data]);
+
   return (
     <div className="matching-game-container">
       <div className="q-number">
@@ -925,14 +823,12 @@ function MatchingGame({ data, index }) {
   );
 }
 
-// --- COMPONENT: ESSAY WRITING ---
-// --- COMPONENT: ESSAY WRITING (Infinite) ---
+// ... (EssayComponent and ListeningStoryComponent remain same) ...
 function EssayComponent({ data, lang, onNext }) {
   const [userText, setUserText] = useState("");
   const [result, setResult] = useState(null);
   const [grading, setGrading] = useState(false);
 
-  // Reset state when new data arrives (New Essay)
   useEffect(() => {
     setUserText("");
     setResult(null);
@@ -951,8 +847,8 @@ function EssayComponent({ data, lang, onNext }) {
       });
       setResult(res.data);
     } catch (e) {
-      alert("Grading failed. Please try again.");
-      setGrading(false); // Stop loading if error
+      alert("Grading failed.");
+      setGrading(false);
     }
     setGrading(false);
   };
@@ -962,13 +858,11 @@ function EssayComponent({ data, lang, onNext }) {
       <div className="section-header">
         <h2>Topic: {data.topic}</h2>
       </div>
-
       <div className="essay-container">
         <div className="essay-prompt">
           <h4>Translate this to {lang}:</h4>
           <p className="source-text">"{data.english_text}"</p>
         </div>
-
         <textarea
           className="essay-input"
           rows="6"
@@ -977,7 +871,6 @@ function EssayComponent({ data, lang, onNext }) {
           onChange={(e) => setUserText(e.target.value)}
           disabled={!!result || grading}
         />
-
         {!result ? (
           <button
             className="finish-btn"
@@ -999,8 +892,6 @@ function EssayComponent({ data, lang, onNext }) {
                 <p>{result.corrected}</p>
               </div>
             </div>
-
-            {/* THIS BUTTON NOW TRIGGERS THE INFINITE LOOP */}
             <button
               className="finish-btn"
               onClick={onNext}
@@ -1014,4 +905,170 @@ function EssayComponent({ data, lang, onNext }) {
     </div>
   );
 }
+
+// --- COMPONENT: LISTENING STORY (Fixed Variable Name) ---
+function ListeningStoryComponent({ data }) {
+  // State is named 'isPlaying' and 'setIsPlaying'
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [voices, setVoices] = useState([]);
+
+  useEffect(() => {
+    window.speechSynthesis.cancel();
+    setAnswers({});
+    setSubmitted(false);
+    setIsPlaying(false); // Fixed
+    setIsPaused(false);
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, [data]);
+
+  useEffect(() => {
+    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+  }, []);
+
+  const toggleAudio = () => {
+    const synth = window.speechSynthesis;
+
+    // Use 'isPlaying' variable
+    if (isPlaying) {
+      if (isPaused) {
+        synth.resume();
+        setIsPaused(false);
+      } else {
+        synth.pause();
+        setIsPaused(true);
+      }
+    } else {
+      if (!data.script) return;
+
+      const utterance = new SpeechSynthesisUtterance(data.script);
+      const targetLang = "fr";
+      const bestVoice =
+        voices.find(
+          (v) => v.lang.startsWith(targetLang) && v.name.includes("Google")
+        ) || voices.find((v) => v.lang.startsWith(targetLang));
+
+      if (bestVoice) {
+        utterance.voice = bestVoice;
+        utterance.lang = bestVoice.lang;
+      } else {
+        utterance.lang = "fr-FR";
+      }
+
+      utterance.rate = 0.8;
+
+      // ✨ FIX: Use setIsPlaying instead of setIsSpeaking
+      utterance.onstart = () => {
+        setIsPlaying(true);
+        setIsPaused(false);
+      };
+      utterance.onend = () => {
+        setIsPlaying(false);
+        setIsPaused(false);
+      };
+      utterance.onerror = (e) => {
+        console.error("Audio error", e);
+        setIsPlaying(false);
+      };
+
+      synth.speak(utterance);
+    }
+  };
+
+  const handleSelect = (qId, val) => setAnswers({ ...answers, [qId]: val });
+  const checkAnswers = () => setSubmitted(true);
+  const score = data.questions
+    ? data.questions.reduce(
+        (acc, q) =>
+          acc + (getString(answers[q.id]) === getString(q.answer) ? 1 : 0),
+        0
+      )
+    : 0;
+
+  // Use 'isPlaying' variable
+  const isAnimating = isPlaying && !isPaused;
+
+  return (
+    <div className="listening-container">
+      <div className={`audio-player-card ${isAnimating ? "playing" : ""}`}>
+        {/* Use 'isPlaying' variable */}
+        <button className="play-fab" onClick={toggleAudio}>
+          {isPlaying && !isPaused ? "⏸" : "▶"}
+        </button>
+
+        <div className="audio-visualizer">
+          <div className="bar"></div>
+          <div className="bar"></div>
+          <div className="bar"></div>
+        </div>
+
+        {/* Use 'isPlaying' variable */}
+        <div className="player-text">
+          {!isPlaying ? "Click to Play" : isPaused ? "Paused" : "Listening..."}
+        </div>
+      </div>
+
+      <div className="story-questions">
+        {data.questions &&
+          data.questions.map((q, i) => (
+            <div key={q.id || i} className="story-q-item">
+              <p className="story-q-text">
+                {i + 1}. {getString(q.question)}
+              </p>
+              <div className="story-options">
+                {q.options.map((opt) => (
+                  <label
+                    key={getString(opt)}
+                    className={`story-opt ${
+                      submitted && getString(opt) === getString(q.answer)
+                        ? "correct"
+                        : ""
+                    } ${
+                      submitted &&
+                      getString(answers[q.id]) === getString(opt) &&
+                      getString(opt) !== getString(q.answer)
+                        ? "wrong"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`q-${q.id}`}
+                      value={getString(opt)}
+                      onChange={() => handleSelect(q.id, getString(opt))}
+                      disabled={submitted}
+                      checked={getString(answers[q.id]) === getString(opt)}
+                    />
+                    {getString(opt)}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+      </div>
+      {!submitted ? (
+        <button className="check-story-btn" onClick={checkAnswers}>
+          Check Answers
+        </button>
+      ) : (
+        <div className="story-result">
+          <h3>
+            You got {score} / {data.questions.length} correct!
+          </h3>
+          <div className="transcript-reveal">
+            <h4>Transcript:</h4>
+            <p>{data.script}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default App;
