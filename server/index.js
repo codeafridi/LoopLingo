@@ -28,12 +28,8 @@ let notifications = [];
 // --- KESTRA TRIGGER HELPER ---
 const triggerKestraTutor = async (unit, score, mistakes = []) => {
   try {
-    const kestraUrl = process.env.KESTRA_WEBHOOK_URL;
-
-    if (!kestraUrl) {
-      console.error("KESTRA_WEBHOOK_URL is missing");
-      return;
-    }
+    const kestraUrl =
+      "http://localhost:8080/api/v1/executions/webhook/looplingo.prod/looplingo_ai_tutor_v2/looplingo_secret_key";
 
     console.log("KESRA URL BEING USED:", kestraUrl);
 
