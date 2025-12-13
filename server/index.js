@@ -189,53 +189,139 @@ app.post("/api/generate", async (req, res) => {
               ]
 
         - "fill-in-the-blank":
-            -Use '___' for the blank.
-            -"options": [Correct Answer, Distractor 1, Distractor 2, Distractor 3].
-            -ENSURE EACH ANSWER IS DIFFERENT.
-            -ANSWERS SHOULD NOT BE REPETITIVE
-            -COVER WIDE VARIETY OF WORDS.
-            - Distractors: Words that fit the sentence but DO NOT match the English hint STRICTLY.
+            RULES FOR ALL QUESTIONS:
+              - Use "___" for the blank.
+              - The blank must be a SINGLE WORD.
+              - The blanked word must be something whose form depends on grammar:
+                → article, adjective, verb conjugation, noun number, pronoun.
+              - NEVER blank the subject ("Je", "Tu", "Il", "Elle").
+              - NEVER blank a word that is identical in all forms (example: "fille").
+              - NEVER blank a word that does not require agreement.
+              - The sentence must ALWAYS be natural and valid French.
+              -CRITICAL : DO NOT REPEAT THE SAME QUESTIONS.
+              -SET DIFFICULTY ACCORDING TO UNIT LEVEL
+              -CRITICAL  :  THE QUESTIONS "MUST" MAKE SENSE AS IF YOU ARE USING THEM IN REAL LIFE.
 
-              - RULE 3 (OPTIONS): The "options" array MUST contain the "answer"string. Do not generate a list of options that excludes the correct answer.
-              - RULE 4 (GENDER AGREEMENT): Check the article before the blank AND MAKE SURE THE GENDER IS CORRECT.
-              - RULE 5 (NUMBER AGREEMENT): Check the number before the blank AND MAKE SURE THE NUMBER IS CORRECT.
-              - RULE 6 (VERB CONJUGATION): Check the verb before the blank AND MAKE SURE THE VERB IS CORRECT.
-              - RULE 7 (ADJECTIVE AGREEMENT): Check the adjective before the blank AND MAKE SURE THE ADJECTIVE IS CORRECT.
-              - RULE 8 (NOUN AGREEMENT): Check the noun before the blank AND MAKE SURE THE NOUN IS CORRECT.
-              - RULE 9 (PREPOSITION AGREEMENT): Check the preposition before the blank AND MAKE SURE THE PREPOSITION IS CORRECT.
-              - RULE 10 (ARTICLE AGREEMENT): Check the article before the blank AND MAKE SURE THE ARTICLE IS CORRECT.
-              - RULE 11 (DETERMINER AGREEMENT): Check the determiner before the blank AND MAKE SURE THE DETERMINER IS CORRECT.
-              - Options: [Correct, Distractor1, Distractor2, Distractor3].
+              ANSWER RULES:
+              - "answer" must be the ONLY fully correct option.
+              - Must obey gender agreement.
+              - Must obey number agreement.
+              - Must obey adjective agreement.
+              - Must obey determiner agreement.
+              - Must obey verb conjugation rules based on the subject.
+
+              OPTIONS RULES:
+              - "options" MUST be: [Correct, Distractor1, Distractor2, Distractor3].
+              - All 4 options must be DIFFERENT.
+              - Distractors must be WRONG because of gender/number/verb disagreement.
+              - Distractors must still look realistic (not random words).
+
+              FORMAT (STRICT JSON):
+              [
+                {
+                  "id": 1,
+                  "type": "fill-in-the-blank",
+                  "question": "Sentence with ___ blank.",
+                  "answer": "correct_word",
+                  "options": ["correct_word", "distractor1", "distractor2", "distractor3"]
+                }
+              ]
+
+              EXAMPLES OF VALID BLANK TYPES:
+              - Articles: "Je vois ___ chat." → ["un", "une", "des", "le"]
+              - Adjectives: "La maison est très ___." (blanc) → ["blanche", "blanc", "blancs", "blanches"]
+              - Verbs: "Nous ___ au cinéma." (aller) → ["allons", "va", "allez", "vais"]
+              - Nouns (only plural/singular agreement): "Il a deux ___." (chien) → ["chiens", "chien", "chiennes", "chiens?"]
+
+              PROHIBITED CASES:
+              - NO noun identity blanking (❌ "La fille est ___ (fille)")
+              - NO blanks with prepositions
+              - NO random vocabulary blanks
+              - NO repeated options
+              - NO English words
 
 
        - "complete-the-sentence":
-            - QUESTION STYLE: Give the FIRST HALF of a sentence (e.g., "Pour aller au marché, je...").
-            - OPTIONS STYLE: Must be PHRASES or CLAUSES .
-            - CRITICAL: DO NOT use single words as options.
-            - Example Question: "Le matin, j'aime..."
-            - Example Answer: "manger un croissant."
-            - Example Distractors: ["le soir.", "dormir noir.", "une table."]
-            - LOGIC: The correct answer must logically and grammatically finish the thought.
-            - CRITICAL RULE: SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
-            - ALSO MENTION SOME LONG SENTENCES AS QUESTIONS AND ANSWERS.
-            - CRITICAL RULE: The question must set a CLEAR CONTEXT so only one answer is logically possible.
-            - GOOD FORMAT: "Goal -> Action" or "Condition -> Consequence".
-            - Example Q: "J'ai très faim, alors je..." (I am very hungry, so I...)
-            - Example A: "...mange une pizza." (eat a pizza.)
-            - Example Distractors (Must be illogical): ["...dors dans le lit.", "...vais au cinéma.", "...suis content."]
-            - AVOID GENERIC STARTERS like "Je vais..." because anything can follow.
+           GOAL:
+              The learner must choose the ONLY sentence ending that creates a logically correct, natural French sentence.
 
+              RULES FOR THE QUESTION:
+              - Provide a natural and grammatically correct French sentence stem ending with “___”.
+              - The stem must strongly constrain what type of ending makes sense.
+              - The ending must be a SHORT phrase (2–5 words), not a full sentence.
+              - The meaning MUST fit logically with the sentence stem.
+              -SET DIFFICULTY ACCORDING TO THE UNITS LEVEL. NO REPETITIONS
+              
+
+              RULES FOR THE CORRECT ANSWER:
+              - Must be the ONLY grammatically correct AND logically meaningful continuation.
+              - Must match tense, gender, person, and logic of the stem.
+              - Must NOT repeat part of the stem.
+              - Must NOT contradict the stem (ex: "Le matin, j'aime le soir" — FORBIDDEN).
+
+              RULES FOR DISTRACTORS:
+              - Must be grammatically valid FRENCH phrases but WRONG in meaning or logic.
+              - Must be plausible enough to not look random.
+              - Must NOT be nonsense phrases (“dormir noir”, “une table” for eating, etc.).
+              - Must NOT accidentally create a valid sentence.
+              - Must NOT rhyme or resemble the correct answer.
+
+              STRUCTURE:
+              Return an array of 5 items, each formatted EXACTLY like this:
+
+              {
+                "id": 1,
+                "type": "complete-the-sentence",
+                "question": "Sentence stem with ___",
+                "answer": "correct_phrase",
+                "options": ["correct_phrase", "d1", "d2"]
+              }
+
+              EXAMPLES OF GOOD QUESTIONS:
+              - "Le matin, j’aime ___."  → ["manger un croissant", "regarder la lune", "porter un manteau rouge"]
+              - "En été, nous aimons ___."  → ["aller à la plage", "faire un feu", "cuisiner une soupe chaude"]
+              - "Quand il pleut, ils préfèrent ___." → ["rester à la maison", "prendre le soleil", "jouer au sable"]
+              - "Avant de dormir, elle aime ___." → ["lire un livre", "faire du vélo", "manger un steak"]
+
+              FORBIDDEN:
+              - No English anywhere.
+              - No full sentences as answers.
+              - No nonsensical distractors.
+              - No distractors that accidentally also fit the sentence.
+              - No placeholders or empty text.
+              - CRITICAL : NEVER REPEAT THE SAME QUESTION
 
         - "translate":
-            - GIVE THE QUESTION IN THE FORM OF SENTENCE AND ANSWER IN THE FORM OF SENTENCE.
-            - EXAMPLE: Question: "Translate the following sentence: 'The cat is sleeping.' to French."
-            - Answer: "Le chat est endormi."
-            - SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
-            -ALSO INCLUDE FEW WORDS ALONE AS QUESTIONS. EXAMPLE: Question: "Translate the word 'chat' to French."
-            - Answer: "chat" (make sure the difficulty of the word is according to the units level.)
-            -MAKE SURE YOU ASK QUESTIONS TO CONVERT FROM  ENGLISH TO FRENCH 80% OF THE TIME AND FROM FRENCH TO ENGLISH 20% OF THE TIME.
+            You MUST generate:
+          - "question":  a sentence to translate (based on difficulty)
+           - "answer": The EXACT correct translation.
+            - "options": MUST follow these rules:
 
-            "options": [Scrambled words of the answer + 3 extra distractor words].
+              STRICT OPTIONS RULES:
+              1. If the question is a WORD → options MUST be ONLY single words.
+              2. If the question is a SENTENCE → options MUST be FULL sentences.
+              3. Options MUST be grammatically valid.
+              4. Options MUST be similar in structure to the answer (same length/type).
+              5. NO emotional or unrelated sentences (no “The cat is tired.” etc.)
+              6. CRITICAL : NO REPEATED QUESTIONS!!!.
+              7. CRITICAL : SET QUESTIONS ACCORDING TO DIFFICULTY OF UNITS LEVEL
+              7. EXACT FORMAT:
+                options: [correct, distractor1, distractor2, distractor3]
+
+                WORD EXAMPLES (Correct format):
+                  Question: "Translate the word 'cat' to French."
+                  Answer: "chat"
+                  Options: ["chat", "chien", "rat", "femme"]
+
+                SENTENCE EXAMPLES (Correct format):
+                  Question: "Translate: 'The cat is sleeping.' to French."
+                  Answer: "Le chat dort."
+                  Options: ["Le chat dort.", "Le chat mange.", "Le chat joue.", "Le chat court."]
+
+                YOU MUST FOLLOW:
+                  - Same subject
+                  - Same structure
+                  - All options must be plausible translations but WRONG
 
         - "match-pairs":
             Structure:
@@ -256,16 +342,58 @@ app.post("/api/generate", async (req, res) => {
            - Ex: { "question": "Nous ___ (avoir) un chien.", "answer": "avons", ... }
            - NEVER put the conjugated form in parentheses.
            - ENSURE ANSWERS ARE DIFFERENT (Change the pronoun!).
+           -SET DIFFICULTY ACCORDNG TOT THE UNITS LEVEL MORE QUESTIONS MORE DIFFICULTY
 
 
         - "choose-article":
-           - Target: Definite (le/la/les/l') or Indefinite (un/une/des) articles.
-           - Question: Sentence with the article missing.
-           - Options: Must be a list of articles.
+           RULES FOR ALL QUESTIONS:
+            - The blank must replace ONLY an article (definite or indefinite).
+            - Allowed articles: ["le", "la", "les", "l'", "un", "une", "des", "du", "de la"].
+            - The sentence must be 100% natural and valid French.
+            - NEVER blank anything except the article.
+            - The noun following the blank MUST determine the correct gender/number.
+            -SET DIFFICULTY ACCORDNG TOT THE UNITS LEVEL MORE QUESTIONS MORE DIFFICULTY
 
-           -CRITICAL RULE: ENSURE EACH ANSWER IS DIFFERENT.
-           -CRITICAL RULE: ANSWERS SHOULD NOT BE REPETITIVE.
-           -SET THE DIFFICULTY OF THE QUESTION ACCORDING TO THE UNITS LEVEL.
+            ANSWER RULES:
+            - "answer" must be the ONLY correct article that agrees with the noun.
+            - Respect gender:
+              - masculine singular → le / un
+              - feminine singular → la / une
+              - plural → les / des
+              - vowel/h-muet → l'
+            - Respect partitive:
+              - du (masc mass noun), de la (fem mass noun)
+
+            OPTIONS RULES:
+            - "options" MUST be: ["correct", "d1", "d2", "d3"].
+            - All 4 options must be DIFFERENT.
+            - Distractors must be INCORRECT due to gender/number mismatch.
+            - Do NOT use unrelated distractors (ex: “à”, “de”, “pour” ❌)
+
+            FORMAT (STRICT JSON ONLY):
+            [
+              {
+                "id": 1,
+                "type": "choose-article",
+                "question": "Sentence with ___ blank.",
+                "answer": "correct_article",
+                "options": ["correct_article", "d1", "d2", "d3"]
+              }
+            ]
+
+            VALID EXAMPLES FOR THE AI TO FOLLOW:
+            - "Le garçon est ___ ami." → ["un", "une", "des", "le"]
+            - "Elle mange ___ pomme." → ["une", "un", "des", "la"]
+            - "Ils regardent ___ étoiles." → ["les", "des", "la", "un"]
+            - "Je veux ___ eau." → ["de l'", "du", "de la", "des"]
+            - "C’est ___ chien adorable." → ["un", "une", "des", "le"]
+
+            PROHIBITED CASES:
+            - NO blanking nouns or adjectives.
+            - NO options with same value repeated.
+            - NO English anywhere.
+            - NO irrelevant distractors.
+            -NO REPETITION OF QUESTIONS
            - USE THE FOLLOWING ARTICLES: Le/La/Les/Un/Une/Des/du/de la/des/d'un/d'une/d'un/d'une/etc... .
 
        - "choose-preposition":
@@ -479,4 +607,9 @@ app.post("/api/end-session", async (req, res) => {
     res.status(500).json({ error: "Failed to trigger analysis" });
   }
 });
-app.listen(5000, () => console.log("Server running on port 5000"));
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
