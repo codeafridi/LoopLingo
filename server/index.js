@@ -596,7 +596,7 @@ app.post("/api/end-session", async (req, res) => {
 
   try {
     // Call our helper function to notify Kestra
-    triggerKestraTutor("Session Review", score, mistakes);
+    await triggerKestraTutor("Session Review", score, mistakes);
 
     res.json({ success: true, message: "Report generated!" });
   } catch (error) {
