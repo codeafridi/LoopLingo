@@ -38,22 +38,6 @@ const triggerKestraTutor = async (unit, score, mistakes = []) => {
 
     console.log("KESRA URL BEING USED:", kestraUrl);
 
-    const response = await axios.post(
-      kestraUrl,
-      {
-        user: "Student",
-        unit: unit || "General Practice",
-        score,
-        mistakes,
-        timestamp: new Date().toISOString(),
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
     console.log("✅ Triggered Kestra:", response.data);
   } catch (error) {
     console.error("❌ KESTRA ERROR");
@@ -440,7 +424,7 @@ app.post("/api/generate", async (req, res) => {
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       temperature: 0.6,
       max_tokens: 8000,
     });
@@ -560,7 +544,7 @@ app.post("/api/check", async (req, res) => {
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
     });
     const text = completion.choices[0]?.message?.content || "";
     const cleanText = text
