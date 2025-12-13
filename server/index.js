@@ -20,6 +20,11 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  console.log("➡️", req.method, req.url);
+  next();
+});
+
 let notifications = [];
 
 // --- KESTRA TRIGGER HELPER ---
@@ -33,13 +38,21 @@ const triggerKestraTutor = async (unit, score, mistakes = []) => {
 
     console.log("KESRA URL BEING USED:", kestraUrl);
 
-    const response = await axios.post(kestraUrl, {
-      user: "Student",
-      unit: unit || "General Practice",
-      score,
-      mistakes,
-      timestamp: new Date().toISOString(),
-    });
+    const response = await axios.post(
+      kestraUrl,
+      {
+        user: "Student",
+        unit: unit || "General Practice",
+        score,
+        mistakes,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     console.log("✅ Triggered Kestra:", response.data);
   } catch (error) {
