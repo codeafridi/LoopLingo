@@ -28,31 +28,31 @@ let notifications = [];
 // --- KESTRA TRIGGER HELPER ---
 const triggerKestraTutor = async (unit, score, mistakes = []) => {
   try {
-    // 1. Define URL
     const kestraUrl =
-      "http://localhost:8080/api/v1/executions/webhook/looplingo.prod/looplingo_ai_tutor/looplingo_secret_key";
+      "https://lisa-direction-tribal-bite.trycloudflare.com/api/v1/executions/webhook/looplingo.prod/looplingo_ai_tutor";
 
     console.log("KESRA URL BEING USED:", kestraUrl);
-    // 2. Send Data (Use 'score', NOT 'finalScore')
-    await axios.post(kestraUrl, {
+
+    const response = await axios.post(kestraUrl, {
       user: "Student",
       unit: unit || "General Practice",
-      score: score,
-      mistakes: mistakes,
+      score,
+      mistakes,
       timestamp: new Date().toISOString(),
     });
 
-    console.log(`✅ Triggered Kestra: Score ${score}%`);
+    console.log("✅ Triggered Kestra:", response.data);
   } catch (error) {
-    console.error("❌ KESTRA ERROR DETAILS:");
+    console.error("❌ KESTRA ERROR");
     if (error.response) {
-      console.error(`Status: ${error.response.status}`);
-      console.error(`Data:`, error.response.data);
+      console.error("Status:", error.response.status);
+      console.error("Data:", error.response.data);
     } else {
-      console.error("Error Message:", error.message);
+      console.error("Message:", error.message);
     }
   }
 };
+
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // --- GENERATE ROUTE ---
@@ -609,6 +609,10 @@ app.post("/api/end-session", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+app.get("/", (req, res) => {
+  res.send("LoopLingo backend is running.");
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
