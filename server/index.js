@@ -261,7 +261,7 @@ app.post("/api/generate", async (req, res) => {
 
         res.json({ exercises: parsed });
       } catch (e) {
-        console.error("JSON PARSE ERROR:", e);
+        console.error("JSON PARSE ERROR:", e); 
         console.log("RAW TEXT:", text); // Check terminal if error persists
         res.status(500).json({ error: "Invalid JSON from AI" });
       }
