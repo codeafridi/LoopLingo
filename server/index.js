@@ -465,10 +465,10 @@ app.post("/api/generate", async (req, res) => {
         if (!Array.isArray(parsed)) parsed = [parsed];
 
         res.json({ exercises: parsed });
-      } catch (e) {
-        console.error("JSON PARSE ERROR:", e);
-        console.log("RAW TEXT:", text); // Check terminal if error persists
-        res.status(500).json({ error: "Invalid JSON from AI" });
+      } catch (parseError) {
+        console.error("JSON PARSE ERROR:", parseError.message);
+        console.log("RAW TEXT:", text);
+        res.status(500).json({ error: "Invalid JSON from AI." });
       }
     } else {
       console.error("NO JSON FOUND");
