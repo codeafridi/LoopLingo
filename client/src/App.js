@@ -54,14 +54,17 @@ function App() {
   const generateWorksheet = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/api/generate", {
-        language: lang,
-        section: section.name,
-        unit: unit.title,
-        vocabulary: unit.vocabulary,
-        grammar: unit.grammar,
-        type: "all",
-      });
+      const res = await axios.post(
+        "https://looplingo.onrender.com/api/generate",
+        {
+          language: lang,
+          section: section.name,
+          unit: unit.title,
+          vocabulary: unit.vocabulary,
+          grammar: unit.grammar,
+          type: "all",
+        }
+      );
       setExercises(res.data.exercises || []);
       setView("worksheet");
     } catch (e) {
@@ -73,14 +76,17 @@ function App() {
   const generateListening = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/api/generate", {
-        language: lang,
-        section: section.name,
-        unit: unit.title,
-        vocabulary: unit.vocabulary,
-        grammar: unit.grammar,
-        type: "listening-story",
-      });
+      const res = await axios.post(
+        "https://looplingo.onrender.com/api/generate",
+        {
+          language: lang,
+          section: section.name,
+          unit: unit.title,
+          vocabulary: unit.vocabulary,
+          grammar: unit.grammar,
+          type: "listening-story",
+        }
+      );
       setExercises(res.data.exercises || []);
       setView("listening");
     } catch (e) {
@@ -93,14 +99,17 @@ function App() {
   const generateMore = async (specificType) => {
     document.body.style.cursor = "wait";
     try {
-      const res = await axios.post("http://localhost:5000/api/generate", {
-        language: lang,
-        section: section.name,
-        unit: unit.title,
-        vocabulary: unit.vocabulary,
-        grammar: unit.grammar,
-        type: specificType,
-      });
+      const res = await axios.post(
+        "https://looplingo.onrender.com/api/generate",
+        {
+          language: lang,
+          section: section.name,
+          unit: unit.title,
+          vocabulary: unit.vocabulary,
+          grammar: unit.grammar,
+          type: specificType,
+        }
+      );
       if (res.data.exercises)
         setExercises((prev) => [...prev, ...res.data.exercises]);
     } catch (e) {
@@ -616,7 +625,7 @@ function QuestionItem({ data, showOptions, language, index }) {
       return;
     }
     try {
-      const res = await axios.post("http://localhost:5000/api/check", {
+      const res = await axios.post("https://looplingo.onrender.com/api/check", {
         question: getString(data.question),
         userAnswer: answer,
         language,
