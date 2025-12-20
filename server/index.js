@@ -439,7 +439,7 @@ app.post("/api/generate", async (req, res) => {
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       temperature: 0.3,
       max_tokens: 3000,
     });
@@ -516,7 +516,7 @@ app.post("/api/grade-essay", async (req, res) => {
     // ✨ FIX: USING GROQ HERE INSTEAD OF OPENAI
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       temperature: 0.1,
     });
 
