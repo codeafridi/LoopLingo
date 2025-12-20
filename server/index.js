@@ -176,7 +176,14 @@ app.post("/api/generate", async (req, res) => {
              - Topic must match the CEFR unit theme.
              - The paragraph must be realistic, modern, and natural.
              - NO repeated structures.
-              Output ONLY the English paragraph.
+             Output STRICT JSON:
+                {
+                  "type": "essay-challenge",
+                  "topic": "string",
+                  "english_text": "string",
+                  "french_reference": "string"
+                }
+
 
 
                  
