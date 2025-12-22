@@ -6581,5 +6581,17 @@ export const COURSE_DATA = {
         // Japanese B1 vocabulary, and appropriate grammar focus.
       ],
     },
+
+    {
+      name: "Section 6: Champion (CEFR B1)",
+      description: "Advanced B1 concepts",
+      units: Array.from({ length: 49 }, (_, i) => ({
+        id: `s6_u${i + 1}`,
+        title: `Unit ${i + 1}: Advanced B1 Practice ${i + 1}`,
+        vocabulary: [],
+        grammar:
+          "Advanced B1 Grammar (complex sentence forms, nuance, fluency).",
+      })),
+    },
   ],
 };
