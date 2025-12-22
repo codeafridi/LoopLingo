@@ -3546,5 +3546,16 @@ export const COURSE_DATA = {
         */
       ],
     },
+
+    {
+      name: "Section 6: Champion (CEFR B1)",
+      description: "Advanced B1 concepts",
+      units: Array.from({ length: 49 }, (_, i) => ({
+        id: `s6_u${i + 1}`,
+        title: `Unit ${i + 1}: Advanced B1 Practice ${i + 1}`,
+        vocabulary: [],
+        grammar: "Advanced B1 Grammar",
+      })),
+    },
   ],
 };
