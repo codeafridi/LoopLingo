@@ -5475,5 +5475,16 @@ export const COURSE_DATA = {
         grammar: "Advanced B1 Grammar",
       })),
     },
+
+    {
+      name: "Section 8: Legendary (CEFR B2)",
+      description: "Mastery",
+      units: Array.from({ length: 37 }, (_, i) => ({
+        id: `s8_u${i + 1}`,
+        title: `Unit ${i + 1}: B2 Mastery ${i + 1}`,
+        vocabulary: [],
+        grammar: "Mastery Level Concepts",
+      })),
+    },
   ],
 };
