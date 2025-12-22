@@ -3557,5 +3557,16 @@ export const COURSE_DATA = {
         grammar: "Advanced B1 Grammar",
       })),
     },
+
+    {
+      name: "Section 7: Daily Refresh (CEFR B2)",
+      description: "Upper Intermediate",
+      units: Array.from({ length: 36 }, (_, i) => ({
+        id: `s7_u${i + 1}`,
+        title: `Unit ${i + 1}: B2 Concept ${i + 1}`,
+        vocabulary: [],
+        grammar: "B2 Level Grammar",
+      })),
+    },
   ],
 };
