@@ -3581,7 +3581,7 @@ export const COURSE_DATA = {
     },
   ],
 
-  Spanish: [
+  German: [
     {
       name: "Section 1: Rookie (CEFR Intro)",
       description: "Essential phrases & simple grammar",
