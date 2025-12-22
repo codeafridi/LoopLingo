@@ -211,6 +211,7 @@ app.post("/api/generate", async (req, res) => {
   Rules:
   - Create a coherent short story or dialogue in ${language}.
   - Follow natural speech patterns of ${language}.
+  - Topic must match CEFR level and unit theme.
   - Then generate 5 multiple-choice questions in ${language}  but 
   - CRITICAL : in bracket write the same question in ENGLISH too .
  but generate options in ${language} only
@@ -238,6 +239,7 @@ app.post("/api/generate", async (req, res) => {
     → particle / case / suffix
   - NEVER blank words that do not change form in ${language}.
   - NEVER blank the subject if the language requires a fixed subject marker.
+  - Topic must match CEFR level and unit theme.
   - Sentence MUST be natural in ${language}.
   - SET difficulty according to unit level.
   
@@ -253,6 +255,7 @@ app.post("/api/generate", async (req, res) => {
   
   Rules:
   - Sentence stem must strongly constrain the ending.
+  - Topic must match CEFR level and unit theme.
   - Ending length: 2–5 words.
   - Distractors must be grammatically valid but logically wrong.
   - NO repetition.
@@ -266,6 +269,7 @@ app.post("/api/generate", async (req, res) => {
   - SENTENCE → sentence options only.
   - Same structure, same subject, same tense.
   - Distractors must be plausible translations but incorrect.
+  - Topic must match CEFR level and unit theme.
   
   Options format:
   options: [correct, d1, d2, d3]
@@ -273,6 +277,8 @@ app.post("/api/generate", async (req, res) => {
   ----------------------------------------------------
   - "match-pairs":
   ----------------------------------------------------
+  Rules :  - Topic must match CEFR level and unit theme. 
+ 
   Structure:
   {
     "id": 1,
@@ -290,6 +296,7 @@ app.post("/api/generate", async (req, res) => {
   - Parentheses MUST contain the infinitive or dictionary form
     (according to ${language}).
   - The blank must require correct conjugation.
+  - Topic must match CEFR level and unit theme.
   - NEVER put the conjugated form in parentheses.
   - Difficulty scales with unit level.
   
@@ -302,6 +309,7 @@ app.post("/api/generate", async (req, res) => {
   - Blank ONLY the article.
   - Respect gender / number / case rules of ${language}.
   - Distractors must fail agreement rules.
+  - Topic must match CEFR level and unit theme.
   
   ----------------------------------------------------
   - "choose-preposition":
@@ -309,6 +317,7 @@ app.post("/api/generate", async (req, res) => {
   Rules:
   - Target real prepositions / particles used in ${language}.
   - Options must be grammatically valid but incorrect.
+  - Topic must match CEFR level and unit theme.
   - Difficulty must match unit level.
   
   ----------------------------------------------------
@@ -320,6 +329,7 @@ app.post("/api/generate", async (req, res) => {
   - Target adjective or noun forms.
   - Options must include correct + incorrect gender/number forms.
   - No repetition.
+  - Topic must match CEFR level and unit theme.
   
   ====================================================
   FINAL OUTPUT RULE
