@@ -163,6 +163,8 @@ app.post("/api/generate", async (req, res) => {
 
         SPECIFIC INSTRUCTIONS FOR OPTIONS:
 
+        CRITICAL : FOLLOW THE BELOW INSTRUCTIONS BASED ON  ${language} ONLY!!!
+
 
         - "essay-challenge":
            You generate French essay challenges.
