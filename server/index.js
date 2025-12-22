@@ -162,8 +162,10 @@ app.post("/api/generate", async (req, res) => {
         3. "answer" MUST MATCH EXACTLY one of the options.
 
         SPECIFIC INSTRUCTIONS FOR OPTIONS:
+        
 
-        CRITICAL : FOLLOW THE BELOW INSTRUCTIONS BASED ON  ${language} ONLY!!!
+        IMPORTANT LINE BELOW!!!!!!
+        VERY CRITICAL : FOLLOW THE BELOW INSTRUCTIONS BASED ON  ${language} ONLY!! ALWAYS!!!
 
 
         - "essay-challenge":
