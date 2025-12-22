@@ -717,3 +717,94 @@ input:checked + .slider:before {
 .mini-check-btn {
   margin-top: 10px;
 }
+
+/* Session Summary Card */
+.session-summary-card {
+  max-width: 520px;
+  margin: 2rem auto;
+  padding: 1.8rem 2rem;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.95),
+    rgba(15, 23, 42, 0.95)
+  );
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  color: #e5e7eb;
+  animation: sessionFadeIn 0.6s ease-out;
+}
+
+/* Title */
+.session-summary-card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.3px;
+}
+
+/* Score line */
+.session-summary-card .session-score {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #22c55e;
+  margin-bottom: 0.6rem;
+}
+
+/* Status line */
+.session-summary-card .session-status {
+  font-size: 0.95rem;
+  color: #cbd5f5;
+  margin-bottom: 1.2rem;
+}
+
+/* Info text */
+.session-summary-card .session-info {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #94a3b8;
+  margin-bottom: 1.6rem;
+}
+
+/* Action button */
+.session-summary-card .session-action {
+  display: inline-block;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  color: #020617;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.session-summary-card .session-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
+  opacity: 0.95;
+}
+
+.session-summary-card .session-action:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.25);
+}
+
+/* Subtle entry animation */
+@keyframes sessionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
