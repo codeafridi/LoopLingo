@@ -115,7 +115,7 @@ app.post("/api/generate", async (req, res) => {
       Generate ONE object with type "listening-story".
       It must contain a "script" (Medium-Length Paragraph, 80-120 words, natural flow) based on the unit topic.
       It must contain a "questions" array (5 multiple-choice questions in ENGLISH about the script but 
-      (CRITICAL : in bracket write the same question in ${language} too).
+      CRITICAL : in bracket write the same question in ${language} too.
     `;
   } else if (type === "essay-challenge") {
     // ✨ ADAPTIVE ESSAY LOGIC
@@ -211,9 +211,7 @@ app.post("/api/generate", async (req, res) => {
   Rules:
   - Create a coherent short story or dialogue in ${language}.
   - Follow natural speech patterns of ${language}.
-  - Then generate 5 multiple-choice questions in ENGLISH but 
-  - CRITICAL : in bracket write the same question in ${language} too .
- but generate options in ${language} only
+  - Then generate 5 multiple-choice questions
   Structure:
   [
     {
