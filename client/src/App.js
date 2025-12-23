@@ -1055,8 +1055,17 @@ function EssayComponent({ data, lang, onNext }) {
 }
 
 // --- COMPONENT: LISTENING STORY (Fixed Variable Name) ---
-function ListeningStoryComponent({ data }) {
-  // State is named 'isPlaying' and 'setIsPlaying'
+const TTS_PROFILES = {
+  fr: { mode: "native", lang: "fr-FR", rate: 0.85 },
+  es: { mode: "native", lang: "es-ES", rate: 0.9 },
+  de: { mode: "native", lang: "de-DE", rate: 0.85 },
+
+  // IMPORTANT FIXES
+  hi: { mode: "romanized", lang: "hi-IN", rate: 0.9 },
+  ja: { mode: "native", lang: "ja-JP", rate: 0.9 },
+};
+
+function ListeningStoryComponent({ data, language }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [answers, setAnswers] = useState({});
@@ -1067,12 +1076,10 @@ function ListeningStoryComponent({ data }) {
     window.speechSynthesis.cancel();
     setAnswers({});
     setSubmitted(false);
-    setIsPlaying(false); // Fixed
+    setIsPlaying(false);
     setIsPaused(false);
-    return () => {
-      window.speechSynthesis.cancel();
-    };
-  }, [data]);
+    return () => window.speechSynthesis.cancel();
+  }, [data, language]);
 
   useEffect(() => {
     const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
@@ -1082,7 +1089,7 @@ function ListeningStoryComponent({ data }) {
 
   const toggleAudio = () => {
     const synth = window.speechSynthesis;
-    // Use 'isPlaying' variable
+
     if (isPlaying) {
       if (isPaused) {
         synth.resume();
@@ -1091,38 +1098,102 @@ function ListeningStoryComponent({ data }) {
         synth.pause();
         setIsPaused(true);
       }
-    } else {
-      if (!data.script) return;
-      const utterance = new SpeechSynthesisUtterance(data.script);
-      const targetLang = "fr";
-      const bestVoice =
-        voices.find(
-          (v) => v.lang.startsWith(targetLang) && v.name.includes("Google")
-        ) || voices.find((v) => v.lang.startsWith(targetLang));
-
-      if (bestVoice) {
-        utterance.voice = bestVoice;
-        utterance.lang = bestVoice.lang;
-      } else {
-        utterance.lang = "fr-FR";
-      }
-      utterance.rate = 0.8;
-
-      // ✨ FIX: Use setIsPlaying instead of setIsSpeaking
-      utterance.onstart = () => {
-        setIsPlaying(true);
-        setIsPaused(false);
-      };
-      utterance.onend = () => {
-        setIsPlaying(false);
-        setIsPaused(false);
-      };
-      utterance.onerror = (e) => {
-        console.error("Audio error", e);
-        setIsPlaying(false);
-      };
-      synth.speak(utterance);
+      return;
     }
+
+    if (!data.script) return;
+
+    const profile = TTS_PROFILES[language] || {
+      mode: "native",
+      lang: "en-US",
+      rate: 1,
+    };
+
+    // ---- TEXT SELECTION ----
+    let ttsText = data.script;
+
+    // Hindi fallback → romanized
+    if (profile.mode === "romanized") {
+      if (!data.romanizedScript) return; // safety
+      ttsText = data.romanizedScript;
+    }
+
+    // ---- JAPANESE FIX (split sentences) ----
+    if (language === "ja") {
+      const sentences = ttsText
+        .split(/。|\n/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      sentences.forEach((sentence, idx) => {
+        const u = new SpeechSynthesisUtterance(sentence + "。");
+        const bestVoice =
+          voices.find((v) => v.lang === "ja-JP" && v.name.includes("Google")) ||
+          voices.find((v) => v.lang === "ja-JP");
+
+        if (bestVoice) {
+          u.voice = bestVoice;
+          u.lang = bestVoice.lang;
+        } else {
+          u.lang = "ja-JP";
+        }
+
+        u.rate = profile.rate;
+
+        if (idx === 0) {
+          u.onstart = () => {
+            setIsPlaying(true);
+            setIsPaused(false);
+          };
+        }
+
+        u.onend = () => {
+          if (idx === sentences.length - 1) {
+            setIsPlaying(false);
+            setIsPaused(false);
+          }
+        };
+
+        synth.speak(u);
+      });
+
+      return;
+    }
+
+    // ---- DEFAULT FLOW (FR / ES / DE / others) ----
+    const utterance = new SpeechSynthesisUtterance(ttsText);
+
+    const bestVoice =
+      voices.find(
+        (v) =>
+          v.lang === profile.lang && v.name.toLowerCase().includes("google")
+      ) || voices.find((v) => v.lang === profile.lang);
+
+    if (bestVoice) {
+      utterance.voice = bestVoice;
+      utterance.lang = bestVoice.lang;
+    } else {
+      utterance.lang = profile.lang;
+    }
+
+    utterance.rate = profile.rate;
+
+    utterance.onstart = () => {
+      setIsPlaying(true);
+      setIsPaused(false);
+    };
+
+    utterance.onend = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+    };
+
+    utterance.onerror = (e) => {
+      console.error("Audio error", e);
+      setIsPlaying(false);
+    };
+
+    synth.speak(utterance);
   };
 
   const handleSelect = (qId, val) => setAnswers({ ...answers, [qId]: val });
@@ -1137,82 +1208,84 @@ function ListeningStoryComponent({ data }) {
       )
     : 0;
 
-  // Use 'isPlaying' variable
   const isAnimating = isPlaying && !isPaused;
+
+  const audioDisabled = language === "hi" && !data.romanizedScript;
 
   return (
     <div className="listening-container">
       <div className={`audio-player-card ${isAnimating ? "playing" : ""}`}>
-        {" "}
-        {/* Use 'isPlaying' variable */}
-        <button className="play-fab" onClick={toggleAudio}>
-          {" "}
-          {isPlaying && !isPaused ? "⏸" : "▶"}{" "}
+        <button
+          className="play-fab"
+          onClick={toggleAudio}
+          disabled={audioDisabled}
+        >
+          {isPlaying && !isPaused ? "⏸" : "▶"}
         </button>
+
         <div className="audio-visualizer">
           <div className="bar"></div>
           <div className="bar"></div>
           <div className="bar"></div>
-        </div>{" "}
-        {/* Use 'isPlaying' variable */}
+        </div>
+
         <div className="player-text">
-          {" "}
-          {!isPlaying
+          {audioDisabled
+            ? "Audio coming soon"
+            : !isPlaying
             ? "Click to Play"
             : isPaused
             ? "Paused"
-            : "Listening..."}{" "}
+            : "Listening..."}
         </div>
       </div>
+
       <div className="story-questions">
-        {data.questions &&
-          data.questions.map((q, i) => (
-            <div key={q.id || i} className="story-q-item">
-              <p className="story-q-text">
-                {" "}
-                {i + 1}. {getString(q.question)}{" "}
-              </p>
-              <div className="story-options">
-                {q.options.map((opt) => (
-                  <label
-                    key={getString(opt)}
-                    className={`story-opt ${
-                      submitted && getString(opt) === getString(q.answer)
-                        ? "correct"
-                        : ""
-                    } ${
-                      submitted &&
-                      getString(answers[q.id]) === getString(opt) &&
-                      getString(opt) !== getString(q.answer)
-                        ? "wrong"
-                        : ""
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name={`q-${q.id}`}
-                      value={getString(opt)}
-                      onChange={() => handleSelect(q.id, getString(opt))}
-                      disabled={submitted}
-                      checked={getString(answers[q.id]) === getString(opt)}
-                    />
-                    {getString(opt)}
-                  </label>
-                ))}
-              </div>
+        {data.questions?.map((q, i) => (
+          <div key={q.id || i} className="story-q-item">
+            <p className="story-q-text">
+              {i + 1}. {getString(q.question)}
+            </p>
+            <div className="story-options">
+              {q.options.map((opt) => (
+                <label
+                  key={getString(opt)}
+                  className={`story-opt ${
+                    submitted && getString(opt) === getString(q.answer)
+                      ? "correct"
+                      : ""
+                  } ${
+                    submitted &&
+                    getString(answers[q.id]) === getString(opt) &&
+                    getString(opt) !== getString(q.answer)
+                      ? "wrong"
+                      : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`q-${q.id}`}
+                    value={getString(opt)}
+                    onChange={() => handleSelect(q.id, getString(opt))}
+                    disabled={submitted}
+                    checked={getString(answers[q.id]) === getString(opt)}
+                  />
+                  {getString(opt)}
+                </label>
+              ))}
             </div>
-          ))}
+          </div>
+        ))}
       </div>
+
       {!submitted ? (
         <button className="check-story-btn" onClick={checkAnswers}>
-          {" "}
-          Check Answers{" "}
+          Check Answers
         </button>
       ) : (
         <div className="story-result">
           <h3>
-            {" "}
-            You got {score} / {data.questions.length} correct!{" "}
+            You got {score} / {data.questions.length} correct!
           </h3>
           <div className="transcript-reveal">
             <h4>Transcript:</h4>
@@ -1223,5 +1296,9 @@ function ListeningStoryComponent({ data }) {
     </div>
   );
 }
+
+// Ensure getString is available in the same scope or imported.
+// If this component is in a separate file, you'll need to import getString:
+// import { getString } from './your-helper-file';
 
 export default App;
