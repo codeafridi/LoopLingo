@@ -1080,6 +1080,12 @@ function ListeningStoryComponent({ data }) {
     loadVoices();
   }, []);
 
+  const detectLang = () => {
+    if (/[\u0900-\u097F]/.test(data.script)) return "hi"; // Hindi (Devanagari)
+    if (/[\u3040-\u30FF\u4E00-\u9FFF]/.test(data.script)) return "ja"; // Japanese
+    return "fr"; // default
+  };
+
   const toggleAudio = () => {
     const synth = window.speechSynthesis;
     // Use 'isPlaying' variable
@@ -1094,19 +1100,24 @@ function ListeningStoryComponent({ data }) {
     } else {
       if (!data.script) return;
       const utterance = new SpeechSynthesisUtterance(data.script);
-      const targetLang = "fr";
+
+      const langCode = detectLang();
+
+      // pick voice by detected language
       const bestVoice =
         voices.find(
-          (v) => v.lang.startsWith(targetLang) && v.name.includes("Google")
-        ) || voices.find((v) => v.lang.startsWith(targetLang));
+          (v) =>
+            v.lang.startsWith(langCode) &&
+            v.name.toLowerCase().includes("google")
+        ) || voices.find((v) => v.lang.startsWith(langCode));
 
-      if (bestVoice) {
-        utterance.voice = bestVoice;
-        utterance.lang = bestVoice.lang;
-      } else {
-        utterance.lang = "fr-FR";
-      }
-      utterance.rate = 0.8;
+      utterance.lang =
+        langCode === "hi" ? "hi-IN" : langCode === "ja" ? "ja-JP" : "fr-FR";
+
+      if (bestVoice) utterance.voice = bestVoice;
+
+      // pacing fixes
+      utterance.rate = langCode === "ja" ? 0.9 : langCode === "hi" ? 0.85 : 0.8;
 
       // ✨ FIX: Use setIsPlaying instead of setIsSpeaking
       utterance.onstart = () => {
