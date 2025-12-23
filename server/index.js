@@ -119,6 +119,7 @@ app.post("/api/generate", async (req, res) => {
 
       -EACH story must be DIFFERENT but the theme MUST BE SAME
       -the paragraph must be logical and not vulgar
+      -it MUST contain 4 options with one CORRECT answer
 
       ABSOLUTE RULES:
         - NO self-introduction chains.
