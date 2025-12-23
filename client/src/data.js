@@ -8047,4 +8047,128 @@ export const COURSE_DATA = {
       })),
     },
   ],
+
+  Korean: [
+    {
+      name: "Section 1: Rookie (CEFR Intro)",
+      description:
+        "Essential Korean sounds, particles, and everyday expressions",
+      units: [
+        {
+          id: "u1",
+          title: "Unit 1: Read Hangul & basic sounds",
+          vocabulary: [
+            "가",
+            "나",
+            "다",
+            "라",
+            "마",
+            "바",
+            "사",
+            "아",
+            "자",
+            "차",
+            "안",
+            "오",
+            "이",
+            "우",
+          ],
+          grammar:
+            "Introduction to Hangul consonants and vowels; syllable blocks.",
+        },
+        {
+          id: "u2",
+          title: "Unit 2: Say hello and goodbye",
+          vocabulary: [
+            "안녕하세요",
+            "안녕",
+            "안녕히 가세요",
+            "안녕히 계세요",
+            "처음 뵙겠습니다",
+            "반갑습니다",
+          ],
+          grammar: "Basic greetings; polite vs casual forms.",
+        },
+        {
+          id: "u3",
+          title: "Unit 3: Introduce yourself",
+          vocabulary: [
+            "저",
+            "이름",
+            "입니다",
+            "이에요",
+            "예요",
+            "학생",
+            "사람",
+          ],
+          grammar: "Copula (입니다 / 이에요 / 예요); basic self-introduction.",
+        },
+        {
+          id: "u4",
+          title: "Unit 4: Ask and answer simple questions",
+          vocabulary: [
+            "뭐",
+            "누구",
+            "어디",
+            "네",
+            "아니요",
+            "맞아요",
+            "아니에요",
+          ],
+          grammar: "Yes/no answers; basic question words.",
+        },
+        {
+          id: "u5",
+          title: "Unit 5: Talk about people",
+          vocabulary: [
+            "남자",
+            "여자",
+            "친구",
+            "선생님",
+            "사람들",
+            "그",
+            "그녀",
+          ],
+          grammar: "Nouns for people; simple reference words.",
+        },
+        {
+          id: "u6",
+          title: "Unit 6: Use particles 은/는",
+          vocabulary: ["은", "는", "저는", "이름은", "사람은"],
+          grammar: "Topic particle 은/는 and sentence focus.",
+        },
+        {
+          id: "u7",
+          title: "Unit 7: Use particles 이/가",
+          vocabulary: ["이", "가", "이름이", "사람이", "친구가"],
+          grammar:
+            "Subject particle 이/가; difference from 은/는 (intro level).",
+        },
+        {
+          id: "u8",
+          title: "Unit 8: Talk about locations",
+          vocabulary: ["여기", "거기", "저기", "집", "학교", "회사"],
+          grammar: "Location words; basic place references.",
+        },
+        {
+          id: "u9",
+          title: "Unit 9: Use 있다 / 없다",
+          vocabulary: ["있다", "없다", "시간", "사람", "친구", "돈"],
+          grammar: "Existence verbs 있다 / 없다.",
+        },
+        {
+          id: "u10",
+          title: "Unit 10: Say thank you and sorry",
+          vocabulary: [
+            "감사합니다",
+            "고맙습니다",
+            "죄송합니다",
+            "미안합니다",
+            "괜찮아요",
+          ],
+          grammar: "Polite expressions for gratitude and apology.",
+        },
+      ],
+    },
+  ],
 };
