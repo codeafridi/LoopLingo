@@ -337,7 +337,7 @@ app.post("/api/generate", async (req, res) => {
   Return ONLY valid JSON.
   No explanations.
   No markdown.
-  No comments.
+  No comments
   
   Output Structure Example:
   [
