@@ -247,7 +247,7 @@ app.post("/api/generate", async (req, res) => {
   - options = [Correct, Distractor1, Distractor2, Distractor3]
   - Distractors must be grammatically WRONG in ${language}, not random.
   
-  ----------------------------------------------------
+  ---------------------------------------------------
   - "complete-the-sentence":
   ----------------------------------------------------
   GOAL:
