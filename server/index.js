@@ -209,8 +209,18 @@ app.post("/api/generate", async (req, res) => {
   - "listening-story":
   ----------------------------------------------------
   Rules:
-  - Create a coherent short story or dialogue in ${language}.
-  - Follow natural speech patterns of ${language}.
+  CRITICAL:
+    -Listening stories MUST use natural spoken ${language}.
+    - Avoid repetitive “मैं … हूँ” constructions
+    - Combine sentences where possible
+    - Use dialogue, not narration
+    - Prefer how people actually speak, not textbook examples
+    - If language is Hindi or Japanese:
+        - Use short conversational exchanges
+        - Avoid formal self-descriptions
+        - Use quoted speech when possible
+
+
   - Topic must match CEFR level and unit theme.
   - Then generate 5 multiple-choice questions in ${language}  but 
   - CRITICAL  : in bracket write the same question in ENGLISH too .
