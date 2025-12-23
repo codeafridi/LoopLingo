@@ -8010,5 +8010,41 @@ export const COURSE_DATA = {
         grammar: "Advanced B1 grammar reinforcement and mixed structures.",
       })),
     },
+
+    {
+      name: "Section 7: Daily Refresh (CEFR B2)",
+      description: "Upper Intermediate",
+      units: Array.from({ length: 36 }, (_, i) => ({
+        id: `s7_u${i + 1}`,
+        title: `Unit ${i + 1}: B2 Concept ${i + 1}`,
+        vocabulary: [
+          "विश्लेषण",
+          "संभावना",
+          "दृष्टिकोण",
+          "परिणाम",
+          "संदर्भ",
+          "तर्कसंगत",
+        ],
+        grammar: "B2-level sentence complexity, connectors, nuance.",
+      })),
+    },
+
+    {
+      name: "Section 8: Legendary (CEFR B2)",
+      description: "Mastery",
+      units: Array.from({ length: 37 }, (_, i) => ({
+        id: `s8_u${i + 1}`,
+        title: `Unit ${i + 1}: B2 Mastery ${i + 1}`,
+        vocabulary: [
+          "सूक्ष्मता",
+          "व्याख्या",
+          "परिप्रेक्ष्य",
+          "आलोचना",
+          "अभिव्यक्ति",
+          "परिष्कृत",
+        ],
+        grammar: "High-level comprehension, precision, and fluency.",
+      })),
+    },
   ],
 };
