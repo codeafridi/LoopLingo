@@ -2,6 +2,9 @@ require("dotenv").config(); // MUST be first line
 
 const { query } = require("./db");
 
+const auth = require("./middleware/auth");
+const progressRoutes = require("./routes/progress");
+
 console.log("DB URL:", process.env.DATABASE_URL);
 if (!process.env.DATABASE_URL) {
   console.error("❌ DATABASE_URL is missing");
@@ -656,6 +659,35 @@ app.post("/signup", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Signup failed" });
   }
+});
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password required" });
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return res.status(401).json({ error: error.message });
+  }
+
+  res.json({
+    user: data.user,
+    session: data.session,
+  });
+});
+
+app.get("/me", auth, (req, res) => {
+  res.json({
+    id: req.user.id,
+    email: req.user.email,
+  });
 });
 
 app.listen(PORT, () => {
