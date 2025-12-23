@@ -213,7 +213,7 @@ app.post("/api/generate", async (req, res) => {
   - Follow natural speech patterns of ${language}.
   - Topic must match CEFR level and unit theme.
   - Then generate 5 multiple-choice questions in ${language}  but 
-  - CRITICAL : in bracket write the same question in ENGLISH too .
+  - CRITICAL  : in bracket write the same question in ENGLISH too .
  but generate options in ${language} only
   Structure:
   [
