@@ -117,6 +117,9 @@ app.post("/api/generate", async (req, res) => {
       It must contain a "questions" array (5 multiple-choice questions in ${language} about the script but 
       CRITICAL : in  bracket write the same question in ENGLISH too.
 
+      -EACH story must be DIFFERENT but the theme MUST BE SAME
+      -the paragraph must be logical and not vulgar
+
       ABSOLUTE RULES:
         - NO self-introduction chains.
         - NO textbook narration.
