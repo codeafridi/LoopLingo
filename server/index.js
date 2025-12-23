@@ -209,16 +209,51 @@ app.post("/api/generate", async (req, res) => {
   - "listening-story":
   ----------------------------------------------------
   Rules:
-  CRITICAL:
-    -Listening stories MUST use natural spoken ${language}.
-    - Avoid repetitive “मैं … हूँ” constructions
-    - Combine sentences where possible
-    - Use dialogue, not narration
-    - Prefer how people actually speak, not textbook examples
-    - If language is Hindi or Japanese:
-        - Use short conversational exchanges
-        - Avoid formal self-descriptions
-        - Use quoted speech when possible
+  ROLE: Native language conversation writer.
+
+          TASK:
+          Generate ONE short listening story in ${language} suitable for CEFR ${section} learners.
+
+          CRITICAL GOAL:
+          This MUST sound like how real people speak, NOT how textbooks explain language.
+
+          ABSOLUTE RULES (NON-NEGOTIABLE):
+          1. NO robotic self-introductions.
+          2. NO repetitive sentence openings.
+          3. NO word-by-word translation from English.
+          4. NO “exam style” sentences.
+          5. NO listing personal facts sentence by sentence.
+
+          STRUCTURE RULES:
+          - The story MUST be a short dialogue or interaction.
+          - Use natural back-and-forth.
+          - Use quotes for speech when appropriate.
+          - Each sentence must logically follow the previous one.
+
+          LANGUAGE-SPECIFIC RULES (VERY IMPORTANT):
+
+          IF language = Hindi:
+          - Avoid repeating “मैं … हूँ” in consecutive sentences.
+          - Prefer conversational Hindi over formal Hindi.
+          - Combine ideas naturally.
+          - Drop unnecessary subjects when context is clear.
+          - Write how people actually talk in daily life.
+
+          IF language = Japanese:
+          - Use short, natural sentences.
+          - Avoid overly formal textbook constructions.
+          - Use casual or neutral polite form consistently.
+          - Prefer dialogue over narration.
+
+          IF language = French / Spanish / German:
+          - Use natural spoken phrasing.
+          - Avoid classroom-style examples.
+
+          QUALITY FILTER (MANDATORY):
+          Reject the story if:
+          - The same subject appears at the start of consecutive sentences.
+          - The paragraph sounds like a self-introduction.
+          - The sentences feel translated rather than original.
 
 
   - Topic must match CEFR level and unit theme.
