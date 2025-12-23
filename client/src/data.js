@@ -9052,5 +9052,38 @@ export const COURSE_DATA = {
         },
       ],
     },
+
+    {
+      name: "Section 6: Champion (CEFR B1)",
+      description: "Advanced B1 reinforcement and fluency practice",
+      units: Array.from({ length: 49 }, (_, i) => ({
+        id: `s6_u${i + 1}`,
+        title: `Unit ${i + 1}: Advanced B1 Practice ${i + 1}`,
+        vocabulary: [],
+        grammar: "Advanced B1 grammar reinforcement",
+      })),
+    },
+
+    {
+      name: "Section 7: Daily Refresh (CEFR B2)",
+      description: "Upper-intermediate accuracy and consistency",
+      units: Array.from({ length: 36 }, (_, i) => ({
+        id: `s7_u${i + 1}`,
+        title: `Unit ${i + 1}: B2 Concept ${i + 1}`,
+        vocabulary: [],
+        grammar: "B2-level structures and refinement",
+      })),
+    },
+
+    {
+      name: "Section 8: Legendary (CEFR B2)",
+      description: "Mastery and near-native command",
+      units: Array.from({ length: 37 }, (_, i) => ({
+        id: `s8_u${i + 1}`,
+        title: `Unit ${i + 1}: B2 Mastery ${i + 1}`,
+        vocabulary: [],
+        grammar: "Advanced mastery and nuance",
+      })),
+    },
   ],
 };
