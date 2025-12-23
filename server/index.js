@@ -115,7 +115,7 @@ app.post("/api/generate", async (req, res) => {
       Generate ONE object with type "listening-story".
       It must contain a "script" (Medium-Length Paragraph, 80-120 words, natural flow) based on the unit topic.
       It must contain a "questions" array (5 multiple-choice questions in ${language} about the script but 
-      CRITICAL : in  bracket write the same question in ENGLISH too.
+      CRITICAL : in  bracket write the same question in ENGLISH too
 
       -EACH story must be DIFFERENT but the theme MUST BE SAME
       -the paragraph must be logical and not vulgar
