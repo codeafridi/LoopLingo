@@ -2,6 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 import { COURSE_DATA } from "./data";
+const LANG_CODE_MAP = {
+  French: "fr",
+  Spanish: "es",
+  German: "de",
+  Hindi: "hi",
+  Japanese: "ja",
+};
 
 // --- HELPER ---
 const getString = (val) => {
@@ -586,6 +593,7 @@ function App() {
           <ListeningStoryComponent
             key={storyData.script || "story"}
             data={storyData}
+            language={LANG_CODE_MAP[lang]}
           />
         )}
         <div className="worksheet-footer">
@@ -1114,8 +1122,7 @@ function ListeningStoryComponent({ data, language }) {
 
     // Hindi fallback → romanized
     if (profile.mode === "romanized") {
-      if (!data.romanizedScript) return; // safety
-      ttsText = data.romanizedScript;
+      ttsText = data.romanizedScript || data.script;
     }
 
     // ---- JAPANESE FIX (split sentences) ----
