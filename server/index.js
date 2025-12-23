@@ -1,9 +1,20 @@
+require("dotenv").config(); // MUST be first line
+
+const { query } = require("./db");
+
+console.log("DB URL:", process.env.DATABASE_URL);
+if (!process.env.DATABASE_URL) {
+  console.error("❌ DATABASE_URL is missing");
+  process.exit(1);
+}
+
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
+
 const Groq = require("groq-sdk");
 
 const axios = require("axios");
+const pool = require("./db");
 
 const app = express();
 app.use(cors());
@@ -26,6 +37,22 @@ app.use((req, res, next) => {
 });
 
 let notifications = [];
+
+app.get("/health", async (req, res) => {
+  try {
+    await pool.query("select 1");
+    res.json({ status: "ok", db: "connected" });
+  } catch (e) {
+    res.status(500).json({ error: "Database not connected" });
+  }
+});
+
+const { createClient } = require("@supabase/supabase-js");
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 // --- KESTRA TRIGGER HELPER ---
 // --- KESTRA TRIGGER HELPER ---
@@ -583,6 +610,52 @@ const PORT = process.env.PORT || 5000;
 
 app.get("/", (req, res) => {
   res.send("LoopLingo backend is running.");
+});
+
+app.post("/users", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const result = await pool.query(
+      "INSERT INTO users (email) VALUES ($1) RETURNING *",
+      [email]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("DB ERROR:", err); // 👈 THIS LINE
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/signup", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // 1. Create auth user
+    const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+
+    if (error) throw error;
+
+    const userId = data.user.id;
+
+    // 2. Insert into users table
+    const { error: dbError } = await pool.query(
+      "insert into users (id, email) values ($1, $2)",
+      [userId, email]
+    );
+
+    if (dbError) throw dbError;
+
+    res.json({ success: true, userId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Signup failed" });
+  }
 });
 
 app.listen(PORT, () => {
