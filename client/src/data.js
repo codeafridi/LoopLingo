@@ -7999,5 +7999,16 @@ export const COURSE_DATA = {
         },
       ],
     },
+
+    {
+      name: "Section 6: Champion (CEFR B1)",
+      description: "Advanced B1 concepts",
+      units: Array.from({ length: 49 }, (_, i) => ({
+        id: `s6_u${i + 1}`,
+        title: `Unit ${i + 1}: Advanced B1 Practice ${i + 1}`,
+        vocabulary: ["राय", "तर्क", "अनुभव", "निर्णय", "समस्या", "समाधान"],
+        grammar: "Advanced B1 grammar reinforcement and mixed structures.",
+      })),
+    },
   ],
 };
