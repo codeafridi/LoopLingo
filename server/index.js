@@ -2,7 +2,8 @@ require("dotenv").config(); // MUST be first line
 
 const { query } = require("./db");
 
-const auth = require("./middleware/auth");
+const supabaseAuth = require("./middleware/supabaseauth");
+
 const progressRoutes = require("./routes/progress");
 
 console.log("DB URL:", process.env.DATABASE_URL);
@@ -683,12 +684,14 @@ app.post("/login", async (req, res) => {
   });
 });
 
-app.get("/me", auth, (req, res) => {
+app.get("/me", supabaseAuth, (req, res) => {
   res.json({
     id: req.user.id,
     email: req.user.email,
   });
 });
+
+app.use("/progress", progressRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
