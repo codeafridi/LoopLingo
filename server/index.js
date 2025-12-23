@@ -115,7 +115,16 @@ app.post("/api/generate", async (req, res) => {
       Generate ONE object with type "listening-story".
       It must contain a "script" (Medium-Length Paragraph, 80-120 words, natural flow) based on the unit topic.
       It must contain a "questions" array (5 multiple-choice questions in ${language} about the script but 
-      CRITICAL : in bracket write the same question in ENGLISH too.
+      CRITICAL : in  bracket write the same question in ENGLISH too.
+
+      ABSOLUTE RULES:
+        - NO self-introduction chains.
+        - NO textbook narration.
+        - NO literal translation from English.
+        - NO repeating the same subject at sentence start.
+        - MUST sound like spoken language.
+        - MUST sound logical and must help in learning
+
     `;
   } else if (type === "essay-challenge") {
     // ✨ ADAPTIVE ESSAY LOGIC
@@ -224,23 +233,15 @@ app.post("/api/generate", async (req, res) => {
           4. NO “exam style” sentences.
           5. NO listing personal facts sentence by sentence.
 
-          STRUCTURE RULES:
-          - The story MUST be a short dialogue or interaction.
-          - Use natural back-and-forth.
-          - Use quotes for speech when appropriate.
-          - Each sentence must logically follow the previous one.
-
           LANGUAGE-SPECIFIC RULES (VERY IMPORTANT):
 
           IF language = Hindi:
-          - Avoid repeating “मैं … हूँ” in consecutive sentences.
-          - Prefer conversational Hindi over formal Hindi.
+          - Prefer formal Hindi.
           - Combine ideas naturally.
           - Drop unnecessary subjects when context is clear.
           - Write how people actually talk in daily life.
 
           IF language = Japanese:
-          - Use short, natural sentences.
           - Avoid overly formal textbook constructions.
           - Use casual or neutral polite form consistently.
           - Prefer dialogue over narration.
