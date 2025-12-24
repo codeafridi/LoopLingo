@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db");
-const auth = require("../middleware/auth");
+const auth = require("../middleware/supabaseauth");
 
 // Get user progress
 router.get("/", auth, async (req, res) => {
