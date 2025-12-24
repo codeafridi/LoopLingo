@@ -2,21 +2,6 @@ require("dotenv").config(); // MUST be first line
 
 const { query } = require("./db");
 
-// #region agent log
-fetch("http://127.0.0.1:7242/ingest/3d931270-8e7c-45cc-9d3c-4ba99a28c742", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    location: "server/index.js:5",
-    message: "Attempting to require supabaseAuth in index.js",
-    data: { path: "./middleware/supabaseauth" },
-    timestamp: Date.now(),
-    sessionId: "debug-session",
-    runId: "run1",
-    hypothesisId: "1",
-  }),
-}).catch(() => {});
-// #endregion
 const supabaseAuth = require("./middleware/supabaseauth");
 
 const progressRoutes = require("./routes/progress");
