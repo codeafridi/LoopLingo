@@ -2,7 +2,7 @@ require("dotenv").config(); // MUST be first line
 
 const { query } = require("./db");
 
-const supabaseAuth = require("./middleware/supabaseauth");
+const supabaseAuth = require("./middleware/temp_supabase");
 
 const progressRoutes = require("./routes/progress");
 
