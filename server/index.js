@@ -6,6 +6,8 @@ const supabaseAuth = require("./middleware/temp_supabase");
 
 const progressRoutes = require("./routes/progress");
 
+const generateRoutes = require("./routes/generate");
+
 console.log("DB URL:", process.env.DATABASE_URL);
 if (!process.env.DATABASE_URL) {
   console.error("❌ DATABASE_URL is missing");
@@ -692,6 +694,7 @@ app.get("/me", supabaseAuth, (req, res) => {
 });
 
 app.use("/progress", progressRoutes);
+app.use("/generate", generateRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
