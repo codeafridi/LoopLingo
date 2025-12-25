@@ -854,3 +854,19 @@ input:checked + .slider:before {
   opacity: 0.45;
   pointer-events: none;
 }
+
+.hero-essay {
+  max-width: 700px;
+  text-align: center;
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin-top: -20px; /* pulls it closer to hero */
+}
+.hero-section {
+  flex-wrap: wrap;
+}
+
+.hero-essay {
+  flex-basis: 100%;
+}
