@@ -37,7 +37,7 @@ body {
 }
 
 .logo {
-  font-size: 1.5 rem;
+  font-size: 130%;
   font-weight: 800;
   background: linear-gradient(to right, var(--success), var(--primary));
   -webkit-background-clip: text;
@@ -91,6 +91,12 @@ body {
   .hero-text {
     max-width: 50%;
   }
+}
+
+.bell-icon {
+  margin-left: 1300px;
+  position: relative;
+  top: -2px;
 }
 
 .hero-text h1 {

@@ -1,5 +1,13 @@
 require("dotenv").config(); // MUST be first line
 
+const { CohereClient } = require("cohere-ai");
+
+const cohere = new CohereClient({
+  token: process.env.COHERE_API_KEY,
+});
+
+//---------------------------------------------------------------------------------------------------------------
+
 const { query } = require("./db");
 
 const supabaseAuth = require("./middleware/temp_supabase");
@@ -427,17 +435,26 @@ app.post("/api/generate", async (req, res) => {
     { "id": 1, "type": "fill-in-the-blank", "question": "...", "answer": "...", "options": [...] }
   ]
   `;
-
+  //-------------------------------------------------------------------------------------------------
   try {
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.1-8b-instant",
+    // const completion = await groq.chat.completions.create({
+    //   messages: [{ role: "user", content: prompt }],
+    //   model: "llama-3.1-8b-instant",
+    //   temperature: 0.3,
+    //   max_tokens: 3000,
+    // });
+
+    // const text = completion.choices[0]?.message?.content || "";
+    const response = await cohere.chat({
+      model: "aya-23",
+      message: prompt,
       temperature: 0.3,
       max_tokens: 3000,
     });
 
-    const text = completion.choices[0]?.message?.content || "";
+    const text = response.text || "";
 
+    //-------------------------------------------------------------------------------------------------
     // --- JSON CLEANER ---
     let cleanText = text
       .replace(/```json/g, "")
@@ -503,16 +520,26 @@ app.post("/api/grade-essay", async (req, res) => {
     OUTPUT JSON ONLY:
     { "score": number, "feedback": "string", "corrected": "string" }
   `;
-
+  //----------------------------------------------------------------------------------
   try {
     // ✨ FIX: USING GROQ HERE INSTEAD OF OPENAI
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.1-8b-instant",
-      temperature: 0.1,
+    // const completion = await groq.chat.completions.create({
+    //   messages: [{ role: "user", content: prompt }],
+    //   model: "llama-3.1-8b-instant",
+    //   temperature: 0.1,
+    // });
+
+    // const text = completion.choices[0]?.message?.content || "";
+    const response = await cohere.chat({
+      model: "aya-23",
+      message: prompt,
+      temperature: 0.3,
+      max_tokens: 3000,
     });
 
-    const text = completion.choices[0]?.message?.content || "";
+    const text = response.text || "";
+
+    //-------------------------------------------------------------------------------
     let cleanText = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
@@ -548,12 +575,24 @@ app.post("/api/check", async (req, res) => {
         Check answer: "${userAnswer}" for Question: "${question}".
         Return JSON: { "isCorrect": boolean, "correctAnswer": "string", "explanation": "string" }
     `;
+  //-------------------------------------------------------------------------------------------------
   try {
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.1-8b-instant",
+    // const completion = await groq.chat.completions.create({
+    //   messages: [{ role: "user", content: prompt }],
+    //   model: "llama-3.1-8b-instant",
+    // });
+    // const text = completion.choices[0]?.message?.content || "";
+
+    const response = await cohere.chat({
+      model: "aya-23",
+      message: prompt,
+      temperature: 0.3,
+      max_tokens: 3000,
     });
-    const text = completion.choices[0]?.message?.content || "";
+
+    const text = response.text || "";
+
+    //-----------------------------------------------------------------------------------------------
     const cleanText = text
       .replace(/```json/g, "")
       .replace(/```/g, "")

@@ -263,7 +263,7 @@ function App() {
       <div className="landing-page">
         <nav className="navbar">
           <div className="logo">
-            Looplingo <span className="logo-icon">♾️</span>
+            Looplingo <span className="logo-icon"></span>
           </div>{" "}
           {/* NOTIFICATION BELL */}
           <div

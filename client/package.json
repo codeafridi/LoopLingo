@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@supabase/supabase-js": "^2.89.0",
     "axios": "^1.6.0",
     "groq-sdk": "^0.37.0",
     "react": "^18.3.1",
