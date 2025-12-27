@@ -449,7 +449,7 @@ app.post("/api/generate", async (req, res) => {
       model: "command-r",
       message: prompt,
       temperature: 0.3,
-      max_tokens: 3000,
+      maxTokens: 3000,
     });
 
     const text = response.text || "";
@@ -534,7 +534,7 @@ app.post("/api/grade-essay", async (req, res) => {
       model: "command-r",
       message: prompt,
       temperature: 0.3,
-      max_tokens: 3000,
+      maxTokens: 3000,
     });
 
     const text = response.text || "";
@@ -587,7 +587,7 @@ app.post("/api/check", async (req, res) => {
       model: "command-r",
       message: prompt,
       temperature: 0.3,
-      max_tokens: 3000,
+      maxTokens: 3000,
     });
 
     const text = response.text || "";
