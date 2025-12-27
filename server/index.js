@@ -447,18 +447,7 @@ app.post("/api/generate", async (req, res) => {
     // const text = completion.choices[0]?.message?.content || "";
     const response = await cohere.chat({
       model: "command-light",
-
-      // REQUIRED
       message: prompt,
-
-      // OPTIONAL (but allowed)
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-
       temperature: 0.3,
       maxTokens: 3000,
     });
@@ -543,18 +532,7 @@ app.post("/api/grade-essay", async (req, res) => {
     // const text = completion.choices[0]?.message?.content || "";
     const response = await cohere.chat({
       model: "command-light",
-
-      // REQUIRED
       message: prompt,
-
-      // OPTIONAL (but allowed)
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-
       temperature: 0.3,
       maxTokens: 3000,
     });
@@ -606,18 +584,7 @@ app.post("/api/check", async (req, res) => {
     // const text = completion.choices[0]?.message?.content || "";
     const response = await cohere.chat({
       model: "command-light",
-
-      // REQUIRED
       message: prompt,
-
-      // OPTIONAL (but allowed)
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-
       temperature: 0.3,
       maxTokens: 3000,
     });
