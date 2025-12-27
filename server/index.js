@@ -446,13 +446,13 @@ app.post("/api/generate", async (req, res) => {
 
     // const text = completion.choices[0]?.message?.content || "";
     const response = await cohere.generate({
-      model: "command-light",
+      model: "command",
       prompt: prompt,
       temperature: 0.3,
-      maxTokens: 3000,
+      max_tokens: 3000, // snake_case REQUIRED
     });
 
-    const text = response.text || "";
+    const text = response.generations[0].text;
 
     //-------------------------------------------------------------------------------------------------
     // --- JSON CLEANER ---
@@ -531,13 +531,13 @@ app.post("/api/grade-essay", async (req, res) => {
 
     // const text = completion.choices[0]?.message?.content || "";
     const response = await cohere.generate({
-      model: "command-light",
+      model: "command",
       prompt: prompt,
       temperature: 0.3,
-      maxTokens: 3000,
+      max_tokens: 3000, // snake_case REQUIRED
     });
 
-    const text = response.text || "";
+    const text = response.generations[0].text;
 
     //-------------------------------------------------------------------------------
     let cleanText = text
@@ -583,13 +583,13 @@ app.post("/api/check", async (req, res) => {
     // });
     // const text = completion.choices[0]?.message?.content || "";
     const response = await cohere.generate({
-      model: "command-light",
+      model: "command",
       prompt: prompt,
       temperature: 0.3,
-      maxTokens: 3000,
+      max_tokens: 3000, // snake_case REQUIRED
     });
 
-    const text = response.text || "";
+    const text = response.generations[0].text;
 
     //-----------------------------------------------------------------------------------------------
     const cleanText = text
