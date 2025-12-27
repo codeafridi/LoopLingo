@@ -445,7 +445,7 @@ app.post("/api/generate", async (req, res) => {
     // });
 
     // const text = completion.choices[0]?.message?.content || "";
-    const response = await cohere.chat({
+    const response = await cohere.generate({
       model: "command-light",
       message: prompt,
       temperature: 0.3,
@@ -530,7 +530,7 @@ app.post("/api/grade-essay", async (req, res) => {
     // });
 
     // const text = completion.choices[0]?.message?.content || "";
-    const response = await cohere.chat({
+    const response = await cohere.generate({
       model: "command-light",
       message: prompt,
       temperature: 0.3,
@@ -582,7 +582,7 @@ app.post("/api/check", async (req, res) => {
     //   model: "llama-3.1-8b-instant",
     // });
     // const text = completion.choices[0]?.message?.content || "";
-    const response = await cohere.chat({
+    const response = await cohere.generate({
       model: "command-light",
       message: prompt,
       temperature: 0.3,
