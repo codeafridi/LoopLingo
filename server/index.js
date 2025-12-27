@@ -1,8 +1,7 @@
 require("dotenv").config(); // MUST be first line
 
-const { Mistral } = require("@mistralai/mistralai");
-
-const mistral = new Mistral({
+const MistralClient = require("@mistralai/mistralai").default;
+const mistral = new MistralClient({
   apiKey: process.env.MISTRAL_API_KEY,
 });
 
@@ -445,14 +444,14 @@ app.post("/api/generate", async (req, res) => {
     // });
 
     // const text = completion.choices[0]?.message?.content || "";
-    const response = await mistral.chat({
+    const completion = await mistral.chatCompletion({
       model: "mistral-small-latest",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
       max_tokens: 3000,
     });
 
-    const text = response.choices[0].message.content;
+    const text = completion.choices[0].message.content;
 
     //-------------------------------------------------------------------------------------------------
     // --- JSON CLEANER ---
@@ -530,14 +529,14 @@ app.post("/api/grade-essay", async (req, res) => {
     // });
 
     // const text = completion.choices[0]?.message?.content || "";
-    const response = await mistral.chat({
+    const completion = await mistral.chatCompletion({
       model: "mistral-small-latest",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
       max_tokens: 3000,
     });
 
-    const text = response.choices[0].message.content;
+    const text = completion.choices[0].message.content;
 
     //-------------------------------------------------------------------------------
     let cleanText = text
@@ -582,14 +581,14 @@ app.post("/api/check", async (req, res) => {
     //   model: "llama-3.1-8b-instant",
     // });
     // const text = completion.choices[0]?.message?.content || "";
-    const response = await mistral.chat({
+    const completion = await mistral.chatCompletion({
       model: "mistral-small-latest",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
       max_tokens: 3000,
     });
 
-    const text = response.choices[0].message.content;
+    const text = completion.choices[0].message.content;
 
     //-----------------------------------------------------------------------------------------------
     const cleanText = text
