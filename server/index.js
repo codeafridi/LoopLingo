@@ -1,10 +1,10 @@
 require("dotenv").config(); // MUST be first line
 
-// const { CohereClient } = require("cohere-ai");
+const { CohereClient } = require("cohere-ai");
 
-// const cohere = new CohereClient({
-//   token: process.env.COHERE_API_KEY,
-// });
+const cohere = new CohereClient({
+  token: process.env.COHERE_API_KEY,
+});
 
 //---------------------------------------------------------------------------------------------------------------
 
@@ -437,22 +437,22 @@ app.post("/api/generate", async (req, res) => {
   `;
   //-------------------------------------------------------------------------------------------------
   try {
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.1-8b-instant",
-      temperature: 0.3,
-      max_tokens: 3000,
-    });
-
-    const text = completion.choices[0]?.message?.content || "";
-    // const response = await cohere.chat({
-    //   model: "aya-23",
-    //   message: prompt,
+    // const completion = await groq.chat.completions.create({
+    //   messages: [{ role: "user", content: prompt }],
+    //   model: "llama-3.1-8b-instant",
     //   temperature: 0.3,
     //   max_tokens: 3000,
     // });
 
-    // const text = response.text || "";
+    // const text = completion.choices[0]?.message?.content || "";
+    const response = await cohere.chat({
+      model: "command-r",
+      message: prompt,
+      temperature: 0.3,
+      max_tokens: 3000,
+    });
+
+    const text = response.text || "";
 
     //-------------------------------------------------------------------------------------------------
     // --- JSON CLEANER ---
@@ -523,21 +523,21 @@ app.post("/api/grade-essay", async (req, res) => {
   //----------------------------------------------------------------------------------
   try {
     // ✨ FIX: USING GROQ HERE INSTEAD OF OPENAI
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.1-8b-instant",
-      temperature: 0.1,
-    });
-
-    const text = completion.choices[0]?.message?.content || "";
-    // const response = await cohere.chat({
-    //   model: "aya-23",
-    //   message: prompt,
-    //   temperature: 0.3,
-    //   max_tokens: 3000,
+    // const completion = await groq.chat.completions.create({
+    //   messages: [{ role: "user", content: prompt }],
+    //   model: "llama-3.1-8b-instant",
+    //   temperature: 0.1,
     // });
 
-    // const text = response.text || "";
+    // const text = completion.choices[0]?.message?.content || "";
+    const response = await cohere.chat({
+      model: "command-r",
+      message: prompt,
+      temperature: 0.3,
+      max_tokens: 3000,
+    });
+
+    const text = response.text || "";
 
     //-------------------------------------------------------------------------------
     let cleanText = text
@@ -577,20 +577,20 @@ app.post("/api/check", async (req, res) => {
     `;
   //-------------------------------------------------------------------------------------------------
   try {
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.1-8b-instant",
-    });
-    const text = completion.choices[0]?.message?.content || "";
-
-    // const response = await cohere.chat({
-    //   model: "aya-23",
-    //   message: prompt,
-    //   temperature: 0.3,
-    //   max_tokens: 3000,
+    // const completion = await groq.chat.completions.create({
+    //   messages: [{ role: "user", content: prompt }],
+    //   model: "llama-3.1-8b-instant",
     // });
+    // const text = completion.choices[0]?.message?.content || "";
 
-    // const text = response.text || "";
+    const response = await cohere.chat({
+      model: "command-r",
+      message: prompt,
+      temperature: 0.3,
+      max_tokens: 3000,
+    });
+
+    const text = response.text || "";
 
     //-----------------------------------------------------------------------------------------------
     const cleanText = text
