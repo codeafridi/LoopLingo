@@ -1,9 +1,9 @@
 require("dotenv").config(); // MUST be first line
 
-const { CohereClient } = require("cohere-ai");
+import { Mistral } from "@mistralai/mistralai";
 
-const cohere = new CohereClient({
-  token: process.env.COHERE_API_KEY,
+const mistral = new Mistral({
+  apiKey: process.env.MISTRAL_API_KEY,
 });
 
 //---------------------------------------------------------------------------------------------------------------
@@ -445,14 +445,14 @@ app.post("/api/generate", async (req, res) => {
     // });
 
     // const text = completion.choices[0]?.message?.content || "";
-    const response = await cohere.generate({
-      model: "command",
-      prompt: prompt,
+    const response = await mistral.chat.completions.create({
+      model: "mistral-small-latest",
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
-      max_tokens: 3000, // snake_case REQUIRED
+      max_tokens: 3000,
     });
 
-    const text = response.generations[0].text;
+    const text = response.choices[0].message.content;
 
     //-------------------------------------------------------------------------------------------------
     // --- JSON CLEANER ---
@@ -530,14 +530,14 @@ app.post("/api/grade-essay", async (req, res) => {
     // });
 
     // const text = completion.choices[0]?.message?.content || "";
-    const response = await cohere.generate({
-      model: "command",
-      prompt: prompt,
+    const response = await mistral.chat.completions.create({
+      model: "mistral-small-latest",
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
-      max_tokens: 3000, // snake_case REQUIRED
+      max_tokens: 3000,
     });
 
-    const text = response.generations[0].text;
+    const text = response.choices[0].message.content;
 
     //-------------------------------------------------------------------------------
     let cleanText = text
@@ -582,14 +582,14 @@ app.post("/api/check", async (req, res) => {
     //   model: "llama-3.1-8b-instant",
     // });
     // const text = completion.choices[0]?.message?.content || "";
-    const response = await cohere.generate({
-      model: "command",
-      prompt: prompt,
+    const response = await mistral.chat.completions.create({
+      model: "mistral-small-latest",
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
-      max_tokens: 3000, // snake_case REQUIRED
+      max_tokens: 3000,
     });
 
-    const text = response.generations[0].text;
+    const text = response.choices[0].message.content;
 
     //-----------------------------------------------------------------------------------------------
     const cleanText = text
