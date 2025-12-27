@@ -11,7 +11,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@mistralai/mistralai": "^1.11.0",
     "@supabase/supabase-js": "^2.89.0",
     "axios": "^1.13.2",
     "body-parser": "^2.2.1",

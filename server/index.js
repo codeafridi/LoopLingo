@@ -1,11 +1,5 @@
 require("dotenv").config(); // MUST be first line
 
-const { Mistral } = require("@mistralai/mistralai");
-
-const mistral = new Mistral({
-  apiKey: process.env.MISTRAL_API_KEY,
-});
-
 //---------------------------------------------------------------------------------------------------------------
 
 const { query } = require("./db");
@@ -445,14 +439,23 @@ app.post("/api/generate", async (req, res) => {
     // });
 
     // const text = completion.choices[0]?.message?.content || "";
-    const completion = await mistral.chat.completions.create({
-      model: "mistral-small-latest",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      max_tokens: 3000,
-    });
+    const response = await axios.post(
+      "https://api.mistral.ai/v1/chat/completions",
+      {
+        model: "mistral-small-latest",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        max_tokens: 3000,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    const text = completion.choices[0].message.content;
+    const text = response.data.choices[0].message.content;
 
     //-------------------------------------------------------------------------------------------------
     // --- JSON CLEANER ---
@@ -530,14 +533,23 @@ app.post("/api/grade-essay", async (req, res) => {
     // });
 
     // const text = completion.choices[0]?.message?.content || "";
-    const completion = await mistral.chat.completions.create({
-      model: "mistral-small-latest",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      max_tokens: 3000,
-    });
+    const response = await axios.post(
+      "https://api.mistral.ai/v1/chat/completions",
+      {
+        model: "mistral-small-latest",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        max_tokens: 3000,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    const text = completion.choices[0].message.content;
+    const text = response.data.choices[0].message.content;
 
     //-------------------------------------------------------------------------------
     let cleanText = text
@@ -582,14 +594,23 @@ app.post("/api/check", async (req, res) => {
     //   model: "llama-3.1-8b-instant",
     // });
     // const text = completion.choices[0]?.message?.content || "";
-    const completion = await mistral.chat.completions.create({
-      model: "mistral-small-latest",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      max_tokens: 3000,
-    });
+    const response = await axios.post(
+      "https://api.mistral.ai/v1/chat/completions",
+      {
+        model: "mistral-small-latest",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        max_tokens: 3000,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    const text = completion.choices[0].message.content;
+    const text = response.data.choices[0].message.content;
 
     //-----------------------------------------------------------------------------------------------
     const cleanText = text
