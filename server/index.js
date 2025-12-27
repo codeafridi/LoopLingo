@@ -446,7 +446,7 @@ app.post("/api/generate", async (req, res) => {
 
     // const text = completion.choices[0]?.message?.content || "";
     const response = await cohere.chat({
-      model: "command-r",
+      model: "command-light",
 
       // REQUIRED
       message: prompt,
@@ -542,7 +542,7 @@ app.post("/api/grade-essay", async (req, res) => {
 
     // const text = completion.choices[0]?.message?.content || "";
     const response = await cohere.chat({
-      model: "command-r",
+      model: "command-light",
 
       // REQUIRED
       message: prompt,
@@ -605,7 +605,7 @@ app.post("/api/check", async (req, res) => {
     // });
     // const text = completion.choices[0]?.message?.content || "";
     const response = await cohere.chat({
-      model: "command-r",
+      model: "command-light",
 
       // REQUIRED
       message: prompt,
