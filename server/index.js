@@ -615,7 +615,7 @@ app.post("/api/kestra-callback", (req, res) => {
     id: Date.now(),
     user,
     message,
-    type, // 'success' or 'warning'
+    type, // 'success' or 'warni ng'
     read: false,
     timestamp: new Date(),
   });
