@@ -530,7 +530,7 @@ app.post("/api/grade-essay", async (req, res) => {
     // const completion = await mistral.chatCompletion({
     //   model: "mistral-small-latest",
     //   messages: [{ role: "user", content: prompt }],
-    //   temperature: 0.3,
+    //   temperature: 0.3 ,
     //   max_tokens: 3000,
     // });
 
