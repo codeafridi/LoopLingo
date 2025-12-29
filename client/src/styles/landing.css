@@ -536,3 +536,33 @@ RESET :root {
     transform: none;
   }
 }
+/* ===================== HERO MOBILE ALIGNMENT ===================== */
+@media (max-width: 768px) {
+  .lp-hero-grid {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .lp-hero h1 {
+    font-size: 36px;
+    line-height: 1.2;
+  }
+
+  .lp-hero p {
+    font-size: 16px;
+  }
+
+  .lp-hero-cta {
+    flex-direction: column;
+  }
+
+  .lp-btn-primary,
+  .lp-btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  .hero-image {
+    display: none;
+  }
+}
