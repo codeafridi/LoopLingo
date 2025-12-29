@@ -399,3 +399,101 @@ RESET :root {
   object-fit: cover;
   border-radius: 28px;
 }
+
+/* ================= MOBILE FIX ================= */
+@media (max-width: 768px) {
+  /* CONTAINER */
+  .lp-container {
+    padding: 48px 16px;
+  }
+
+  /* NAVBAR */
+  .lp-nav-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .lp-nav-links {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .lp-nav-links a {
+    margin-left: 0;
+    font-size: 14px;
+  }
+
+  /* HERO LAYOUT */
+  .lp-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: left;
+  }
+
+  .lp-hero h1 {
+    font-size: 34px;
+    line-height: 1.15;
+  }
+
+  .lp-hero p {
+    font-size: 16px;
+  }
+
+  /* CTA STACK */
+  .lp-hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lp-btn-primary,
+  .lp-btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* HERO IMAGE */
+  .hero-image {
+    padding-right: 0;
+    justify-content: center;
+  }
+
+  .dashboard-preview {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    transform: none;
+  }
+
+  /* FEATURES GRID */
+  .lp-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* STEPS */
+  .lp-steps {
+    grid-template-columns: 1fr;
+  }
+
+  /* PREVIEW SECTION */
+  .lp-preview-box {
+    height: 360px;
+    border-radius: 20px;
+  }
+
+  /* SECTION HEADINGS */
+  .lp-section h2 {
+    font-size: 28px;
+  }
+
+  .lp-subtitle {
+    font-size: 15px;
+  }
+
+  /* FOOTER */
+  .lp-footer {
+    padding: 24px;
+  }
+}
