@@ -8,12 +8,19 @@ export default function LandingPage({ onEnter }) {
         <div className="lp-container lp-nav-inner">
           <div className="lp-logo">LoopLingo</div>
           <div className="lp-nav-links">
-            <a href="#how">How it works</a>
-            <a href="#features">Features</a>
-            <a href="#faq">FAQs</a>
-            <button className="lp-btn-primary" onClick={onEnter}>
-              Try LoopLingo
-            </button>
+            <input type="checkbox" id="nav-toggle" />
+            <label htmlFor="nav-toggle" className="lp-hamburger">
+              ☰
+            </label>
+
+            <div className="lp-mobile-menu">
+              <a href="#how">How it works</a>
+              <a href="#features">Features</a>
+              <a href="#faq">FAQs</a>
+              <a className="lp-btn-primary" href="/app">
+                Try LoopLingo
+              </a>
+            </div>
           </div>
         </div>
       </nav>

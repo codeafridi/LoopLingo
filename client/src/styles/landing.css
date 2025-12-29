@@ -566,3 +566,65 @@ RESET :root {
     display: none;
   }
 }
+/* ===================== SAAS MOBILE NAV ===================== */
+
+#nav-toggle {
+  display: none;
+}
+
+.lp-hamburger {
+  display: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .lp-nav-inner {
+    padding: 0 16px;
+  }
+
+  /* hide desktop links */
+  .lp-nav-links a {
+    display: none;
+  }
+
+  /* show hamburger */
+  .lp-hamburger {
+    display: block;
+  }
+
+  /* dropdown container */
+  .lp-mobile-menu {
+    position: absolute;
+    top: 64px;
+    right: 16px;
+    width: 220px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.18);
+    padding: 12px;
+    display: none;
+    z-index: 50;
+  }
+
+  /* open menu */
+  #nav-toggle:checked + .lp-hamburger + .lp-mobile-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .lp-mobile-menu a {
+    display: block;
+    padding: 10px 12px;
+    color: #0f172a;
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  .lp-mobile-menu .lp-btn-primary {
+    margin-top: 6px;
+    text-align: center;
+  }
+}
