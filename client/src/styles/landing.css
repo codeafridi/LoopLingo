@@ -497,3 +497,42 @@ RESET :root {
     padding: 24px;
   }
 }
+/* ================= SAAS-STYLE MOBILE HEADER ================= */
+@media (max-width: 768px) {
+  .lp-navbar {
+    padding: 0;
+  }
+
+  .lp-nav-inner {
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+  }
+
+  /* LOGO */
+  .lp-logo {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  /* HIDE TEXT LINKS ON MOBILE (SaaS STANDARD) */
+  .lp-nav-links a:not(.lp-btn-primary) {
+    display: none;
+  }
+
+  /* CTA BUTTON */
+  .lp-nav-links {
+    display: flex;
+    align-items: center;
+  }
+
+  .lp-nav-links .lp-btn-primary {
+    padding: 10px 18px;
+    font-size: 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+    margin-left: 0;
+    transform: none;
+  }
+}
