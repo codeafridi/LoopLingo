@@ -1,0 +1,400 @@
+RESET :root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --fast: 160ms;
+  --normal: 240ms;
+}
+
+.lp-root {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #0f172a;
+}
+
+/* CONTAINER */
+.lp-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+/* NAVBAR */
+.lp-navbar {
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 10;
+}
+
+.lp-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+}
+
+.lp-logo {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.lp-nav-links a {
+  margin-left: 24px;
+  text-decoration: none;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.lp-nav-links .lp-btn-primary {
+  background-color: #010512;
+}
+
+.lp-nav-links .lp-btn-primary {
+  color: #e5e7eb;
+}
+
+/* HERO */
+.lp-hero {
+  background: linear-gradient(180deg, #0b1220, #020617);
+  color: #ffffff;
+}
+
+.lp-hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.lp-hero h1 {
+  font-size: 52px;
+  line-height: 1.1;
+}
+
+.lp-hero p {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #cbd5f5;
+}
+
+.lp-hero-cta {
+  margin-top: 32px;
+  display: flex;
+  gap: 16px;
+}
+
+.lp-supported {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+/* MOCK */
+.lp-hero-mock {
+  background: #020617;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+}
+
+.lp-mock-box {
+  height: 44px;
+  background: #1e293b;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.lp-mock-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  background: #22c55e;
+  border: none;
+  font-weight: 600;
+}
+
+/* BUTTONS */
+.lp-btn-primary {
+  background: #fefcfc;
+  color: #0f0101;
+  padding: 14px 22px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.lp-btn-primary.large {
+  font-size: 18px;
+  padding: 18px 36px;
+  color: #010512;
+}
+
+.lp-btn-secondary {
+  border: 1px solid #e5e7eb;
+  padding: 14px 22px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #f0f2f8;
+}
+
+/* SECTIONS */
+.lp-section {
+  background: #ffffff;
+}
+
+.lp-muted {
+  background: #f8fafc;
+}
+
+.lp-section h2 {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.lp-subtitle {
+  color: #475569;
+  margin-bottom: 48px;
+}
+
+/* GRID */
+.lp-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.lp-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.lp-card h3 {
+  margin-bottom: 10px;
+}
+
+/* STEPS */
+.lp-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.lp-step {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.lp-step span {
+  display: inline-block;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* PREVIEW */
+.lp-preview-box {
+  width: 100%;
+  height: 695px; /* ← increase this */
+  border-radius: 28px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0b1220, #0f1b33);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6);
+}
+
+/* FAQ */
+.lp-faq details {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+
+/* FINAL */
+.lp-final {
+  background: #020617;
+  color: #ffffff;
+  text-align: center;
+}
+
+.lp-final h2 {
+  margin-bottom: 32px;
+}
+
+/* FOOTER */
+.lp-footer {
+  text-align: center;
+  padding: 40px;
+  font-size: 14px;
+  color: #64748b;
+}
+.hero-form input,
+.hero-form select {
+  color: #ffffff;
+}
+
+.hero-form input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.hero {
+  min-height: auto;
+  padding: 96px 64px;
+}
+.hero-form input,
+.hero-form select {
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+
+  color: #ffffff;
+  font-size: 15px;
+  outline: none;
+}
+
+.hero-form input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.hero-form input:focus,
+.hero-form select:focus {
+  border-color: #22c55e;
+  background: rgba(255, 255, 255, 0.08);
+}
+.hero-form {
+  backdrop-filter: blur(14px);
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+}
+.hero-image {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 40px;
+}
+
+.dashboard-preview {
+  width: 500px; /* main size */
+  max-width: none; /* REMOVE auto shrinking */
+  height: auto;
+  height: 300px;
+
+  border-radius: 24px;
+
+  box-shadow: 0 60px 120px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+
+  transform: translateX(20px); /* slight bleed */
+}
+
+@media (max-width: 1024px) {
+  .hero-image {
+    margin-top: 40px;
+    justify-content: center;
+  }
+
+  .hero-image img {
+    width: 90%;
+  }
+}
+
+/* ================= BUTTON MICRO-INTERACTIONS ================= */
+
+/* PRIMARY BUTTON (Get Started / Try LoopLingo / Enter Dashboard) */
+.lp-btn-primary {
+  position: relative;
+  overflow: hidden;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1), filter 160ms ease;
+}
+
+/* hover lift */
+.lp-btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 18px 45px rgba(34, 197, 94, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  filter: brightness(1.08);
+}
+
+/* click press */
+.lp-btn-primary:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.35);
+}
+
+/* glow sweep */
+.lp-btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.35),
+    transparent 80%
+  );
+  transform: translateX(-120%);
+  transition: transform 500ms ease;
+}
+
+.lp-btn-primary:hover::after {
+  transform: translateX(120%);
+}
+
+/* ================= SECONDARY BUTTON ================= */
+
+.lp-btn-secondary {
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 140ms ease, border-color 140ms ease;
+}
+
+.lp-btn-secondary:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.lp-btn-secondary:active {
+  transform: scale(0.96);
+}
+
+/* ================= NAV CTA (Try LoopLingo) ================= */
+
+.lp-nav-links .lp-btn-primary {
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lp-nav-links .lp-btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.45);
+}
+
+/* ================= REDUCE MOTION (ACCESSIBILITY) ================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-btn-primary,
+  .lp-btn-secondary {
+    transition: none !important;
+  }
+
+  .lp-btn-primary::after {
+    display: none;
+  }
+}
+
+.lp-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 28px;
+}

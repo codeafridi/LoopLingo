@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 import { COURSE_DATA } from "./data";
+import LandingPage from "./components/LandingPage";
+import "./styles/landing.css";
 
 // --- HELPER ---
 const getString = (val) => {
@@ -19,7 +21,7 @@ const getString = (val) => {
 };
 
 function App() {
-  const [view, setView] = useState("setup");
+  const [view, setView] = useState("landing");
   const [notifications, setNotifications] = useState([]);
   const [showNotifs, setShowNotifs] = useState(false);
   const [essayLevel, setEssayLevel] = useState(1);
@@ -41,14 +43,21 @@ function App() {
 
   // Add this useEffect inside App()
   useEffect(() => {
+    setView("landing");
+  }, []);
+
+  useEffect(() => {
+    if (view === "landing") return;
+
     const interval = setInterval(() => {
       axios
         .get("https://looplingo.onrender.com/api/notifications")
         .then((res) => setNotifications(res.data))
-        .catch((err) => console.error(err));
-    }, 5000); // Check every 5 seconds
+        .catch(console.error);
+    }, 5000);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [view]);
 
   // --- HANDLERS ---
   const handleLangChange = (e) => {
@@ -258,6 +267,10 @@ function App() {
 
   // ================= VIEWS =================
   // 1. SETUP
+  if (view === "landing") {
+    return <LandingPage onEnter={() => setView("setup")} />;
+  }
+
   if (view === "setup") {
     return (
       <div className="landing-page">
