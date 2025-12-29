@@ -628,3 +628,90 @@ RESET :root {
     text-align: center;
   }
 }
+/* ================= MOBILE LAYOUT FIX ================= */
+@media (max-width: 768px) {
+  /* GLOBAL */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .lp-container {
+    padding: 56px 16px;
+  }
+
+  /* NAVBAR */
+  .lp-nav-inner {
+    padding: 12px 16px;
+  }
+
+  /* HERO */
+  .lp-hero {
+    text-align: left;
+  }
+
+  .lp-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .lp-hero h1 {
+    font-size: 34px;
+    line-height: 1.15;
+    max-width: 100%;
+  }
+
+  .lp-hero p {
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 100%;
+  }
+
+  /* CTA BUTTONS */
+  .lp-hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .lp-btn-primary,
+  .lp-btn-secondary {
+    width: 100%;
+    text-align: center;
+    padding: 14px 0;
+  }
+
+  /* REMOVE DESKTOP BLEED */
+  .hero-image {
+    padding-right: 0;
+    justify-content: center;
+  }
+
+  .dashboard-preview {
+    width: 100%;
+    max-width: 100%;
+    transform: none;
+  }
+
+  /* PREVIEW SECTION */
+  .lp-preview-box {
+    height: auto;
+    padding: 0;
+  }
+
+  .lp-preview-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  /* GRID SECTIONS */
+  .lp-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .lp-steps {
+    grid-template-columns: 1fr;
+  }
+}
