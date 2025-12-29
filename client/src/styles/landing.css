@@ -51,6 +51,7 @@ RESET :root {
 
 .lp-nav-links .lp-btn-primary {
   color: #e5e7eb;
+  right: -30px;
 }
 
 /* HERO */
