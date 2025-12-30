@@ -297,12 +297,12 @@ function App() {
           {/* NOTIFICATION BELL (anchored dropdown) */}
           <div
             className="notif-container"
-            onClick={() => setShowNotifs(!showNotifs)}
             style={{
               position: "relative",
               display: "inline-block",
               cursor: "pointer",
             }}
+            onClick={() => setShowNotifs((s) => !s)}
           >
             <span className="bell-icon">🔔</span>
             {notifications.length > 0 && (
@@ -944,20 +944,20 @@ function MatchingGame({ data, index, onResult }) {
   const [hasReported, setHasReported] = useState(false); // Prevent double reporting
 
   useEffect(() => {
-    if (!data.pairs) return;
+    if (!data?.pairs) return;
     const list = [];
     data.pairs.forEach((pair, idx) => {
       list.push({
         id: idx,
         type: "left",
         text: getString(pair.left),
-        uuid: Math.random(),
+        uuid: Math.random().toString(36).slice(2),
       });
       list.push({
         id: idx,
         type: "right",
         text: getString(pair.right),
-        uuid: Math.random(),
+        uuid: Math.random().toString(36).slice(2),
       });
     });
     setItems(list.sort(() => Math.random() - 0.5));
@@ -968,25 +968,28 @@ function MatchingGame({ data, index, onResult }) {
 
     if (!selected) {
       setSelected(item);
+      return;
+    }
+
+    // clicking the same item toggles selection
+    if (selected.uuid === item.uuid) {
+      setSelected(null);
+      return;
+    }
+
+    if (selected.id === item.id) {
+      setMatched((prev) => [...prev, item.id]);
+      setSelected(null);
     } else {
-      if (selected.uuid === item.uuid) {
+      setWrong([selected.uuid, item.uuid]);
+      setTimeout(() => {
+        setWrong(null);
         setSelected(null);
-        return;
-      }
-      if (selected.id === item.id) {
-        setMatched([...matched, item.id]);
-        setSelected(null);
-      } else {
-        setWrong([selected.uuid, item.uuid]);
-        setTimeout(() => {
-          setWrong(null);
-          setSelected(null);
-        }, 800);
-      }
+      }, 800);
     }
   };
 
-  const isComplete = data.pairs && matched.length === data.pairs.length;
+  const isComplete = data?.pairs && matched.length === data.pairs.length;
 
   useEffect(() => {
     if (isComplete && !hasReported) {
@@ -998,8 +1001,7 @@ function MatchingGame({ data, index, onResult }) {
   return (
     <div className="matching-game-container">
       <div className="q-number">
-        {" "}
-        {index}. {getString(data.question)}{" "}
+        {index}. {getString(data.question)}
       </div>
       <div className="matching-grid">
         {items.map((item) => {
@@ -1018,8 +1020,7 @@ function MatchingGame({ data, index, onResult }) {
               className={statusClass}
               onClick={() => handleClick(item)}
             >
-              {" "}
-              {item.text}{" "}
+              {item.text}
             </button>
           );
         })}
@@ -1031,7 +1032,6 @@ function MatchingGame({ data, index, onResult }) {
   );
 }
 
-// ... (EssayComponent and ListeningStoryComponent remain same) ...
 function EssayComponent({ data, lang, onNext }) {
   const [userText, setUserText] = useState("");
   const [result, setResult] = useState(null);
@@ -1051,17 +1051,17 @@ function EssayComponent({ data, lang, onNext }) {
         "https://looplingo.onrender.com/api/grade-essay",
         {
           userText,
-          originalText: data.english_text,
-          referenceText: data.french_reference,
+          originalText: data.english_text || "",
+          referenceText: data.french_reference || data.language_reference || "",
           language: lang,
         }
       );
       setResult(res.data);
     } catch (e) {
       alert("Grading failed.");
+    } finally {
       setGrading(false);
     }
-    setGrading(false);
   };
 
   return (
@@ -1088,8 +1088,7 @@ function EssayComponent({ data, lang, onNext }) {
             onClick={handleSubmit}
             disabled={grading}
           >
-            {" "}
-            {grading ? "Grading..." : "Submit Essay"}{" "}
+            {grading ? "Grading..." : "Submit Essay"}
           </button>
         ) : (
           <div className="essay-result">
@@ -1107,10 +1106,9 @@ function EssayComponent({ data, lang, onNext }) {
             <button
               className="finish-btn"
               onClick={onNext}
-              style={{ backgroundColor: "#3b82f6", marginTop: "30px" }}
+              style={{ backgroundColor: "#3b82f6", marginTop: 20 }}
             >
-              {" "}
-              Next Essay Scenario ➔{" "}
+              Next Essay Scenario ➔
             </button>
           </div>
         )}
@@ -1119,9 +1117,7 @@ function EssayComponent({ data, lang, onNext }) {
   );
 }
 
-// --- COMPONENT: LISTENING STORY (Fixed Variable Name) ---
 function ListeningStoryComponent({ data }) {
-  // State is named 'isPlaying' and 'setIsPlaying'
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [answers, setAnswers] = useState({});
@@ -1132,11 +1128,9 @@ function ListeningStoryComponent({ data }) {
     window.speechSynthesis.cancel();
     setAnswers({});
     setSubmitted(false);
-    setIsPlaying(false); // Fixed
+    setIsPlaying(false);
     setIsPaused(false);
-    return () => {
-      window.speechSynthesis.cancel();
-    };
+    return () => window.speechSynthesis.cancel();
   }, [data]);
 
   useEffect(() => {
@@ -1146,14 +1140,13 @@ function ListeningStoryComponent({ data }) {
   }, []);
 
   const detectLang = () => {
-    if (/[\u0900-\u097F]/.test(data.script)) return "hi"; // Hindi (Devanagari)
-    if (/[\u3040-\u30FF\u4E00-\u9FFF]/.test(data.script)) return "ja"; // Japanese
-    return "fr"; // default
+    if (/[\u0900-\u097F]/.test(data?.script || "")) return "hi";
+    if (/[\u3040-\u30FF\u4E00-\u9FFF]/.test(data?.script || "")) return "ja";
+    return "fr";
   };
 
   const toggleAudio = () => {
     const synth = window.speechSynthesis;
-    // Use 'isPlaying' variable
     if (isPlaying) {
       if (isPaused) {
         synth.resume();
@@ -1162,47 +1155,27 @@ function ListeningStoryComponent({ data }) {
         synth.pause();
         setIsPaused(true);
       }
-    } else {
-      if (!data.script) return;
-      const utterance = new SpeechSynthesisUtterance(data.script);
-
-      const langCode = detectLang();
-
-      // pick voice by detected language
-      const bestVoice =
-        voices.find(
-          (v) =>
-            v.lang.startsWith(langCode) &&
-            v.name.toLowerCase().includes("google")
-        ) || voices.find((v) => v.lang.startsWith(langCode));
-
-      utterance.lang =
-        langCode === "hi" ? "hi-IN" : langCode === "ja" ? "ja-JP" : "fr-FR";
-
-      if (bestVoice) utterance.voice = bestVoice;
-
-      // pacing fixes
-      utterance.rate = langCode === "ja" ? 0.9 : langCode === "hi" ? 0.85 : 0.8;
-
-      // ✨ FIX: Use setIsPlaying instead of setIsSpeaking
-      utterance.onstart = () => {
-        setIsPlaying(true);
-        setIsPaused(false);
-      };
-      utterance.onend = () => {
-        setIsPlaying(false);
-        setIsPaused(false);
-      };
-      utterance.onerror = (e) => {
-        console.error("Audio error", e);
-        setIsPlaying(false);
-      };
-      synth.speak(utterance);
+      return;
     }
+    if (!data?.script) return;
+    const utterance = new SpeechSynthesisUtterance(data.script);
+    const langCode = detectLang();
+    utterance.lang =
+      langCode === "hi" ? "hi-IN" : langCode === "ja" ? "ja-JP" : "fr-FR";
+    utterance.rate = langCode === "ja" ? 0.9 : langCode === "hi" ? 0.85 : 0.8;
+    utterance.onstart = () => {
+      setIsPlaying(true);
+      setIsPaused(false);
+    };
+    utterance.onend = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+    };
+    utterance.onerror = () => setIsPlaying(false);
+    synth.speak(utterance);
   };
 
   const handleSelect = (qId, val) => setAnswers({ ...answers, [qId]: val });
-
   const checkAnswers = () => setSubmitted(true);
 
   const score = data.questions
@@ -1213,82 +1186,70 @@ function ListeningStoryComponent({ data }) {
       )
     : 0;
 
-  // Use 'isPlaying' variable
   const isAnimating = isPlaying && !isPaused;
 
   return (
     <div className="listening-container">
       <div className={`audio-player-card ${isAnimating ? "playing" : ""}`}>
-        {" "}
-        {/* Use 'isPlaying' variable */}
         <button className="play-fab" onClick={toggleAudio}>
-          {" "}
-          {isPlaying && !isPaused ? "⏸" : "▶"}{" "}
+          {isPlaying && !isPaused ? "⏸" : "▶"}
         </button>
         <div className="audio-visualizer">
           <div className="bar"></div>
           <div className="bar"></div>
           <div className="bar"></div>
-        </div>{" "}
-        {/* Use 'isPlaying' variable */}
+        </div>
         <div className="player-text">
-          {" "}
-          {!isPlaying
-            ? "Click to Play"
-            : isPaused
-            ? "Paused"
-            : "Listening..."}{" "}
+          {!isPlaying ? "Click to Play" : isPaused ? "Paused" : "Listening..."}
         </div>
       </div>
+
       <div className="story-questions">
-        {data.questions &&
-          data.questions.map((q, i) => (
-            <div key={q.id || i} className="story-q-item">
-              <p className="story-q-text">
-                {" "}
-                {i + 1}. {getString(q.question)}{" "}
-              </p>
-              <div className="story-options">
-                {q.options.map((opt) => (
-                  <label
-                    key={getString(opt)}
-                    className={`story-opt ${
-                      submitted && getString(opt) === getString(q.answer)
-                        ? "correct"
-                        : ""
-                    } ${
-                      submitted &&
-                      getString(answers[q.id]) === getString(opt) &&
-                      getString(opt) !== getString(q.answer)
-                        ? "wrong"
-                        : ""
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name={`q-${q.id}`}
-                      value={getString(opt)}
-                      onChange={() => handleSelect(q.id, getString(opt))}
-                      disabled={submitted}
-                      checked={getString(answers[q.id]) === getString(opt)}
-                    />
-                    {getString(opt)}
-                  </label>
-                ))}
-              </div>
+        {data.questions?.map((q, i) => (
+          <div key={q.id || i} className="story-q-item">
+            <p className="story-q-text">
+              {i + 1}. {getString(q.question)}
+            </p>
+            <div className="story-options">
+              {q.options.map((opt) => (
+                <label
+                  key={getString(opt)}
+                  className={`story-opt ${
+                    submitted && getString(opt) === getString(q.answer)
+                      ? "correct"
+                      : ""
+                  } ${
+                    submitted &&
+                    getString(answers[q.id]) === getString(opt) &&
+                    getString(opt) !== getString(q.answer)
+                      ? "wrong"
+                      : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`q-${q.id}`}
+                    value={getString(opt)}
+                    onChange={() => handleSelect(q.id, getString(opt))}
+                    disabled={submitted}
+                    checked={getString(answers[q.id]) === getString(opt)}
+                  />
+                  {getString(opt)}
+                </label>
+              ))}
             </div>
-          ))}
+          </div>
+        ))}
       </div>
+
       {!submitted ? (
         <button className="check-story-btn" onClick={checkAnswers}>
-          {" "}
-          Check Answers{" "}
+          Check Answers
         </button>
       ) : (
         <div className="story-result">
           <h3>
-            {" "}
-            You got {score} / {data.questions.length} correct!{" "}
+            You got {score} / {data.questions.length} correct!
           </h3>
           <div className="transcript-reveal">
             <h4>Transcript:</h4>
