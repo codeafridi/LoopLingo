@@ -4,45 +4,35 @@ const pool = require("../db");
 
 /**
  * GET /progress
- * Fetch all progress (temporary: no auth)
+ * Fetch all progress or filter by ?user_id=...
  */
 router.get("/", async (req, res) => {
+  // handle optional user_id query
+  const { user_id } = req.query;
+
   try {
+    if (user_id) {
+      const { rows } = await pool.query(
+        "SELECT * FROM user_progress WHERE user_id = $1 ORDER BY created_at DESC",
+        [user_id]
+      );
+      return res.json(rows);
+    }
+
     const { rows } = await pool.query(
       "SELECT * FROM user_progress ORDER BY created_at DESC"
     );
-    res.json(rows);
+    return res.json(rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch progress" });
+    return res.status(500).json({ error: "Failed to fetch progress" });
   }
 });
 
 /**
  * POST /progress
- * Insert new progress
+ * Insert new progress (upsert)
  */
-// Get progress by user_id
-router.get("/", async (req, res) => {
-  const { user_id } = req.query;
-
-  if (!user_id) {
-    return res.status(400).json({ error: "user_id required" });
-  }
-
-  try {
-    const { rows } = await pool.query(
-      "SELECT * FROM user_progress WHERE user_id = $1 ORDER BY created_at DESC",
-      [user_id]
-    );
-
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch progress" });
-  }
-});
-
 router.post("/", async (req, res) => {
   const { user_id, language, section, unit, score } = req.body;
 
