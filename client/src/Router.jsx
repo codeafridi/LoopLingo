@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 
 import LandingPage from "./components/LandingPage";
 import Auth from "./pages/Auth";
@@ -7,7 +7,7 @@ import Protected from "./components/Protected";
 
 export default function Router() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<Auth />} />
