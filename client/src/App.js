@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 import { COURSE_DATA } from "./data";
-import LandingPage from "./components/LandingPage";
 import "./styles/landing.css";
+import { supabase } from "./supabase";
 
 // --- HELPER ---
 const getString = (val) => {
@@ -21,7 +21,25 @@ const getString = (val) => {
 };
 
 function App() {
-  const [view, setView] = useState("landing");
+  const [view, setView] = useState("setup");
+
+  // Log view changes for debugging
+  useEffect(() => {
+    console.log("App:view ->", view);
+  }, [view]);
+
+  // Log Supabase session on mount to confirm auth state inside App
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: { session } = {} } = await supabase.auth.getSession();
+        console.log("App:supabase session present?", !!session, session);
+      } catch (e) {
+        console.error("App:failed to get session", e);
+      }
+    })();
+  }, []);
+
   const [notifications, setNotifications] = useState([]);
   const [showNotifs, setShowNotifs] = useState(false);
   const [essayLevel, setEssayLevel] = useState(1);
@@ -41,9 +59,10 @@ function App() {
     mistakesLog: [],
   });
 
-  // Add this useEffect inside App()
+  // Ensure landing UI renders by using the 'setup' view name
+  // (previously setView("landing") — App expects "setup" for the landing page)
   useEffect(() => {
-    setView("landing");
+    setView("setup");
   }, []);
 
   useEffect(() => {
@@ -267,9 +286,6 @@ function App() {
 
   // ================= VIEWS =================
   // 1. SETUP
-  if (view === "landing") {
-    return <LandingPage onEnter={() => setView("setup")} />;
-  }
 
   if (view === "setup") {
     return (
@@ -278,25 +294,61 @@ function App() {
           <div className="logo">
             Looplingo <span className="logo-icon"></span>
           </div>{" "}
-          {/* NOTIFICATION BELL */}
+          {/* NOTIFICATION BELL (anchored dropdown) */}
           <div
             className="notif-container"
             onClick={() => setShowNotifs(!showNotifs)}
+            style={{
+              position: "relative",
+              display: "inline-block",
+              cursor: "pointer",
+            }}
           >
             <span className="bell-icon">🔔</span>
             {notifications.length > 0 && (
               <span className="badge">{notifications.length}</span>
             )}
             {showNotifs && (
-              <div className="notif-dropdown">
-                <h4>AI Tutor Feedback</h4>
+              <div
+                className="notif-dropdown"
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "calc(100% + 8px)",
+                  minWidth: 300,
+                  background: "rgba(7, 15, 30, 0.95)",
+                  color: "#e6eef8",
+                  padding: "12px",
+                  borderRadius: 10,
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                  border: "1px solid rgba(255,255,255,0.04)",
+                  zIndex: 1200,
+                }}
+              >
+                <h4 style={{ margin: 0, marginBottom: 8, color: "#cfe6ff" }}>
+                  AI Tutor Feedback
+                </h4>
                 {notifications.length === 0 ? (
-                  <p>No new messages.</p>
+                  <p style={{ margin: 0, color: "#b8c7d9" }}>
+                    No new messages.
+                  </p>
                 ) : (
                   notifications.map((n) => (
-                    <div key={n.id} className={`notif-item ${n.type}`}>
-                      <p>{n.message}</p>
-                      <span className="time">Just now</span>
+                    <div
+                      key={n.id}
+                      className={`notif-item ${n.type}`}
+                      style={{
+                        padding: "8px 6px",
+                        borderBottom: "1px solid rgba(255,255,255,0.03)",
+                      }}
+                    >
+                      <p style={{ margin: 0 }}>{n.message}</p>
+                      <span
+                        className="time"
+                        style={{ fontSize: 12, opacity: 0.7 }}
+                      >
+                        Just now
+                      </span>
                     </div>
                   ))
                 )}

@@ -1,4 +1,5 @@
 import "../styles/landing.css";
+import { Link } from "react-router-dom";
 
 export default function LandingPage({ onEnter }) {
   return (
@@ -17,9 +18,9 @@ export default function LandingPage({ onEnter }) {
               <a href="#how">How it works</a>
               <a href="#features">Features</a>
               <a href="#faq">FAQs</a>
-              <a className="lp-btn-primary" href="/app">
+              <Link to="/auth" className="lp-btn-primary">
                 Try LoopLingo
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -39,9 +40,17 @@ export default function LandingPage({ onEnter }) {
               into daily learning loops designed for real fluency.
             </p>
             <div className="lp-hero-cta">
-              <button className="lp-btn-primary" onClick={onEnter}>
+              {/* force full page navigation to /auth to avoid client-router state jumping */}
+              <a
+                href="/auth"
+                className="lp-btn-primary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = "/auth";
+                }}
+              >
                 Get Started
-              </button>
+              </a>
               <a className="lp-btn-secondary" href="#features">
                 See features
               </a>
@@ -182,9 +191,16 @@ export default function LandingPage({ onEnter }) {
       <section className="lp-final">
         <div className="lp-container">
           <h2>Start practicing smarter today</h2>
-          <button className="lp-btn-primary large" onClick={onEnter}>
+          <a
+            href="/auth"
+            className="lp-btn-primary large"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = "/auth";
+            }}
+          >
             Try LoopLingo
-          </button>
+          </a>
         </div>
       </section>
 
