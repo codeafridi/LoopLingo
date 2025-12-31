@@ -41,16 +41,10 @@ export default function LandingPage({ onEnter }) {
             </p>
             <div className="lp-hero-cta">
               {/* force full page navigation to /auth to avoid client-router state jumping */}
-              <a
-                href="/auth"
-                className="lp-btn-primary"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = "/auth";
-                }}
-              >
+              <Link to="/auth" className="lp-btn-primary">
                 Get Started
-              </a>
+              </Link>
+
               <a className="lp-btn-secondary" href="#features">
                 See features
               </a>
@@ -191,16 +185,9 @@ export default function LandingPage({ onEnter }) {
       <section className="lp-final">
         <div className="lp-container">
           <h2>Start practicing smarter today</h2>
-          <a
-            href="/auth"
-            className="lp-btn-primary large"
-            onClick={(e) => {
-              e.preventDefault();
-              window.location.href = "/auth";
-            }}
-          >
+          <Link to="/auth" className="lp-btn-primary large">
             Try LoopLingo
-          </a>
+          </Link>
         </div>
       </section>
 
