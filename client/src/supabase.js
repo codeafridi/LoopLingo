@@ -1,12 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
-export const supabase = createClient(
-  process.env.REACT_APP_SUPABASE_URL,
-  process.env.REACT_APP_SUPABASE_ANON_KEY
-);
-// #region agent log
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
-// #endregion
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Supabase env variables are missing");
+}
 
-console.log("Supabase URL:", process.env.REACT_APP_SUPABASE_URL);
-console.log("Supabase Anon Key:", process.env.REACT_APP_SUPABASE_ANON_KEY);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

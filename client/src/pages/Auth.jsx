@@ -20,6 +20,7 @@ export default function Auth() {
         redirectTo: `${window.location.origin}/#/app`,
       },
     });
+    console.log("OAuth Redirect URL:", `${window.location.origin}/#/app`);
   };
 
   return (
