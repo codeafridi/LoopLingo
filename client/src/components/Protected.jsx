@@ -23,7 +23,6 @@ export default function Protected({ children }) {
   }, []);
 
   if (loading) return <div>Loading…</div>;
-
   if (!session) return <Navigate to="/auth" replace />;
 
   return children;

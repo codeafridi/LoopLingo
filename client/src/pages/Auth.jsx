@@ -6,18 +6,37 @@ export default function Auth() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    const handleAuth = async () => {
+      // 🔑 Handle OAuth callback FIRST
+      if (window.location.hash.includes("access_token")) {
+        await supabase.auth.getSessionFromUrl();
+
+        // clean URL
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname + "#/app"
+        );
+
+        navigate("/app", { replace: true });
+        return;
+      }
+
+      // normal session check
+      const { data } = await supabase.auth.getSession();
       if (data.session) {
         navigate("/app", { replace: true });
       }
-    });
+    };
+
+    handleAuth();
   }, [navigate]);
 
   const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/#/app`,
+        redirectTo: window.location.origin, // IMPORTANT
       },
     });
   };
