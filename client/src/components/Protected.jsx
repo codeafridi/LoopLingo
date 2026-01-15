@@ -11,13 +11,20 @@ export default function Protected({ children }) {
       setSession(data.session);
       setLoading(false);
     });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) return null;
+  if (loading) return <div>Loading…</div>;
 
-  if (!session) {
-    return <Navigate to="/auth" replace />;
-  }
+  if (!session) return <Navigate to="/auth" replace />;
 
   return children;
 }

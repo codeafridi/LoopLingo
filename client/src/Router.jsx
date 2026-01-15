@@ -1,5 +1,4 @@
 import { HashRouter, Routes, Route } from "react-router-dom";
-
 import LandingPage from "./components/LandingPage";
 import Auth from "./pages/Auth";
 import App from "./App";
