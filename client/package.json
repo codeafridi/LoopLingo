@@ -12,6 +12,9 @@
     "react-scripts": "^5.0.1",
     "web-vitals": "^2.1.0"
   },
+  "devDependencies": {
+    "baseline-browser-mapping": "^2.9.19"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
