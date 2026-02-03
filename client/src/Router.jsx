@@ -21,6 +21,7 @@ export default function Router() {
             </Protected>
           }
         />
+        <Route path="*" element={<LandingPage />} />
       </Routes>
     </HashRouter>
   );

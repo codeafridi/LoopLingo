@@ -17,16 +17,21 @@ export default function LandingPage({ onEnter }) {
   };
 
   useEffect(() => {
-    const hash = window.location.hash || "";
-    const normalized = hash.replace(/^#\/?/, "");
-    if (normalized === "features" || normalized === "how" || normalized === "faq") {
-      window.history.replaceState(
-        {},
-        document.title,
-        `${window.location.pathname}#/${normalized}`
-      );
-      setTimeout(() => scrollToSection(normalized), 0);
-    }
+    const scrollToHash = () => {
+      const hash = window.location.hash || "";
+      const normalized = hash.replace(/^#\/?/, "");
+      if (
+        normalized === "features" ||
+        normalized === "how" ||
+        normalized === "faq"
+      ) {
+        setTimeout(() => scrollToSection(normalized), 0);
+      }
+    };
+
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
   }, []);
 
   return (
