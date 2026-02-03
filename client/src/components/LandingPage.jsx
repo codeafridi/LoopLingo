@@ -2,6 +2,19 @@ import "../styles/landing.css";
 import { Link } from "react-router-dom";
 
 export default function LandingPage({ onEnter }) {
+  const scrollToSection = (id) => {
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    const navOffset = 72;
+    const top =
+      target.getBoundingClientRect().top + window.pageYOffset - navOffset;
+    window.scrollTo({ top, behavior: "smooth" });
+
+    const toggle = document.getElementById("nav-toggle");
+    if (toggle) toggle.checked = false;
+  };
+
   return (
     <div className="lp-root">
       {/* NAVBAR */}
@@ -15,9 +28,21 @@ export default function LandingPage({ onEnter }) {
             </label>
 
             <div className="lp-mobile-menu">
-              <a href="#how">How it works</a>
-              <a href="#features">Features</a>
-              <a href="#faq">FAQs</a>
+              <button
+                type="button"
+                onClick={() => scrollToSection("how")}
+              >
+                How it works
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollToSection("features")}
+              >
+                Features
+              </button>
+              <button type="button" onClick={() => scrollToSection("faq")}>
+                FAQs
+              </button>
               <Link to="/auth" className="lp-btn-primary">
                 Try LoopLingo
               </Link>
@@ -45,9 +70,13 @@ export default function LandingPage({ onEnter }) {
                 Get Started
               </Link>
 
-              <a className="lp-btn-secondary" href="#features">
+              <button
+                type="button"
+                className="lp-btn-secondary"
+                onClick={() => scrollToSection("features")}
+              >
                 See features
-              </a>
+              </button>
             </div>
             <p className="lp-supported">
               Supports French, Spanish, German, Japanese, Hindi, Korean, Italian
