@@ -1122,7 +1122,6 @@ function ListeningStoryComponent({ data }) {
   const [isPaused, setIsPaused] = useState(false);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const [voices, setVoices] = useState([]);
 
   useEffect(() => {
     window.speechSynthesis.cancel();
@@ -1132,12 +1131,6 @@ function ListeningStoryComponent({ data }) {
     setIsPaused(false);
     return () => window.speechSynthesis.cancel();
   }, [data]);
-
-  useEffect(() => {
-    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    loadVoices();
-  }, []);
 
   const detectLang = () => {
     if (/[\u0900-\u097F]/.test(data?.script || "")) return "hi";
