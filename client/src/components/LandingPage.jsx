@@ -1,5 +1,6 @@
 import "../styles/landing.css";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function LandingPage({ onEnter }) {
   const scrollToSection = (id) => {
@@ -14,6 +15,19 @@ export default function LandingPage({ onEnter }) {
     const toggle = document.getElementById("nav-toggle");
     if (toggle) toggle.checked = false;
   };
+
+  useEffect(() => {
+    const hash = window.location.hash || "";
+    const normalized = hash.replace(/^#\/?/, "");
+    if (normalized === "features" || normalized === "how" || normalized === "faq") {
+      window.history.replaceState(
+        {},
+        document.title,
+        `${window.location.pathname}#/${normalized}`
+      );
+      setTimeout(() => scrollToSection(normalized), 0);
+    }
+  }, []);
 
   return (
     <div className="lp-root">

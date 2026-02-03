@@ -9,6 +9,9 @@ export default function Router() {
     <HashRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/features" element={<LandingPage />} />
+        <Route path="/how" element={<LandingPage />} />
+        <Route path="/faq" element={<LandingPage />} />
         <Route path="/auth" element={<Auth />} />
         <Route
           path="/app"
