@@ -31,9 +31,53 @@ export default function Auth() {
       setError("");
       setInfo("");
 
-      // 🔑 Handle OAuth callback FIRST (hash router uses # for routing)
+      const searchParams = new URLSearchParams(window.location.search);
+      const code = searchParams.get("code");
+      const errorParam =
+        searchParams.get("error_description") || searchParams.get("error");
+      const isRecovery =
+        window.location.hash.includes("type=recovery") ||
+        searchParams.get("type") === "recovery";
+
+      if (errorParam) {
+        setError(decodeURIComponent(errorParam));
+        setLoading(false);
+        return;
+      }
+
+      // 🔑 Handle OAuth callback (PKCE uses ?code=, implicit uses #access_token)
+      if (code) {
+        const { error: exchangeError } =
+          await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) {
+          setError(exchangeError.message || "Authentication failed.");
+          setLoading(false);
+          return;
+        }
+
+        if (isRecovery) {
+          blockRedirectRef.current = true;
+          setMode("reset-new");
+          setInfo("Create a new password to continue.");
+          window.history.replaceState(
+            {},
+            document.title,
+            `${window.location.pathname}#/auth`
+          );
+          setLoading(false);
+          return;
+        }
+
+        window.history.replaceState(
+          {},
+          document.title,
+          `${window.location.pathname}#/app`
+        );
+        navigate("/app", { replace: true });
+        return;
+      }
+
       if (window.location.hash.includes("access_token")) {
-        const isRecovery = window.location.hash.includes("type=recovery");
         const { error: sessionError } =
           await supabase.auth.getSessionFromUrl();
 
@@ -56,7 +100,6 @@ export default function Auth() {
           return;
         }
 
-        // Clean URL and go to app
         window.history.replaceState(
           {},
           document.title,
@@ -113,7 +156,7 @@ export default function Auth() {
     setInfo("");
     setLoading(true);
     updateRememberMe(rememberMe);
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+    const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         // Send back to /#/auth so we can handle the OAuth callback.
@@ -121,10 +164,19 @@ export default function Auth() {
       },
     });
 
+    if (data?.url) {
+      window.location.href = data.url;
+      return;
+    }
+
     if (oauthError) {
       setError(oauthError.message || "Google sign-in failed.");
       setLoading(false);
+      return;
     }
+
+    setError("Unable to start Google sign-in. Please try again.");
+    setLoading(false);
   };
 
   const handleEmailAuth = async (e) => {
@@ -149,7 +201,13 @@ export default function Auth() {
           });
 
         if (signInError) throw signInError;
-        if (data?.session) navigate("/app", { replace: true });
+        const session =
+          data?.session || (await supabase.auth.getSession()).data.session;
+        if (session) {
+          navigate("/app", { replace: true });
+        } else {
+          setError("Sign in succeeded, but no session was created.");
+        }
       } else {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
