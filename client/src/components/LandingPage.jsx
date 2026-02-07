@@ -274,6 +274,15 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer className="lp-footer">
         © {new Date().getFullYear()} LoopLingo
+        <span className="lp-footer-sep">•</span>
+        <a
+          className="lp-footer-link"
+          href="https://x.com/LoopLingo_in"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Follow on X
+        </a>
       </footer>
     </div>
   );
