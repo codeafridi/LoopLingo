@@ -38,7 +38,14 @@ export default function Auth() {
         hashQueryIndex >= 0 ? hash.slice(hashQueryIndex + 1) : "";
       const hashParams = new URLSearchParams(hashQuery);
 
+      const tokenFragmentIndex = hash.lastIndexOf("#");
+      const tokenFragment =
+        tokenFragmentIndex >= 0 ? hash.slice(tokenFragmentIndex + 1) : "";
+      const tokenParams = new URLSearchParams(tokenFragment);
+
       const code = searchParams.get("code") || hashParams.get("code");
+      const accessToken = tokenParams.get("access_token");
+      const refreshToken = tokenParams.get("refresh_token");
       const errorParam =
         searchParams.get("error_description") ||
         searchParams.get("error") ||
@@ -87,9 +94,11 @@ export default function Auth() {
         return;
       }
 
-      if (hash.includes("access_token")) {
-        const { error: sessionError } =
-          await supabase.auth.getSessionFromUrl();
+      if (accessToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || "",
+        });
 
         if (sessionError) {
           setError(sessionError.message || "Authentication failed.");
@@ -118,6 +127,10 @@ export default function Auth() {
         navigate("/app", { replace: true });
         return;
       }
+
+      if (hash.includes("access_token")) {
+        const { error: sessionError } =
+          await supabase.auth.getSessionFromUrl();
 
       // Normal session check
       const { data } = await supabase.auth.getSession();
