@@ -295,22 +295,6 @@ function App() {
             Looplingo <span className="logo-icon"></span>
           </div>
           <div className="nav-actions">
-            <a
-              className="nav-twitter"
-              href="https://x.com/LoopLingo_in"
-              target="_blank"
-              rel="noreferrer"
-            >
-              @LoopLingo_in
-            </a>
-            <a
-              className="nav-instagram"
-              href="https://www.instagram.com/looplingo_in/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              @looplingo_in
-            </a>
             {/* NOTIFICATION BELL (anchored dropdown) */}
             <div
               className="notif-container"
@@ -448,6 +432,24 @@ function App() {
             </button>
           </div>
         </header>
+        <div className="social-bar">
+          <a
+            className="social-pill x"
+            href="https://x.com/LoopLingo_in"
+            target="_blank"
+            rel="noreferrer"
+          >
+            X
+          </a>
+          <a
+            className="social-pill ig"
+            href="https://www.instagram.com/looplingo_in/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Instagram
+          </a>
+        </div>
       </div>
     );
   }

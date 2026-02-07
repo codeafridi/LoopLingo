@@ -281,7 +281,16 @@ export default function LandingPage() {
           target="_blank"
           rel="noreferrer"
         >
-          Follow on X
+          X
+        </a>
+        <span className="lp-footer-sep">•</span>
+        <a
+          className="lp-footer-link"
+          href="https://www.instagram.com/looplingo_in/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Instagram
         </a>
       </footer>
     </div>
