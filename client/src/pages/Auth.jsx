@@ -140,12 +140,11 @@ export default function Auth() {
 
     handleAuth();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const authListener = supabase.auth.onAuthStateChange((_event, session) => {
       if (blockRedirectRef.current) return;
       if (session) navigate("/app", { replace: true });
     });
+    const subscription = authListener?.data?.subscription;
 
     return () => {
       if (subscription?.unsubscribe) subscription.unsubscribe();
