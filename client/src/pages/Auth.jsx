@@ -18,7 +18,7 @@ export default function Auth() {
   const [rememberMe, setRememberMe] = useState(() => {
     try {
       return localStorage.getItem("ll_remember_me") !== "false";
-    } catch {
+    } catch (err) {
       return true;
     }
   });
@@ -64,10 +64,9 @@ export default function Auth() {
 
       // 🔑 Handle OAuth callback (PKCE uses ?code=, implicit uses #access_token)
       if (code) {
-        const { error: exchangeError } =
-          await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-          setError(exchangeError.message || "Authentication failed.");
+        const exchangeResult = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeResult?.error) {
+          setError(exchangeResult.error.message || "Authentication failed.");
           setLoading(false);
           return;
         }
@@ -95,13 +94,13 @@ export default function Auth() {
       }
 
       if (accessToken) {
-        const { error: sessionError } = await supabase.auth.setSession({
+        const sessionResult = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken || "",
         });
 
-        if (sessionError) {
-          setError(sessionError.message || "Authentication failed.");
+        if (sessionResult?.error) {
+          setError(sessionResult.error.message || "Authentication failed.");
           setLoading(false);
           return;
         }
@@ -129,8 +128,10 @@ export default function Auth() {
       }
 
       // Normal session check
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
+      const sessionResult = await supabase.auth.getSession();
+      const session =
+        sessionResult && sessionResult.data ? sessionResult.data.session : null;
+      if (session) {
         navigate("/app", { replace: true });
         return;
       }
@@ -164,7 +165,7 @@ export default function Auth() {
     setRememberMe(value);
     try {
       localStorage.setItem("ll_remember_me", value ? "true" : "false");
-    } catch {
+    } catch (err) {
       // ignore storage errors
     }
   };
@@ -174,7 +175,7 @@ export default function Auth() {
     setInfo("");
     setLoading(true);
     updateRememberMe(rememberMe);
-    const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+    const oauthResult = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         // Send back to /#/auth so we can handle the OAuth callback.
@@ -182,13 +183,13 @@ export default function Auth() {
       },
     });
 
-    if (data?.url) {
-      window.location.href = data.url;
+    if (oauthResult?.data?.url) {
+      window.location.href = oauthResult.data.url;
       return;
     }
 
-    if (oauthError) {
-      setError(oauthError.message || "Google sign-in failed.");
+    if (oauthResult?.error) {
+      setError(oauthResult.error.message || "Google sign-in failed.");
       setLoading(false);
       return;
     }
@@ -212,22 +213,22 @@ export default function Auth() {
     try {
       updateRememberMe(rememberMe);
       if (mode === "signin") {
-        const { data, error: signInError } =
-          await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+        const signInResult = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-        if (signInError) throw signInError;
+        if (signInResult?.error) throw signInResult.error;
         const session =
-          data?.session || (await supabase.auth.getSession()).data.session;
+          (signInResult?.data && signInResult.data.session) ||
+          (await supabase.auth.getSession()).data.session;
         if (session) {
           navigate("/app", { replace: true });
         } else {
           setError("Sign in succeeded, but no session was created.");
         }
       } else {
-        const { data, error: signUpError } = await supabase.auth.signUp({
+        const signUpResult = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -235,8 +236,8 @@ export default function Auth() {
           },
         });
 
-        if (signUpError) throw signUpError;
-        if (data?.session) {
+        if (signUpResult?.error) throw signUpResult.error;
+        if (signUpResult?.data?.session) {
           navigate("/app", { replace: true });
         } else {
           setMode("confirm-email");
@@ -267,12 +268,12 @@ export default function Auth() {
         setLoading(false);
         return;
       }
-      const { error: resendError } = await supabase.auth.resend({
+      const resendResult = await supabase.auth.resend({
         type: "signup",
         email,
         options: { emailRedirectTo: redirectToAuth },
       });
-      if (resendError) throw resendError;
+      if (resendResult?.error) throw resendResult.error;
       setInfo("Confirmation email resent.");
     } catch (err) {
       setError(err?.message || "Failed to resend confirmation email.");
@@ -294,11 +295,10 @@ export default function Auth() {
     }
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email,
-        { redirectTo: redirectToAuth }
-      );
-      if (resetError) throw resetError;
+      const resetResult = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectToAuth,
+      });
+      if (resetResult?.error) throw resetResult.error;
       setInfo("Reset link sent. Check your email.");
     } catch (err) {
       setError(err?.message || "Failed to send reset link.");
@@ -325,10 +325,10 @@ export default function Auth() {
     }
 
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
+      const updateResult = await supabase.auth.updateUser({
         password: newPassword,
       });
-      if (updateError) throw updateError;
+      if (updateResult?.error) throw updateResult.error;
       blockRedirectRef.current = false;
       navigate("/app", { replace: true });
     } catch (err) {
