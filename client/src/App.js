@@ -293,67 +293,77 @@ function App() {
         <nav className="navbar">
           <div className="logo">
             Looplingo <span className="logo-icon"></span>
-          </div>{" "}
-          {/* NOTIFICATION BELL (anchored dropdown) */}
-          <div
-            className="notif-container"
-            style={{
-              position: "relative",
-              display: "inline-block",
-              cursor: "pointer",
-            }}
-            onClick={() => setShowNotifs((s) => !s)}
-          >
-            <span className="bell-icon">🔔</span>
-            {notifications.length > 0 && (
-              <span className="badge">{notifications.length}</span>
-            )}
-            {showNotifs && (
-              <div
-                className="notif-dropdown"
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: "calc(100% + 8px)",
-                  minWidth: 300,
-                  background: "rgba(7, 15, 30, 0.95)",
-                  color: "#e6eef8",
-                  padding: "12px",
-                  borderRadius: 10,
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-                  border: "1px solid rgba(255,255,255,0.04)",
-                  zIndex: 1200,
-                }}
-              >
-                <h4 style={{ margin: 0, marginBottom: 8, color: "#cfe6ff" }}>
-                  AI Tutor Feedback
-                </h4>
-                {notifications.length === 0 ? (
-                  <p style={{ margin: 0, color: "#b8c7d9" }}>
-                    No new messages.
-                  </p>
-                ) : (
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      className={`notif-item ${n.type}`}
-                      style={{
-                        padding: "8px 6px",
-                        borderBottom: "1px solid rgba(255,255,255,0.03)",
-                      }}
-                    >
-                      <p style={{ margin: 0 }}>{n.message}</p>
-                      <span
-                        className="time"
-                        style={{ fontSize: 12, opacity: 0.7 }}
+          </div>
+          <div className="nav-actions">
+            <a
+              className="nav-twitter"
+              href="https://x.com/LoopLingo_in"
+              target="_blank"
+              rel="noreferrer"
+            >
+              @LoopLingo_in
+            </a>
+            {/* NOTIFICATION BELL (anchored dropdown) */}
+            <div
+              className="notif-container"
+              style={{
+                position: "relative",
+                display: "inline-block",
+                cursor: "pointer",
+              }}
+              onClick={() => setShowNotifs((s) => !s)}
+            >
+              <span className="bell-icon">🔔</span>
+              {notifications.length > 0 && (
+                <span className="badge">{notifications.length}</span>
+              )}
+              {showNotifs && (
+                <div
+                  className="notif-dropdown"
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: "calc(100% + 8px)",
+                    minWidth: 300,
+                    background: "rgba(7, 15, 30, 0.95)",
+                    color: "#e6eef8",
+                    padding: "12px",
+                    borderRadius: 10,
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                    border: "1px solid rgba(255,255,255,0.04)",
+                    zIndex: 1200,
+                  }}
+                >
+                  <h4 style={{ margin: 0, marginBottom: 8, color: "#cfe6ff" }}>
+                    AI Tutor Feedback
+                  </h4>
+                  {notifications.length === 0 ? (
+                    <p style={{ margin: 0, color: "#b8c7d9" }}>
+                      No new messages.
+                    </p>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`notif-item ${n.type}`}
+                        style={{
+                          padding: "8px 6px",
+                          borderBottom: "1px solid rgba(255,255,255,0.03)",
+                        }}
                       >
-                        Just now
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
+                        <p style={{ margin: 0 }}>{n.message}</p>
+                        <span
+                          className="time"
+                          style={{ fontSize: 12, opacity: 0.7 }}
+                        >
+                          Just now
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </nav>
         <div className="background-glow"></div>
