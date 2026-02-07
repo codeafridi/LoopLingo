@@ -59,6 +59,22 @@ body {
   background: rgba(15, 23, 42, 0.6);
 }
 
+.nav-instagram {
+  font-size: 14px;
+  color: #f9a8d4;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 114, 182, 0.35);
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.nav-instagram:hover {
+  color: #ffffff;
+  border-color: rgba(244, 114, 182, 0.6);
+  background: rgba(15, 23, 42, 0.6);
+}
+
 .logo {
   font-size: 130%;
   font-weight: 800;

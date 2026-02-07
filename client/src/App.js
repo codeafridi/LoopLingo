@@ -303,6 +303,14 @@ function App() {
             >
               @LoopLingo_in
             </a>
+            <a
+              className="nav-instagram"
+              href="https://www.instagram.com/looplingo_in/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              @looplingo_in
+            </a>
             {/* NOTIFICATION BELL (anchored dropdown) */}
             <div
               className="notif-container"
