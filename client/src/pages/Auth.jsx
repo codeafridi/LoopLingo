@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../supabase";
 
 export default function Auth() {
   const navigate = useNavigate();
+  const location = useLocation();
   const blockRedirectRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,6 +14,13 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(() => {
+    try {
+      return localStorage.getItem("ll_remember_me") !== "false";
+    } catch {
+      return true;
+    }
+  });
 
   const redirectToAuth = `${window.location.origin}/#/auth`;
 
@@ -81,10 +89,29 @@ export default function Auth() {
     };
   }, [navigate]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const nextMode = params.get("mode");
+    if (nextMode === "signup" || nextMode === "signin") {
+      if (mode === "reset-new" || mode === "confirm-email") return;
+      setMode(nextMode);
+    }
+  }, [location.search, mode]);
+
+  const updateRememberMe = (value) => {
+    setRememberMe(value);
+    try {
+      localStorage.setItem("ll_remember_me", value ? "true" : "false");
+    } catch {
+      // ignore storage errors
+    }
+  };
+
   const signInWithGoogle = async () => {
     setError("");
     setInfo("");
     setLoading(true);
+    updateRememberMe(rememberMe);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -112,6 +139,7 @@ export default function Auth() {
     }
 
     try {
+      updateRememberMe(rememberMe);
       if (mode === "signin") {
         const { data, error: signInError } =
           await supabase.auth.signInWithPassword({
@@ -134,11 +162,43 @@ export default function Auth() {
         if (data?.session) {
           navigate("/app", { replace: true });
         } else {
-          setInfo("Check your email to confirm your account, then sign in.");
+          setMode("confirm-email");
+          setInfo("We sent a confirmation link to your email.");
         }
       }
     } catch (err) {
       setError(err?.message || "Authentication failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    setError("");
+    setInfo("");
+    setLoading(true);
+
+    if (!email) {
+      setError("Enter your email to resend the confirmation link.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      if (typeof supabase.auth.resend !== "function") {
+        setInfo("Please check your inbox for the confirmation email.");
+        setLoading(false);
+        return;
+      }
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: redirectToAuth },
+      });
+      if (resendError) throw resendError;
+      setInfo("Confirmation email resent.");
+    } catch (err) {
+      setError(err?.message || "Failed to resend confirmation email.");
     } finally {
       setLoading(false);
     }
@@ -210,6 +270,7 @@ export default function Auth() {
 
   const isResetRequest = mode === "reset-request";
   const isResetNew = mode === "reset-new";
+  const isConfirmEmail = mode === "confirm-email";
   const isEmailAuth = mode === "signin" || mode === "signup";
 
   return (
@@ -242,29 +303,33 @@ export default function Auth() {
           Sign in to start your language practice.
         </p>
 
-        <button
-          onClick={signInWithGoogle}
-          className="lp-btn-primary"
-          disabled={loading}
-          style={{ width: "100%" }}
-        >
-          {loading ? "Signing you in..." : "Continue with Google"}
-        </button>
+        {!isResetNew && (
+          <button
+            onClick={signInWithGoogle}
+            className="lp-btn-primary"
+            disabled={loading}
+            style={{ width: "100%" }}
+          >
+            {loading ? "Signing you in..." : "Continue with Google"}
+          </button>
+        )}
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            margin: "18px 0",
-            color: "#94a3b8",
-            fontSize: "13px",
-          }}
-        >
-          <div style={{ height: 1, flex: 1, background: "#e5e7eb" }} />
-          <span>or</span>
-          <div style={{ height: 1, flex: 1, background: "#e5e7eb" }} />
-        </div>
+        {!isResetNew && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              margin: "18px 0",
+              color: "#94a3b8",
+              fontSize: "13px",
+            }}
+          >
+            <div style={{ height: 1, flex: 1, background: "#e5e7eb" }} />
+            <span>or</span>
+            <div style={{ height: 1, flex: 1, background: "#e5e7eb" }} />
+          </div>
+        )}
 
         {isEmailAuth && (
           <div style={{ display: "flex", gap: "10px", marginBottom: "12px" }}>
@@ -336,6 +401,23 @@ export default function Auth() {
                 padding: "12px 14px",
               }}
             />
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "13px",
+                color: "#94a3b8",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => updateRememberMe(e.target.checked)}
+                disabled={loading}
+              />
+              Remember me on this device
+            </label>
             <button
               type="submit"
               className="lp-btn-primary"
@@ -349,6 +431,32 @@ export default function Auth() {
                   : "Create Account"}
             </button>
           </form>
+        )}
+
+        {isConfirmEmail && (
+          <div style={{ textAlign: "left" }}>
+            <p style={{ color: "#cbd5f5", marginBottom: "10px" }}>
+              We sent a confirmation link to <strong>{email}</strong>.
+              Once you confirm, come back and sign in.
+            </p>
+            <button
+              type="button"
+              className="lp-btn-primary"
+              onClick={handleResendConfirmation}
+              disabled={loading}
+              style={{ width: "100%", marginBottom: "10px" }}
+            >
+              {loading ? "Resending..." : "Resend confirmation email"}
+            </button>
+            <button
+              type="button"
+              className="lp-btn-secondary"
+              onClick={() => setMode("signin")}
+              style={{ width: "100%", color: "#0f172a" }}
+            >
+              Back to Sign In
+            </button>
+          </div>
         )}
 
         {isResetRequest && (

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { supabase } from "../supabase";
 
-export default function LandingPage({ onEnter }) {
+export default function LandingPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -123,6 +123,12 @@ export default function LandingPage({ onEnter }) {
                 See features
               </button>
             </div>
+            <p className="lp-inline-cta">
+              New here?{" "}
+              <Link to="/auth?mode=signup" className="lp-inline-link">
+                Create account
+              </Link>
+            </p>
             <p className="lp-supported">
               Supports French, Spanish, German, Japanese, Hindi, Korean, Italian
               and more.

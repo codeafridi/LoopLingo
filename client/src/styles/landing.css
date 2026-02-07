@@ -101,6 +101,18 @@ RESET :root {
   color: #94a3b8;
 }
 
+.lp-inline-cta {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #cbd5f5;
+}
+
+.lp-inline-link {
+  color: #ffffff;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
 /* MOCK */
 .lp-hero-mock {
   background: #020617;
