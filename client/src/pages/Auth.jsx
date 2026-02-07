@@ -32,12 +32,22 @@ export default function Auth() {
       setInfo("");
 
       const searchParams = new URLSearchParams(window.location.search);
-      const code = searchParams.get("code");
+      const hash = window.location.hash || "";
+      const hashQueryIndex = hash.indexOf("?");
+      const hashQuery =
+        hashQueryIndex >= 0 ? hash.slice(hashQueryIndex + 1) : "";
+      const hashParams = new URLSearchParams(hashQuery);
+
+      const code = searchParams.get("code") || hashParams.get("code");
       const errorParam =
-        searchParams.get("error_description") || searchParams.get("error");
+        searchParams.get("error_description") ||
+        searchParams.get("error") ||
+        hashParams.get("error_description") ||
+        hashParams.get("error");
       const isRecovery =
-        window.location.hash.includes("type=recovery") ||
-        searchParams.get("type") === "recovery";
+        hash.includes("type=recovery") ||
+        searchParams.get("type") === "recovery" ||
+        hashParams.get("type") === "recovery";
 
       if (errorParam) {
         setError(decodeURIComponent(errorParam));
@@ -77,7 +87,7 @@ export default function Auth() {
         return;
       }
 
-      if (window.location.hash.includes("access_token")) {
+      if (hash.includes("access_token")) {
         const { error: sessionError } =
           await supabase.auth.getSessionFromUrl();
 
