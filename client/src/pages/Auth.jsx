@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../supabase";
+import "../styles/auth.css";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -274,86 +275,38 @@ export default function Auth() {
   const isEmailAuth = mode === "signin" || mode === "signup";
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(180deg, #0b1220, #020617)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "460px",
-          background: "rgba(15, 23, 42, 0.75)",
-          backdropFilter: "blur(16px)",
-          borderRadius: "22px",
-          padding: "36px",
-          boxShadow: "0 40px 120px rgba(0,0,0,0.6)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          textAlign: "center",
-          color: "white",
-        }}
-      >
-        <h1 style={{ marginBottom: "6px" }}>Welcome to LoopLingo</h1>
-        <p style={{ color: "#94a3b8", marginBottom: "24px" }}>
+    <div className="auth-page">
+      <div className="auth-card">
+        <h1 className="auth-title">Welcome to LoopLingo</h1>
+        <p className="auth-subtitle">
           Sign in to start your language practice.
         </p>
 
         {!isResetNew && (
           <button
             onClick={signInWithGoogle}
-            className="lp-btn-primary"
+            className="auth-google-btn"
             disabled={loading}
-            style={{ width: "100%" }}
           >
             {loading ? "Signing you in..." : "Continue with Google"}
           </button>
         )}
 
-        {!isResetNew && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              margin: "18px 0",
-              color: "#94a3b8",
-              fontSize: "13px",
-            }}
-          >
-            <div style={{ height: 1, flex: 1, background: "#e5e7eb" }} />
-            <span>or</span>
-            <div style={{ height: 1, flex: 1, background: "#e5e7eb" }} />
-          </div>
-        )}
+        {!isResetNew && <div className="auth-divider"><span>or</span></div>}
 
         {isEmailAuth && (
-          <div style={{ display: "flex", gap: "10px", marginBottom: "12px" }}>
+          <div className="auth-tabs">
             <button
               type="button"
               onClick={() => setMode("signin")}
-              className="lp-btn-secondary"
-              style={{
-                width: "50%",
-                borderColor: mode === "signin" ? "#0f172a" : "#e5e7eb",
-                color: "#0f172a",
-              }}
+              className={`auth-tab ${mode === "signin" ? "active" : ""}`}
             >
               Sign In
             </button>
             <button
               type="button"
               onClick={() => setMode("signup")}
-              className="lp-btn-secondary"
-              style={{
-                width: "50%",
-                borderColor: mode === "signup" ? "#0f172a" : "#e5e7eb",
-                color: "#0f172a",
-              }}
+              className={`auth-tab ${mode === "signup" ? "active" : ""}`}
             >
               Sign Up
             </button>
@@ -363,11 +316,7 @@ export default function Auth() {
         {isEmailAuth && (
           <form
             onSubmit={handleEmailAuth}
-            style={{
-              display: "grid",
-              gap: "10px",
-              textAlign: "left",
-            }}
+            className="auth-form"
           >
             <input
               type="email"
@@ -375,15 +324,7 @@ export default function Auth() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              className="paper-input"
-              style={{
-                width: "100%",
-                background: "#ffffff",
-                color: "#0f172a",
-                border: "1px solid #e5e7eb",
-                borderRadius: "10px",
-                padding: "12px 14px",
-              }}
+              className="auth-input"
             />
             <input
               type="password"
@@ -391,25 +332,9 @@ export default function Auth() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              className="paper-input"
-              style={{
-                width: "100%",
-                background: "#ffffff",
-                color: "#0f172a",
-                border: "1px solid #e5e7eb",
-                borderRadius: "10px",
-                padding: "12px 14px",
-              }}
+              className="auth-input"
             />
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                fontSize: "13px",
-                color: "#94a3b8",
-              }}
-            >
+            <label className="auth-remember">
               <input
                 type="checkbox"
                 checked={rememberMe}
@@ -420,9 +345,8 @@ export default function Auth() {
             </label>
             <button
               type="submit"
-              className="lp-btn-primary"
+              className="auth-primary"
               disabled={loading}
-              style={{ width: "100%" }}
             >
               {loading
                 ? "Please wait..."
@@ -441,18 +365,17 @@ export default function Auth() {
             </p>
             <button
               type="button"
-              className="lp-btn-primary"
+              className="auth-primary"
               onClick={handleResendConfirmation}
               disabled={loading}
-              style={{ width: "100%", marginBottom: "10px" }}
+              style={{ marginBottom: "10px" }}
             >
               {loading ? "Resending..." : "Resend confirmation email"}
             </button>
             <button
               type="button"
-              className="lp-btn-secondary"
+              className="auth-secondary"
               onClick={() => setMode("signin")}
-              style={{ width: "100%", color: "#0f172a" }}
             >
               Back to Sign In
             </button>
@@ -462,11 +385,7 @@ export default function Auth() {
         {isResetRequest && (
           <form
             onSubmit={handleResetRequest}
-            style={{
-              display: "grid",
-              gap: "10px",
-              textAlign: "left",
-            }}
+            className="auth-form"
           >
             <input
               type="email"
@@ -474,29 +393,19 @@ export default function Auth() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              className="paper-input"
-              style={{
-                width: "100%",
-                background: "#ffffff",
-                color: "#0f172a",
-                border: "1px solid #e5e7eb",
-                borderRadius: "10px",
-                padding: "12px 14px",
-              }}
+              className="auth-input"
             />
             <button
               type="submit"
-              className="lp-btn-primary"
+              className="auth-primary"
               disabled={loading}
-              style={{ width: "100%" }}
             >
               {loading ? "Sending..." : "Send reset link"}
             </button>
             <button
               type="button"
-              className="lp-btn-secondary"
+              className="auth-secondary"
               onClick={() => setMode("signin")}
-              style={{ width: "100%", color: "#0f172a" }}
             >
               Back to Sign In
             </button>
@@ -506,11 +415,7 @@ export default function Auth() {
         {isResetNew && (
           <form
             onSubmit={handleUpdatePassword}
-            style={{
-              display: "grid",
-              gap: "10px",
-              textAlign: "left",
-            }}
+            className="auth-form"
           >
             <input
               type="password"
@@ -518,15 +423,7 @@ export default function Auth() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               disabled={loading}
-              className="paper-input"
-              style={{
-                width: "100%",
-                background: "#ffffff",
-                color: "#0f172a",
-                border: "1px solid #e5e7eb",
-                borderRadius: "10px",
-                padding: "12px 14px",
-              }}
+              className="auth-input"
             />
             <input
               type="password"
@@ -534,29 +431,19 @@ export default function Auth() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}
-              className="paper-input"
-              style={{
-                width: "100%",
-                background: "#ffffff",
-                color: "#0f172a",
-                border: "1px solid #e5e7eb",
-                borderRadius: "10px",
-                padding: "12px 14px",
-              }}
+              className="auth-input"
             />
             <button
               type="submit"
-              className="lp-btn-primary"
+              className="auth-primary"
               disabled={loading}
-              style={{ width: "100%" }}
             >
               {loading ? "Updating..." : "Update password"}
             </button>
             <button
               type="button"
-              className="lp-btn-secondary"
+              className="auth-secondary"
               onClick={handleCancelRecovery}
-              style={{ width: "100%", color: "#0f172a" }}
             >
               Cancel
             </button>
@@ -567,33 +454,20 @@ export default function Auth() {
           <button
             type="button"
             onClick={() => setMode("reset-request")}
-            style={{
-              marginTop: "10px",
-              background: "none",
-              border: "none",
-              color: "#cbd5f5",
-              cursor: "pointer",
-              textDecoration: "underline",
-            }}
+            className="auth-link"
           >
             Forgot password?
           </button>
         )}
 
         {error ? (
-          <div style={{ marginTop: "12px", color: "#ef4444" }}>{error}</div>
+          <div className="auth-error">{error}</div>
         ) : null}
         {info ? (
-          <div style={{ marginTop: "12px", color: "#16a34a" }}>{info}</div>
+          <div className="auth-info">{info}</div>
         ) : null}
 
-        <p
-          style={{
-            marginTop: "18px",
-            fontSize: "12px",
-            color: "#64748b",
-          }}
-        >
+        <p className="auth-legal">
           By continuing, you agree to our Terms & Privacy Policy.
         </p>
       </div>
