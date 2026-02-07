@@ -1,8 +1,34 @@
 import "../styles/landing.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { supabase } from "../supabase";
 
 export default function LandingPage({ onEnter }) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const { data: { session } = {} } = await supabase.auth.getSession();
+        if (active && session) navigate("/app", { replace: true });
+      } catch {
+        // ignore auth check errors on landing
+      }
+    })();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) navigate("/app", { replace: true });
+    });
+
+    return () => {
+      active = false;
+      if (subscription?.unsubscribe) subscription.unsubscribe();
+    };
+  }, [navigate]);
+
   const scrollToSection = (id) => {
     const target = document.getElementById(id);
     if (!target) return;
