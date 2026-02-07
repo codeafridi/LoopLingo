@@ -128,10 +128,6 @@ export default function Auth() {
         return;
       }
 
-      if (hash.includes("access_token")) {
-        const { error: sessionError } =
-          await supabase.auth.getSessionFromUrl();
-
       // Normal session check
       const { data } = await supabase.auth.getSession();
       if (data.session) {
