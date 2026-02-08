@@ -1,4 +1,5 @@
 import { HashRouter, Routes, Route } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import LandingPage from "./components/LandingPage";
 import Auth from "./pages/Auth";
 import App from "./App";
@@ -23,6 +24,7 @@ export default function Router() {
         />
         <Route path="*" element={<LandingPage />} />
       </Routes>
+      <Analytics />
     </HashRouter>
   );
 }
