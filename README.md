@@ -195,5 +195,6 @@ The focus is on:
 - Correct architecture
 - Sponsor-aligned tooling
 - Production-ready design
+- Exam ready questions 
 
 ---
